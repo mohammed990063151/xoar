@@ -1,26 +1,146 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-deep: #05050c;
+  --bg-panel: rgba(12, 12, 24, 0.72);
+  --cyan: #22d3ee;
+  --purple: #a855f7;
+  --violet: #7c3aed;
+  --muted: #94a3b8;
+  --border-glow: rgba(168, 85, 247, 0.45);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-deep: var(--bg-deep);
+  --color-bg-panel: var(--bg-panel);
+  --font-sans: var(--font-tajawal), var(--font-outfit), ui-sans-serif, system-ui;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: auto;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: radial-gradient(1200px 800px at 80% -10%, rgba(124, 58, 237, 0.25), transparent),
+    radial-gradient(900px 600px at 10% 20%, rgba(34, 211, 238, 0.12), transparent),
+    radial-gradient(800px 500px at 50% 100%, rgba(0, 108, 53, 0.08), transparent),
+    var(--bg-deep);
+  background-size: 100% 100%, 100% 100%, 120% 120%, 100%;
+  animation: body-bg-drift 28s ease-in-out infinite alternate;
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
+@keyframes body-bg-drift {
+  0% {
+    background-position: 0% 0%, 0% 0%, 0% 100%, 0 0;
+  }
+  100% {
+    background-position: 100% 20%, 10% 30%, 100% 80%, 0 0;
+  }
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #c084fc, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-text-saudi {
+  background: linear-gradient(
+    105deg,
+    #34d399,
+    #fbbf24,
+    #a78bfa,
+    #22d3ee,
+    #34d399
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: saudi-text-shine 7s ease-in-out infinite;
+}
+
+@keyframes saudi-text-shine {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.hero-saudi-aurora {
+  background: linear-gradient(
+    125deg,
+    rgba(0, 108, 53, 0.22),
+    rgba(5, 5, 12, 0.05) 35%,
+    rgba(124, 58, 237, 0.18) 55%,
+    rgba(212, 175, 55, 0.12) 78%,
+    rgba(34, 211, 238, 0.1)
+  );
+  background-size: 200% 200%;
+  animation: saudi-aurora-pan 18s ease-in-out infinite;
+}
+
+@keyframes saudi-aurora-pan {
+  0%,
+  100% {
+    background-position: 0% 40%;
+  }
+  33% {
+    background-position: 100% 60%;
+  }
+  66% {
+    background-position: 40% 0%;
+  }
+}
+
+@keyframes header-line-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-header-line {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(52, 211, 153, 0.55),
+    rgba(251, 191, 36, 0.45),
+    rgba(167, 139, 250, 0.55),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: header-line-flow 8s linear infinite;
+}
+
+.gradient-border {
+  position: relative;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(34, 211, 238, 0.25));
+  padding: 1px;
+}
+
+.gradient-border > .inner {
+  border-radius: calc(1.25rem - 1px);
+  background: rgba(8, 8, 18, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.glass {
+  background: rgba(10, 10, 22, 0.55);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }

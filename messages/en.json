@@ -1,0 +1,112 @@
+{
+  "brand": { "name": "Xora", "tagline": "Unforgettable event experiences" },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "events": "Events",
+    "activities": "Recreation",
+    "contact": "Contact",
+    "cta": "Book a consult"
+  },
+  "activityTabs": [
+    { "id": "yoga", "label": "Yoga & wellness", "short": "Yoga" },
+    { "id": "hiking", "label": "Hiking & trails", "short": "Hike" },
+    { "id": "interactive", "label": "Interactive games", "short": "Play" },
+    { "id": "shows", "label": "Live shows", "short": "Shows" },
+    { "id": "family", "label": "Family & kids", "short": "Family" }
+  ],
+  "hero": {
+    "title": "We craft",
+    "titleHighlight": "experiences",
+    "titleEnd": "you remember",
+    "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
+    "primaryCta": "Explore services",
+    "secondaryCta": "See our work"
+  },
+  "eventsSection": {
+    "title": "Events for every goal",
+    "subtitle": "Individuals, exhibitions, and entertainment — full design & operations.",
+    "individual": "Private & individual",
+    "individualDesc": "Personal celebrations and intimate experiences with pro-grade production.",
+    "exhibitions": "Exhibitions & conferences",
+    "exhibitionsDesc": "Booths, lighting, LED canvases, and seamless visitor journeys.",
+    "entertainment": "Entertainment",
+    "entertainmentDesc": "Shows, activations, and high-energy moments that hold attention.",
+    "viewDetails": "Details",
+    "book": "Book now"
+  },
+  "booking": {
+    "title": "Book your favorite activity",
+    "subtitle": "Yoga, hiking, workshops, and group sessions — pick a path and reach out.",
+    "cta": "Start booking",
+    "note": "Our team replies within one business day."
+  },
+  "servicesStrip": {
+    "title": "Integrated solutions for every event",
+    "cards": [
+      { "title": "Creative design", "desc": "Visual identity and clear visitor flows.", "cta": "Request" },
+      { "title": "Technical ops", "desc": "Audio, lighting, LED, and live coordination.", "cta": "Request" },
+      { "title": "Crowd management", "desc": "Registration, ticketing, smooth entry.", "cta": "Request" },
+      { "title": "Recreation", "desc": "Booths, shows, and surprise interactions.", "cta": "Request" }
+    ]
+  },
+  "achievements": {
+    "title": "Our impact",
+    "years": "years experience",
+    "cities": "cities in KSA",
+    "events": "events & conferences",
+    "clients": "happy clients",
+    "vision": "Proud to contribute to Saudi Vision 2030"
+  },
+  "footer": {
+    "about": "We design and deliver conferences, exhibitions, celebrations, and recreation with a modern pulse and human touch.",
+    "quickLinks": "Quick links",
+    "contactTitle": "Contact",
+    "email": "hello@xora.events",
+    "phone": "+966 56 367 2097",
+    "follow": "Follow",
+    "rights": "All rights reserved."
+  },
+  "whatsapp": { "label": "WhatsApp", "aria": "Open WhatsApp chat" },
+  "pages": {
+    "about": {
+      "title": "About Xora",
+      "p1": "Xora is a Saudi team focused on designing and running events, conferences, and recreation. We blend creativity, technology, and disciplined operations.",
+      "p2": "We partner with public and private organizations to deliver consistent guest journeys — from the first visual touchpoint to the final moment on site.",
+      "values": ["Quality", "Transparency", "Innovation", "Obsession with detail"]
+    },
+    "services": {
+      "title": "Services",
+      "intro": "We cover the full event lifecycle — from advisory to post-event wrap-up.",
+      "items": [
+        { "title": "Event strategy", "body": "Goals, audience, messaging, and a realistic timeline." },
+        { "title": "Production & delivery", "body": "Vetted vendors, run-of-show, and risk management." },
+        { "title": "Content & experience", "body": "Run-of-event scripts, activations, and workshops." },
+        { "title": "Coverage & streaming", "body": "Photo/video, live streaming, and highlight edits." }
+      ]
+    },
+    "events": {
+      "title": "Events",
+      "intro": "A sample of our work — exhibitions, conferences, and entertainment at different scales.",
+      "filterAll": "All",
+      "filterIndividual": "Individuals",
+      "filterExpo": "Exhibitions",
+      "filterFun": "Entertainment"
+    },
+    "activities": {
+      "title": "Recreation",
+      "intro": "Five entertainment tracks you can book and tailor for your event.",
+      "detailCta": "Book this track"
+    },
+    "contact": {
+      "title": "Contact",
+      "intro": "Tell us about your idea or reach us instantly on WhatsApp.",
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "send": "Send",
+      "success": "Message received — we will get back to you shortly."
+    }
+  }
+}

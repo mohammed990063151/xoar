@@ -1,0 +1,130 @@
+"use client";
+
+import Link from "next/link";
+import { motion } from "framer-motion";
+import type { Locale } from "@/lib/i18n";
+import { localizedPath } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/dictionary";
+
+interface FooterProps {
+  readonly locale: Locale;
+  readonly footer: Dictionary["footer"];
+  readonly nav: Dictionary["nav"];
+}
+
+const links = [
+  { href: "/", key: "home" as const },
+  { href: "/about", key: "about" as const },
+  { href: "/services", key: "services" as const },
+  { href: "/events", key: "events" as const },
+  { href: "/activities", key: "activities" as const },
+  { href: "/contact", key: "contact" as const },
+];
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+  },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+};
+
+export function Footer({
+  locale,
+  footer,
+  nav,
+}: FooterProps): React.ReactElement {
+  return (
+    <footer className="relative mt-24 overflow-hidden border-t border-emerald-500/10 bg-black/50">
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px animate-header-line opacity-70"
+        aria-hidden
+      />
+      <motion.div
+        className="pointer-events-none absolute -end-40 bottom-0 h-64 w-64 rounded-full bg-violet-600/15 blur-[100px]"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <motion.div
+        className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-8"
+        variants={container}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-8%" }}
+      >
+        <motion.div variants={fadeUp}>
+          <p className="gradient-text-saudi text-2xl font-bold">Xora</p>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
+            {footer.about}
+          </p>
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-100/90">
+            {footer.quickLinks}
+          </h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-400">
+            {links.map(({ href, key }) => (
+              <li key={href}>
+                <Link
+                  href={localizedPath(locale, href)}
+                  className="transition hover:text-emerald-300"
+                >
+                  {nav[key]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-100/90">
+            {footer.contactTitle}
+          </h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-400">
+            <li>
+              <a
+                href={`mailto:${footer.email}`}
+                className="transition hover:text-emerald-300"
+              >
+                {footer.email}
+              </a>
+            </li>
+            <li>
+              <a
+                href="tel:+966563672097"
+                className="transition hover:text-emerald-300"
+              >
+                {footer.phone}
+              </a>
+            </li>
+            <li className="pt-2 text-xs text-slate-500">{footer.follow}</li>
+            <li className="flex gap-3 pt-1">
+              {["in", "tw", "ig"].map((s, i) => (
+                <motion.span
+                  key={s}
+                  className="flex h-9 w-9 cursor-default items-center justify-center rounded-full border border-white/10 text-[10px] uppercase text-slate-500"
+                  whileHover={{
+                    scale: 1.08,
+                    borderColor: "rgba(52, 211, 153, 0.45)",
+                    color: "rgb(167 243 208)",
+                  }}
+                  transition={{ delay: i * 0.02 }}
+                >
+                  {s}
+                </motion.span>
+              ))}
+            </li>
+          </ul>
+        </motion.div>
+      </motion.div>
+      <div className="border-t border-white/5 py-6 text-center text-xs text-slate-500">
+        © {new Date().getFullYear()} Xora. {footer.rights}
+      </div>
+    </footer>
+  );
+}
