@@ -88,15 +88,17 @@ export default async function EventDetailPage({
         </h1>
       </ScrollReveal>
       <ScrollReveal>
-        <div className="relative mt-8 aspect-video w-full overflow-hidden rounded-3xl border border-white/10">
-          <Image
-            src={item.image}
-            alt={locale === "ar" ? item.titleAr : item.titleEn}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
+        <div className="relative mt-8 w-full overflow-hidden rounded-3xl border border-white/10 bg-slate-900/80">
+          <div className="relative aspect-video w-full">
+            <Image
+              src={item.image}
+              alt={locale === "ar" ? item.titleAr : item.titleEn}
+              fill
+              className="object-contain"
+              sizes="100vw"
+              priority
+            />
+          </div>
         </div>
       </ScrollReveal>
       <ScrollReveal>

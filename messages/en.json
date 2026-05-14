@@ -1,13 +1,13 @@
 {
-  "brand": { "name": "Xora", "tagline": "Unforgettable event experiences" },
+  "brand": { "name": "xora", "tagline": "Unforgettable event experiences" },
   "nav": {
     "home": "Home",
     "about": "About",
     "services": "Services",
-    "events": "Events",
+    "events": "Our work",
     "activities": "Recreation",
     "contact": "Contact",
-    "cta": "Book a consult"
+    "cta": "Contact us"
   },
   "activityTabs": [
     { "id": "yoga", "label": "Yoga & wellness", "short": "Yoga" },
@@ -22,7 +22,7 @@
     "titleEnd": "you remember",
     "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
     "primaryCta": "Explore services",
-    "secondaryCta": "See our work"
+    "secondaryCta": "Watch our work"
   },
   "eventsSection": {
     "title": "Events for every goal",
@@ -36,6 +36,32 @@
     "viewDetails": "Details",
     "book": "Book now"
   },
+  "entertainmentSection": {
+    "title": "Entertainment that makes the difference",
+    "subtitle": "Shows, activations, and guest moments tailored to your audience and goals.",
+    "cards": [
+      {
+        "title": "Outdoor cinema",
+        "desc": "Open-air screenings with immersive sound and lighting.",
+        "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80"
+      },
+      {
+        "title": "Family moments",
+        "desc": "Face paint, games, and workshops that keep kids engaged safely.",
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80"
+      },
+      {
+        "title": "Live performances",
+        "desc": "Stage energy, lighting, and crowd moments that anchor the night.",
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80"
+      },
+      {
+        "title": "Arcade zones",
+        "desc": "Playful challenges and arcade-style experiences for high energy.",
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80"
+      }
+    ]
+  },
   "booking": {
     "title": "Book your favorite activity",
     "subtitle": "Yoga, hiking, workshops, and group sessions — pick a path and reach out.",
@@ -44,17 +70,34 @@
   },
   "servicesStrip": {
     "title": "Integrated solutions for every event",
+    "subtitle": "From planning to the final cue — technical coordination and a cohesive guest journey.",
     "cards": [
-      { "title": "Creative design", "desc": "Visual identity and clear visitor flows.", "cta": "Request" },
-      { "title": "Technical ops", "desc": "Audio, lighting, LED, and live coordination.", "cta": "Request" },
-      { "title": "Crowd management", "desc": "Registration, ticketing, smooth entry.", "cta": "Request" },
-      { "title": "Recreation", "desc": "Booths, shows, and surprise interactions.", "cta": "Request" }
+      {
+        "title": "Promotion & comms",
+        "desc": "Campaigns and digital presence that amplify reach before doors open.",
+        "cta": "Request service"
+      },
+      {
+        "title": "Logistics planning",
+        "desc": "Flow maps, zoning, and movement design for a smooth onsite rhythm.",
+        "cta": "Request service"
+      },
+      {
+        "title": "Celebrations & launches",
+        "desc": "Receptions, parties, and surprise beats that lift the room’s energy.",
+        "cta": "Request service"
+      },
+      {
+        "title": "Guest experience",
+        "desc": "Hosting, interaction, and live coordination focused on every guest.",
+        "cta": "Request service"
+      }
     ]
   },
   "achievements": {
-    "title": "Our impact",
-    "years": "years experience",
-    "cities": "cities in KSA",
+    "title": "",
+    "years": "years of experience",
+    "cities": "cities across Saudi Arabia",
     "events": "events & conferences",
     "clients": "happy clients",
     "vision": "Proud to contribute to Saudi Vision 2030"
@@ -71,8 +114,8 @@
   "whatsapp": { "label": "WhatsApp", "aria": "Open WhatsApp chat" },
   "pages": {
     "about": {
-      "title": "About Xora",
-      "p1": "Xora is a Saudi team focused on designing and running events, conferences, and recreation. We blend creativity, technology, and disciplined operations.",
+      "title": "About xora",
+      "p1": "xora is a Saudi team focused on designing and running events, conferences, and recreation. We blend creativity, technology, and disciplined operations.",
       "p2": "We partner with public and private organizations to deliver consistent guest journeys — from the first visual touchpoint to the final moment on site.",
       "values": ["Quality", "Transparency", "Innovation", "Obsession with detail"]
     },

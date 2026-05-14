@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { XoraLogo } from "@/components/brand/XoraLogo";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
@@ -40,32 +41,38 @@ export function Footer({
   nav,
 }: FooterProps): React.ReactElement {
   return (
-    <footer className="relative mt-24 overflow-hidden border-t border-emerald-500/10 bg-black/50">
+    <footer className="relative mt-16 overflow-hidden border-t border-white/10 bg-[#020617]/90">
       <motion.div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px animate-header-line opacity-70"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px animate-header-line opacity-60"
         aria-hidden
       />
       <motion.div
-        className="pointer-events-none absolute -end-40 bottom-0 h-64 w-64 rounded-full bg-violet-600/15 blur-[100px]"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        className="pointer-events-none absolute -end-40 bottom-0 h-64 w-64 rounded-full bg-purple-600/12 blur-[100px]"
+        animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
       />
 
       <motion.div
-        className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-8"
+        className="relative mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:px-8"
         variants={container}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-8%" }}
       >
         <motion.div variants={fadeUp}>
-          <p className="gradient-text-saudi text-2xl font-bold">Xora</p>
+          <Link
+            href={localizedPath(locale, "/")}
+            className="inline-block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500/80"
+            aria-label="xora"
+          >
+            <XoraLogo size="lg" />
+          </Link>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
             {footer.about}
           </p>
         </motion.div>
         <motion.div variants={fadeUp}>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-100/90">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-purple-200/90">
             {footer.quickLinks}
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-slate-400">
@@ -73,7 +80,7 @@ export function Footer({
               <li key={href}>
                 <Link
                   href={localizedPath(locale, href)}
-                  className="transition hover:text-emerald-300"
+                  className="transition hover:text-blue-300"
                 >
                   {nav[key]}
                 </Link>
@@ -82,14 +89,14 @@ export function Footer({
           </ul>
         </motion.div>
         <motion.div variants={fadeUp}>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-100/90">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-purple-200/90">
             {footer.contactTitle}
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-slate-400">
             <li>
               <a
                 href={`mailto:${footer.email}`}
-                className="transition hover:text-emerald-300"
+                className="transition hover:text-blue-300"
               >
                 {footer.email}
               </a>
@@ -97,7 +104,7 @@ export function Footer({
             <li>
               <a
                 href="tel:+966563672097"
-                className="transition hover:text-emerald-300"
+                className="transition hover:text-blue-300"
               >
                 {footer.phone}
               </a>
@@ -110,8 +117,8 @@ export function Footer({
                   className="flex h-9 w-9 cursor-default items-center justify-center rounded-full border border-white/10 text-[10px] uppercase text-slate-500"
                   whileHover={{
                     scale: 1.08,
-                    borderColor: "rgba(52, 211, 153, 0.45)",
-                    color: "rgb(167 243 208)",
+                    borderColor: "rgba(168, 85, 247, 0.45)",
+                    color: "rgb(196 181 253)",
                   }}
                   transition={{ delay: i * 0.02 }}
                 >
@@ -123,7 +130,7 @@ export function Footer({
         </motion.div>
       </motion.div>
       <div className="border-t border-white/5 py-6 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} Xora. {footer.rights}
+        © {new Date().getFullYear()} xora. {footer.rights}
       </div>
     </footer>
   );

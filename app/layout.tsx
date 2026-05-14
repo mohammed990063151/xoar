@@ -3,8 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Xora — Events & Conferences",
-    template: "%s | Xora",
+    default: "xora — Events & Conferences",
+    template: "%s | xora",
   },
   description:
     "Design and delivery of conferences, exhibitions, celebrations, and recreation in Saudi Arabia.",

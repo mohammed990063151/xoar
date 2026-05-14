@@ -1,6 +1,5 @@
 import { Achievements } from "@/components/home/Achievements";
-import { BookingBand } from "@/components/home/BookingBand";
-import { EventsShowcase } from "@/components/home/EventsShowcase";
+import { EntertainmentShowcase } from "@/components/home/EntertainmentShowcase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { ServiceStrip } from "@/components/home/ServiceStrip";
 import { getDictionary } from "@/lib/dictionary";
@@ -21,11 +20,12 @@ export default async function HomePage({
   return (
     <>
       <HeroSection locale={locale} hero={dict.hero} />
-      <ServiceStrip data={dict.servicesStrip} />
-      <EventsShowcase locale={locale} section={dict.eventsSection} />
-      <div className="px-4 sm:px-6 lg:px-8">
-        <BookingBand locale={locale} booking={dict.booking} />
-      </div>
+      <ServiceStrip locale={locale} data={dict.servicesStrip} />
+      <EntertainmentShowcase
+        locale={locale}
+        section={dict.entertainmentSection}
+        bookCta={dict.eventsSection.book}
+      />
       <Achievements data={dict.achievements} />
     </>
   );

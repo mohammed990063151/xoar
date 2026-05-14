@@ -73,6 +73,8 @@ export function EventsGallery({
               imageSrc={item.image}
               href={`/events/${item.id}`}
               cta={section.viewDetails}
+              imageAspect="4 / 3"
+              imageObjectFit="contain"
             />
           </ScrollReveal>
         ))}

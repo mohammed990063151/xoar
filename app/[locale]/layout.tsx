@@ -69,11 +69,7 @@ export default async function LocaleLayout({
         <div
           className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen flex-col`}
         >
-          <Header
-            locale={locale}
-            nav={dict.nav}
-            activityTabs={dict.activityTabs}
-          />
+          <Header locale={locale} nav={dict.nav} />
           <main className="flex-1">{children}</main>
           <Footer locale={locale} footer={dict.footer} nav={dict.nav} />
           <WhatsAppFloat

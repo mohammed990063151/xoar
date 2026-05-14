@@ -25,12 +25,12 @@ function FloatingOrb(): React.ReactElement {
       <Sphere ref={meshRef} args={[1.05, 64, 64]} scale={1.35}>
         <MeshDistortMaterial
           color="#6d28d9"
-          emissive="#22d3ee"
-          emissiveIntensity={0.35}
-          roughness={0.25}
+          emissive="#50E3C2"
+          emissiveIntensity={0.4}
+          roughness={0.22}
           metalness={0.55}
-          distort={0.45}
-          speed={2.2}
+          distort={0.48}
+          speed={2.1}
         />
       </Sphere>
     </Float>

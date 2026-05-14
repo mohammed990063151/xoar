@@ -21,25 +21,34 @@ export function ScrollReveal({
     const el = ref.current;
     if (!el) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(el, {
-        opacity: 0,
-        y: 64,
-        rotateX: 6,
-        filter: "blur(8px)",
-        transformOrigin: "50% 80%",
-        duration: 1.05,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: el,
-          start: "top 88%",
-          toggleActions: "play none none none",
-        },
-      });
-    }, el);
+    let ctx: gsap.Context | null = null;
+    let cancelled = false;
+
+    const raf = requestAnimationFrame(() => {
+      if (cancelled || !ref.current) return;
+      const node = ref.current;
+      ctx = gsap.context(() => {
+        gsap.from(node, {
+          opacity: 0,
+          y: 64,
+          rotateX: 6,
+          filter: "blur(8px)",
+          transformOrigin: "50% 80%",
+          duration: 1.05,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: node,
+            start: "top 88%",
+            toggleActions: "play none none none",
+          },
+        });
+      }, node);
+    });
 
     return () => {
-      ctx.revert();
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      ctx?.revert();
     };
   }, []);
 

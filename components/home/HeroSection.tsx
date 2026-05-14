@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { HeroSceneLazy } from "@/components/three/HeroSceneLazy";
-import { HeroSaudiBanner } from "@/components/home/HeroSaudiBanner";
+import { motion, useReducedMotion } from "framer-motion";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
+
+/**
+ * Hero background video — Pexels (free use): concert stage, smoke & dynamic lights.
+ * Fits event / entertainment identity; pairs with Saudi-themed gradient overlay.
+ * HD file for reasonable bandwidth; poster for first paint & reduced-motion.
+ */
+const HERO_VIDEO_SRC =
+  "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4";
+
+const HERO_VIDEO_POSTER =
+  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80";
 
 const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.11, delayChildren: 0.08 },
+    transition: { staggerChildren: 0.11, delayChildren: 0.12 },
   },
 };
 
@@ -35,105 +44,108 @@ export function HeroSection({
   locale,
   hero,
 }: HeroSectionProps): React.ReactElement {
-  return (
-    <section className="relative overflow-hidden rounded-b-[2.5rem] border-b border-emerald-500/10">
-      <HeroSaudiBanner locale={locale} />
+  const reduceMotion = useReducedMotion();
 
-      <div className="pointer-events-none absolute end-0 top-0 h-[min(520px,55vh)] w-[min(520px,90vw)] opacity-70 mix-blend-screen">
-        <HeroSceneLazy />
+  return (
+    <section className="relative min-h-[78vh] overflow-hidden rounded-b-[2rem] border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem]">
+      <div className="absolute inset-0">
+        <video
+          className="h-full w-full scale-105 object-cover object-center"
+          poster={HERO_VIDEO_POSTER}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          autoPlay={!reduceMotion}
+          aria-hidden
+        >
+          <source src={HERO_VIDEO_SRC} type="video/mp4" />
+        </video>
+        {/* Saudi / national palette hint: green + gold + violet wash over footage */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/50 to-[#020617]/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/25 via-transparent to-purple-950/35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-950/15 via-transparent to-blue-950/25" />
       </div>
 
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-10 px-4 pb-24 pt-16 sm:px-6 lg:flex-row lg:items-center lg:px-8 lg:pb-32 lg:pt-24">
+      <div className="hero-wave-lines pointer-events-none absolute inset-x-0 bottom-0 h-40 opacity-80">
+        <svg
+          className="h-full w-full text-purple-500/35"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
+        >
+          <defs>
+            <linearGradient id="heroWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#34d399" stopOpacity="0.35" />
+              <stop offset="35%" stopColor="#3b82f6" stopOpacity="0.5" />
+              <stop offset="70%" stopColor="#a855f7" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.35" />
+            </linearGradient>
+          </defs>
+          <path
+            fill="none"
+            stroke="url(#heroWaveGrad)"
+            strokeWidth="2"
+            d="M0,90 C180,40 360,110 540,70 C720,30 900,100 1080,60 C1260,20 1380,80 1440,50"
+          />
+          <path
+            fill="none"
+            stroke="url(#heroWaveGrad)"
+            strokeWidth="1.2"
+            opacity="0.6"
+            d="M0,100 C200,55 400,115 600,75 C800,35 1000,105 1200,65 C1320,45 1400,90 1440,70"
+          />
+        </svg>
+      </div>
+
+      <div className="relative z-[1] mx-auto flex min-h-[78vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:min-h-[82vh] sm:px-6 sm:pb-20 lg:px-8">
         <motion.div
-          className="max-w-2xl space-y-6"
+          className="max-w-3xl space-y-6"
           variants={container}
           initial="hidden"
           animate="show"
         >
           <motion.h1
-            className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
+            className="text-4xl font-bold leading-[1.15] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]"
             variants={item}
           >
-            <span className="block text-white">{hero.title}</span>
-            <span className="gradient-text-saudi">{hero.titleHighlight}</span>{" "}
+            <span className="block sm:inline">{hero.title}</span>{" "}
+            <span className="gradient-text">{hero.titleHighlight}</span>{" "}
             <span className="text-white">{hero.titleEnd}</span>
           </motion.h1>
           <motion.p
-            className="max-w-xl text-base text-slate-200/95 sm:text-lg"
+            className="max-w-2xl text-base leading-relaxed text-slate-200/95 sm:text-lg"
             variants={item}
           >
             {hero.subtitle}
           </motion.p>
-          <motion.div
-            className="flex flex-wrap gap-4"
-            variants={item}
-          >
-            <motion.span whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+          <motion.div className="flex flex-wrap items-center gap-4 sm:gap-5" variants={item}>
+            <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
                 href={localizedPath(locale, "/services")}
-                className="pointer-events-auto relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-l from-emerald-700 via-violet-600 to-cyan-500 px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-900/40"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.35)]"
               >
-                <motion.span
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                  initial={{ x: "-120%" }}
-                  animate={{ x: ["120%", "-120%"] }}
-                  transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2, ease: "linear" }}
-                />
-                <span className="relative z-10">{hero.primaryCta}</span>
-                <span className="relative z-10" aria-hidden>
+                {hero.primaryCta}
+                <span className="text-lg rtl:rotate-180" aria-hidden>
                   →
                 </span>
               </Link>
             </motion.span>
-            <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+            <motion.span whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
                 href={localizedPath(locale, "/events")}
-                className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-amber-200/25 bg-white/5 px-5 py-3 text-sm font-medium text-amber-50/95 backdrop-blur-sm transition hover:border-emerald-400/50 hover:text-emerald-100"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition hover:text-white"
               >
                 {hero.secondaryCta}
-                <span aria-hidden>→</span>
+                <span className="transition group-hover:translate-x-0.5 rtl:-scale-x-100" aria-hidden>
+                  →
+                </span>
               </Link>
             </motion.span>
           </motion.div>
         </motion.div>
-
-        <motion.div
-          className="pointer-events-auto relative ms-auto hidden flex-col items-center gap-3 lg:flex"
-          initial={{ opacity: 0, scale: 0.75, rotate: -6 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ delay: 0.4, type: "spring", stiffness: 220, damping: 18 }}
-        >
-          <motion.div
-            className="relative flex h-32 w-32 items-center justify-center rounded-full border border-emerald-400/30 bg-gradient-to-br from-emerald-950/60 to-violet-950/50 text-white shadow-[0_0_40px_rgba(16,185,129,0.25)] backdrop-blur-md"
-            animate={{ boxShadow: ["0 0 28px rgba(16,185,129,0.2)", "0 0 48px rgba(168,85,247,0.35)", "0 0 28px rgba(16,185,129,0.2)"] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <motion.span
-              className="text-2xl"
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-              aria-hidden
-            >
-              ✦
-            </motion.span>
-            <motion.span
-              className="absolute inset-2 rounded-full border border-amber-300/20"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-            />
-          </motion.div>
-          <span className="max-w-[10rem] text-center text-xs text-emerald-100/80">
-            {locale === "ar" ? "هوية فعاليات سعودية" : "Saudi event identity"}
-          </span>
-        </motion.div>
       </div>
-
-      <motion.div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#05050c] to-transparent"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.8 }}
-      />
     </section>
   );
 }

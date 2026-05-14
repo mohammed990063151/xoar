@@ -15,6 +15,9 @@ interface EventCardProps {
   readonly href: string;
   readonly cta: string;
   readonly className?: string;
+  /** CSS aspect-ratio value, e.g. `"16 / 11"` */
+  readonly imageAspect?: string;
+  readonly imageObjectFit?: "cover" | "contain";
 }
 
 export function EventCard({
@@ -25,8 +28,11 @@ export function EventCard({
   href,
   cta,
   className,
+  imageAspect = "60 / 100",
+  imageObjectFit = "cover",
 }: EventCardProps): React.ReactElement {
   const path = href.startsWith("/") ? localizedPath(locale, href) : href;
+  const isContain = imageObjectFit === "contain";
 
   return (
     <motion.div
@@ -41,17 +47,28 @@ export function EventCard({
       <div className="inner flex h-full flex-col overflow-hidden">
         <Link href={path} className="relative block w-full shrink-0">
           <div
-            className="relative w-full overflow-hidden"
-            style={{ aspectRatio: "60 / 100" }}
+            className={cn(
+              "relative w-full overflow-hidden",
+              isContain ? "bg-slate-900/90" : "bg-slate-950",
+            )}
+            style={{ aspectRatio: imageAspect }}
           >
             <Image
               src={imageSrc}
               alt={title}
               fill
-              className="object-cover transition duration-700 group-hover:scale-105"
+              className={cn(
+                "transition duration-700 group-hover:scale-105",
+                isContain ? "object-contain" : "object-cover",
+              )}
               sizes="(max-width:768px) 100vw, 33vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#05050c] via-transparent to-transparent opacity-90" />
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-0 bg-gradient-to-t from-[#05050c] via-transparent to-transparent",
+                isContain ? "opacity-50" : "opacity-90",
+              )}
+            />
           </div>
         </Link>
         <div className="flex flex-1 flex-col gap-2 p-4">
@@ -61,7 +78,7 @@ export function EventCard({
           </p>
           <Link
             href={path}
-            className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-l from-violet-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-500/20"
+            className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-l from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/25"
           >
             {cta}
           </Link>
