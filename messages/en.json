@@ -111,7 +111,18 @@
     "follow": "Follow",
     "rights": "All rights reserved."
   },
-  "whatsapp": { "label": "WhatsApp", "aria": "Open WhatsApp chat" },
+  "inquiryFab": { "label": "Book now", "aria": "Open booking form" },
+  "inquiryForm": {
+    "defaultTitle": "Booking or consultation",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "message": "Details",
+    "send": "Submit request",
+    "success": "Request received — we will contact you soon.",
+    "error": "Could not send. Please try again.",
+    "close": "Close"
+  },
   "pages": {
     "about": {
       "title": "About xora",
@@ -144,7 +155,7 @@
     },
     "contact": {
       "title": "Contact",
-      "intro": "Tell us about your idea or reach us instantly on WhatsApp.",
+      "intro": "Tell us about your idea and we will reply within one business day.",
       "name": "Name",
       "email": "Email",
       "message": "Message",

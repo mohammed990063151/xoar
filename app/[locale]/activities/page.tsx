@@ -20,6 +20,7 @@ export default async function ActivitiesPage({
         dict={dict.pages.activities}
         activityTabs={dict.activityTabs}
         cta={dict.pages.activities.detailCta}
+        formTitle={dict.inquiryForm.defaultTitle}
       />
     </Suspense>
   );

@@ -1,14 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
+import { BookButton } from "@/components/ui/BookButton";
 import { cn } from "@/lib/cn";
+import { siteContainer } from "@/lib/layout";
 import type { Dictionary } from "@/lib/dictionary";
-import { localizedPath } from "@/lib/i18n";
-import type { Locale } from "@/lib/i18n";
 
 interface ServiceStripProps {
-  readonly locale: Locale;
   readonly data: Dictionary["servicesStrip"];
 }
 
@@ -70,11 +68,10 @@ function IconPeople({ className }: { readonly className?: string }): React.React
 const icons = [IconMegaphone, IconMap, IconParty, IconPeople] as const;
 
 export function ServiceStrip({
-  locale,
   data,
 }: ServiceStripProps): React.ReactElement {
   return (
-    <section className="relative mx-auto max-w-6xl overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
+    <section className={cn(siteContainer, "relative overflow-hidden py-20")}>
       <div className="pointer-events-none absolute -start-24 top-10 h-64 w-64 rounded-full bg-purple-600/15 blur-[100px]" />
       <div className="pointer-events-none absolute -end-20 bottom-0 h-56 w-56 rounded-full bg-blue-600/15 blur-[90px]" />
 
@@ -134,15 +131,17 @@ export function ServiceStrip({
               </div>
               <h3 className="text-lg font-semibold text-white">{card.title}</h3>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{card.desc}</p>
-              <Link
-                href={localizedPath(locale, "/contact")}
+              <BookButton
+                type="service"
+                source={card.title}
+                title={card.title}
                 className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-300/95 transition hover:text-purple-200"
               >
                 {card.cta}
                 <span className="text-base rtl:rotate-180" aria-hidden>
                   →
                 </span>
-              </Link>
+              </BookButton>
             </motion.article>
           );
         })}

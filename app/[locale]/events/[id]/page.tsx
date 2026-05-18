@@ -4,6 +4,8 @@ import { getEventById } from "@/lib/event-gallery";
 import type { Locale } from "@/lib/i18n";
 import { isLocale, localizedPath } from "@/lib/i18n";
 import Image from "next/image";
+import { EventDetailBook } from "@/components/events/EventDetailBook";
+import { siteContainerNarrow } from "@/lib/layout";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -75,7 +77,7 @@ export default async function EventDetailPage({
   const extra = detailCopy[id]?.[locale === "ar" ? "ar" : "en"];
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <article className={`${siteContainerNarrow} py-16`}>
       <ScrollReveal>
         <Link
           href={localizedPath(locale, "/events")}
@@ -110,14 +112,11 @@ export default async function EventDetailPage({
         ) : null}
       </ScrollReveal>
       <ScrollReveal>
-        <a
-          href="https://wa.me/966563672097"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-10 inline-flex rounded-full bg-gradient-to-l from-violet-600 to-cyan-500 px-8 py-3 font-semibold text-white"
-        >
-          {dict.eventsSection.book}
-        </a>
+        <EventDetailBook
+          label={dict.eventsSection.book}
+          source={`event-detail:${id}`}
+          title={locale === "ar" ? item.titleAr : item.titleEn}
+        />
       </ScrollReveal>
     </article>
   );

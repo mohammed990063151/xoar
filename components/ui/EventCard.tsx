@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { BookButton } from "@/components/ui/BookButton";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
@@ -15,7 +16,6 @@ interface EventCardProps {
   readonly href: string;
   readonly cta: string;
   readonly className?: string;
-  /** CSS aspect-ratio value, e.g. `"16 / 11"` */
   readonly imageAspect?: string;
   readonly imageObjectFit?: "cover" | "contain";
 }
@@ -71,17 +71,17 @@ export function EventCard({
             />
           </div>
         </Link>
-        <div className="flex flex-1 flex-col gap-2 p-4">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <p className="line-clamp-3 flex-1 text-sm text-slate-400">
-            {description}
-          </p>
-          <Link
-            href={path}
-            className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-l from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/25"
+        <div className="flex flex-1 flex-col gap-2 p-4 sm:p-5">
+          <h3 className="text-lg font-semibold text-white sm:text-xl">{title}</h3>
+          <p className="line-clamp-3 flex-1 text-sm text-slate-400">{description}</p>
+          <BookButton
+            type="booking"
+            source={`event:${title}`}
+            title={title}
+            className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-gradient-to-l from-blue-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25"
           >
             {cta}
-          </Link>
+          </BookButton>
         </div>
       </div>
     </motion.div>

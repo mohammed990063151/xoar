@@ -1,5 +1,6 @@
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { getDictionary } from "@/lib/dictionary";
+import { siteContainerNarrow } from "@/lib/layout";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
@@ -15,7 +16,7 @@ export default async function AboutPage({
   const p = dict.pages.about;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className={`${siteContainerNarrow} py-16`}>
       <ScrollReveal>
         <h1 className="text-4xl font-bold">{p.title}</h1>
       </ScrollReveal>

@@ -17,9 +17,12 @@
 
 html {
   scroll-behavior: auto;
+  width: 100%;
+  overflow-x: clip;
 }
 
 body {
+  width: 100%;
   background: radial-gradient(1000px 700px at 85% -5%, rgba(168, 85, 247, 0.18), transparent),
     radial-gradient(800px 500px at 5% 30%, rgba(59, 130, 246, 0.12), transparent),
     var(--bg-deep);

@@ -20,7 +20,7 @@ export default async function HomePage({
   return (
     <>
       <HeroSection locale={locale} hero={dict.hero} />
-      <ServiceStrip locale={locale} data={dict.servicesStrip} />
+      <ServiceStrip data={dict.servicesStrip} />
       <EntertainmentShowcase
         locale={locale}
         section={dict.entertainmentSection}

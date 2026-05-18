@@ -5,7 +5,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { LocaleAttributes } from "@/components/providers/LocaleAttributes";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
-import { WhatsAppFloat } from "@/components/ui/WhatsAppFloat";
+import { BookingModalProvider } from "@/components/providers/BookingModalProvider";
+import { InquiryFab } from "@/components/ui/InquiryFab";
 import { getDictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
@@ -66,17 +67,19 @@ export default async function LocaleLayout({
   return (
     <LocaleAttributes locale={locale}>
       <SmoothScrollProvider>
-        <div
-          className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen flex-col`}
-        >
-          <Header locale={locale} nav={dict.nav} />
-          <main className="flex-1">{children}</main>
-          <Footer locale={locale} footer={dict.footer} nav={dict.nav} />
-          <WhatsAppFloat
-            label={dict.whatsapp.label}
-            aria={dict.whatsapp.aria}
-          />
-        </div>
+        <BookingModalProvider locale={locale} labels={dict.inquiryForm}>
+          <div
+            className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen flex-col`}
+          >
+            <Header locale={locale} nav={dict.nav} />
+            <main className="flex-1">{children}</main>
+            <Footer locale={locale} footer={dict.footer} nav={dict.nav} />
+            <InquiryFab
+              label={dict.inquiryFab.label}
+              aria={dict.inquiryFab.aria}
+            />
+          </div>
+        </BookingModalProvider>
       </SmoothScrollProvider>
     </LocaleAttributes>
   );

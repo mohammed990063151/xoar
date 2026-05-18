@@ -1,5 +1,6 @@
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { getDictionary } from "@/lib/dictionary";
+import { siteContainer } from "@/lib/layout";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
@@ -14,7 +15,7 @@ export default async function ServicesPage({
   const p = dict.pages.services;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className={`${siteContainer} py-16`}>
       <ScrollReveal>
         <h1 className="text-4xl font-bold">{p.title}</h1>
         <p className="mt-4 max-w-2xl text-slate-300">{p.intro}</p>

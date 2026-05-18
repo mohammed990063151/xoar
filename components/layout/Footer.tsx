@@ -6,6 +6,8 @@ import { XoraLogo } from "@/components/brand/XoraLogo";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
+import { siteContainer } from "@/lib/layout";
+import { cn } from "@/lib/cn";
 
 interface FooterProps {
   readonly locale: Locale;
@@ -53,7 +55,7 @@ export function Footer({
       />
 
       <motion.div
-        className="relative mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:px-8"
+        className={cn(siteContainer, "relative grid gap-10 py-14 lg:grid-cols-3")}
         variants={container}
         initial="hidden"
         whileInView="show"

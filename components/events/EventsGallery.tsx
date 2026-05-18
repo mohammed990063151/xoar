@@ -6,6 +6,7 @@ import { EventCard } from "@/components/ui/EventCard";
 import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import type { Dictionary } from "@/lib/dictionary";
+import { siteContainer } from "@/lib/layout";
 import { eventGallery } from "@/lib/event-gallery";
 
 type Filter = "all" | "individual" | "exhibitions" | "entertainment";
@@ -36,7 +37,7 @@ export function EventsGallery({
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className={cn(siteContainer, "py-16")}>
       <ScrollReveal>
         <h1 className="text-4xl font-bold">{copy.title}</h1>
         <p className="mt-4 max-w-2xl text-slate-300">{copy.intro}</p>
