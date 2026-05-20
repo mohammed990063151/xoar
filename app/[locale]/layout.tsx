@@ -7,7 +7,7 @@ import { LocaleAttributes } from "@/components/providers/LocaleAttributes";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { BookingModalProvider } from "@/components/providers/BookingModalProvider";
 import { InquiryFab } from "@/components/ui/InquiryFab";
-import { getDictionary } from "@/lib/dictionary";
+import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
 
@@ -34,7 +34,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: loc } = await params;
   const locale = isLocale(loc) ? loc : "ar";
-  const dict = getDictionary(locale);
+  const dict = await getSiteContent(locale);
   return {
     title: dict.brand.name,
     description: dict.hero.subtitle,
@@ -57,7 +57,7 @@ export default async function LocaleLayout({
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
   const locale = loc;
-  const dict = getDictionary(locale);
+  const dict = await getSiteContent(locale);
 
   const fontClass =
     locale === "ar"

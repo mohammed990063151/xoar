@@ -1,5 +1,5 @@
 import { EventsGallery } from "@/components/events/EventsGallery";
-import { getDictionary } from "@/lib/dictionary";
+import { getSiteContent } from "@/services/contentService";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
@@ -10,13 +10,14 @@ export default async function EventsPage({
 }): Promise<React.ReactElement> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
-  const dict = getDictionary(loc);
+  const dict = await getSiteContent(loc);
 
   return (
     <EventsGallery
       locale={loc}
       copy={dict.pages.events}
       section={dict.eventsSection}
+      events={dict.eventsGallery}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
-import { getDictionary } from "@/lib/dictionary";
+import { getSiteContent } from "@/services/contentService";
 import { siteContainer } from "@/lib/layout";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
@@ -11,7 +11,7 @@ export default async function ServicesPage({
 }): Promise<React.ReactElement> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
-  const dict = getDictionary(loc);
+  const dict = await getSiteContent(loc);
   const p = dict.pages.services;
 
   return (
