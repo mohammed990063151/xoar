@@ -5,12 +5,10 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { HomeHero } from "@/lib/home-content";
+import type { Dictionary } from "@/lib/dictionary";
+import { siteContainer } from "@/lib/layout";
+import { cn } from "@/lib/cn";
 
-/**
- * Hero background video — Pexels (free use): concert stage, smoke & dynamic lights.
- * Fits event / entertainment identity; pairs with Saudi-themed gradient overlay.
- * HD file for reasonable bandwidth; poster for first paint & reduced-motion.
- */
 const HERO_VIDEO_SRC =
   "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4";
 
@@ -64,7 +62,6 @@ export function HeroSection({
         >
           <source src={videoSrc} type="video/mp4" />
         </video>
-        {/* Saudi / national palette hint: green + gold + violet wash over footage */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/50 to-[#020617]/30" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/25 via-transparent to-purple-950/35" />
         <div className="absolute inset-0 bg-gradient-to-r from-amber-950/15 via-transparent to-blue-950/25" />
@@ -102,7 +99,12 @@ export function HeroSection({
         </svg>
       </div>
 
-      <div className="relative z-[1] mx-auto flex min-h-[78vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:min-h-[82vh] sm:px-6 sm:pb-20 lg:px-8">
+      <div
+        className={cn(
+          siteContainer,
+          "relative z-[1] flex min-h-[78vh] flex-col justify-end pb-16 pt-28 sm:min-h-[82vh] sm:pb-20",
+        )}
+      >
         <motion.div
           className="max-w-3xl space-y-6"
           variants={container}

@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { HeaderCta } from "@/components/layout/HeaderCta";
+import { XoraLogo } from "@/components/brand/XoraLogo";
 import { cn } from "@/lib/cn";
+import { siteContainer } from "@/lib/layout";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
-import { XoraLogo } from "@/components/brand/XoraLogo";
 
 interface HeaderProps {
   readonly locale: Locale;
@@ -94,7 +96,7 @@ export function Header({
   return (
     <header className="relative sticky top-0 z-50 border-b border-white/10 glass">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px animate-header-line opacity-70" />
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
+      <div className={cn(siteContainer, "flex items-center justify-between gap-4 py-3.5")}>
         <Link
           href={localizedPath(locale, "/")}
           className="shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500/80"
@@ -103,7 +105,7 @@ export function Header({
           <XoraLogo size="md" />
         </Link>
 
-        <nav className="hidden items-center gap-5 xl:gap-7 lg:flex">
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-7">
           {navKeys.map(({ href, key }) => (
             <NavTextLink
               key={href}
@@ -123,13 +125,7 @@ export function Header({
           >
             {locale === "ar" ? "EN" : "عربي"}
           </Link>
-          <Link
-            href={localizedPath(locale, "/contact")}
-            className="hidden items-center gap-2 rounded-full border border-purple-500/55 bg-purple-500/5 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_24px_rgba(168,85,247,0.15)] transition hover:border-blue-400/50 hover:shadow-[0_0_28px_rgba(59,130,246,0.2)] sm:inline-flex"
-          >
-            {nav.cta}
-            <ArrowOutIcon className="text-purple-300 rtl:rotate-180" />
-          </Link>
+          <HeaderCta label={nav.cta} />
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 lg:hidden"
@@ -170,14 +166,9 @@ export function Header({
               {nav[key]}
             </Link>
           ))}
-          <Link
-            href={localizedPath(locale, "/contact")}
-            className="mt-1 inline-flex items-center justify-center gap-2 rounded-full border border-purple-500/50 px-4 py-2.5 text-sm font-semibold text-white"
-            onClick={() => setOpen(false)}
-          >
-            {nav.cta}
-            <ArrowOutIcon className="text-purple-300 rtl:rotate-180" />
-          </Link>
+          <div className="mt-2 px-2 [&_button]:!flex [&_button]:w-full [&_button]:justify-center">
+            <HeaderCta label={nav.cta} />
+          </div>
         </div>
       ) : null}
     </header>

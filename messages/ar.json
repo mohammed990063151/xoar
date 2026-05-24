@@ -16,13 +16,70 @@
     { "id": "shows", "label": "عروض حية", "short": "عروض" },
     { "id": "family", "label": "عائلي وأطفال", "short": "عائلي" }
   ],
+  "activityCards": {
+    "organizerLabel": "تنظيم:",
+    "items": [
+      {
+        "id": "yoga",
+        "title": "يوجا وعافية",
+        "description": "جلسات يوجا للشركات والمجتمعات مع مدربين معتمدين، سجاد، موسيقى هادئة، ومسارات صعوبة متعددة.",
+        "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&q=80",
+        "organizer": "Xora",
+        "location": "الرياض",
+        "date": "20 مايو 2026",
+        "price": "180 ر.س"
+      },
+      {
+        "id": "hiking",
+        "title": "مشي وهيكنج",
+        "description": "مسارات آمنة في الطبيعة مع مرشدين، نقاط تموين، وتصوير جوّي اختياري لتخليد الرحلة.",
+        "image": "https://images.unsplash.com/photo-1551632811-561732d1e306?w=900&q=80",
+        "organizer": "Xora",
+        "location": "أبها",
+        "date": "22 مايو 2026",
+        "price": "220 ر.س"
+      },
+      {
+        "id": "interactive",
+        "title": "ألعاب تفاعلية",
+        "description": "ألعاب تفاعلية وVR خفيف وتجارب أركان للفعاليات الكبرى والعائلية.",
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80",
+        "organizer": "Xora",
+        "location": "جدة",
+        "date": "18 مايو 2026",
+        "price": "300 ر.س"
+      },
+      {
+        "id": "shows",
+        "title": "عروض حية",
+        "description": "عروض موسيقية ورقص وإضاءة متزامنة مع هوية الفعالية.",
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80",
+        "organizer": "Xora",
+        "location": "الرياض",
+        "date": "25 مايو 2026",
+        "price": "450 ر.س"
+      },
+      {
+        "id": "family",
+        "title": "أنشطة للعائلة",
+        "description": "رسم وجوه وألعاب وورش بسيطة تبقي الأطفال منشغلين بأمان.",
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80",
+        "organizer": "Xora",
+        "location": "الرياض",
+        "date": "15 مايو 2026",
+        "price": "250 ر.س"
+      }
+    ]
+  },
   "hero": {
     "title": "نصنع",
     "titleHighlight": "تجارب",
     "titleEnd": "لا تُنسى",
     "subtitle": "من الفكرة إلى التنفيذ: مؤتمرات، معارض، حفلات وأنشطة ترفيهية بحرفية تقنية وهوية بصرية قوية.",
     "primaryCta": "استكشف خدماتنا",
-    "secondaryCta": "مشاهدة أعمالنا"
+    "secondaryCta": "مشاهدة أعمالنا",
+    "videoUrl": "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4",
+    "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80"
   },
   "heroGallery": {
     "eyebrow": "لمحات من أعمالنا",
@@ -84,6 +141,7 @@
   "servicesStrip": {
     "title": "حلول متكاملة لكل فعالية",
     "subtitle": "نرافقك من التخطيط حتى اللحظة الأخيرة — بتنسيق تقني وتجربة حضور متناسقة.",
+    "featuredIndex": "2",
     "cards": [
       {
         "title": "الترويج والإعلان",
@@ -109,9 +167,17 @@
   },
   "achievements": {
     "title": "",
+    "yearsValue": "10",
+    "yearsSuffix": "+",
     "years": "سنوات من الخبرة",
+    "citiesValue": "20",
+    "citiesSuffix": "+",
     "cities": "مدينة في السعودية",
+    "eventsValue": "350",
+    "eventsSuffix": "+",
     "events": "فعالية ومؤتمر",
+    "clientsValue": "150",
+    "clientsSuffix": "+",
     "clients": "عميل سعيد",
     "vision": "نفخر بمساهمتنا في رؤية السعودية ٢٠٣٠"
   },
@@ -124,7 +190,18 @@
     "follow": "تابعنا",
     "rights": "جميع الحقوق محفوظة."
   },
-  "whatsapp": { "label": "تواصل واتساب", "aria": "فتح محادثة واتساب" },
+  "inquiryFab": { "label": "طلب حجز", "aria": "فتح نموذج الحجز" },
+  "inquiryForm": {
+    "defaultTitle": "طلب حجز أو استشارة",
+    "name": "الاسم",
+    "email": "البريد",
+    "phone": "الجوال",
+    "message": "تفاصيل الطلب",
+    "send": "إرسال الطلب",
+    "success": "تم استلام طلبك — سنتواصل معك قريباً.",
+    "error": "تعذّر الإرسال. حاول مرة أخرى.",
+    "close": "إغلاق"
+  },
   "pages": {
     "about": {
       "eyebrow": "تعرّف على زورا",
@@ -201,7 +278,7 @@
     },
     "contact": {
       "title": "تواصل معنا",
-      "intro": "أرسل لنا فكرتك أو تواصل مباشرة عبر واتساب.",
+      "intro": "أرسل لنا فكرتك وسنعود إليك خلال ٢٤ ساعة.",
       "name": "الاسم",
       "email": "البريد",
       "message": "الرسالة",

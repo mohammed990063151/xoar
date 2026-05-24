@@ -16,13 +16,70 @@
     { "id": "shows", "label": "Live shows", "short": "Shows" },
     { "id": "family", "label": "Family & kids", "short": "Family" }
   ],
+  "activityCards": {
+    "organizerLabel": "By:",
+    "items": [
+      {
+        "id": "yoga",
+        "title": "Yoga & wellness",
+        "description": "Corporate and community yoga with certified instructors, mats, calm music, and multi-level flows.",
+        "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&q=80",
+        "organizer": "Xora",
+        "location": "Riyadh",
+        "date": "May 20, 2026",
+        "price": "180 SAR"
+      },
+      {
+        "id": "hiking",
+        "title": "Hiking & trails",
+        "description": "Safe outdoor trails with guides, hydration points, and optional aerial capture.",
+        "image": "https://images.unsplash.com/photo-1551632811-561732d1e306?w=900&q=80",
+        "organizer": "Xora",
+        "location": "Abha",
+        "date": "May 22, 2026",
+        "price": "220 SAR"
+      },
+      {
+        "id": "interactive",
+        "title": "Interactive games",
+        "description": "Interactive games, light VR, and booth-style activations for large or family events.",
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80",
+        "organizer": "Xora",
+        "location": "Jeddah",
+        "date": "May 18, 2026",
+        "price": "300 SAR"
+      },
+      {
+        "id": "shows",
+        "title": "Live shows",
+        "description": "Music, dance, and lighting synchronized with your event identity.",
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80",
+        "organizer": "Xora",
+        "location": "Riyadh",
+        "date": "May 25, 2026",
+        "price": "450 SAR"
+      },
+      {
+        "id": "family",
+        "title": "Family activities",
+        "description": "Face paint, games, and simple workshops that keep kids engaged safely.",
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80",
+        "organizer": "Xora",
+        "location": "Riyadh",
+        "date": "May 15, 2026",
+        "price": "250 SAR"
+      }
+    ]
+  },
   "hero": {
     "title": "We craft",
     "titleHighlight": "experiences",
     "titleEnd": "you remember",
     "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
     "primaryCta": "Explore services",
-    "secondaryCta": "Watch our work"
+    "secondaryCta": "Watch our work",
+    "videoUrl": "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4",
+    "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80"
   },
   "heroGallery": {
     "eyebrow": "Highlights",
@@ -84,6 +141,7 @@
   "servicesStrip": {
     "title": "Integrated solutions for every event",
     "subtitle": "From planning to the final cue — technical coordination and a cohesive guest journey.",
+    "featuredIndex": "2",
     "cards": [
       {
         "title": "Promotion & comms",
@@ -109,9 +167,17 @@
   },
   "achievements": {
     "title": "",
+    "yearsValue": "10",
+    "yearsSuffix": "+",
     "years": "years of experience",
+    "citiesValue": "20",
+    "citiesSuffix": "+",
     "cities": "cities across Saudi Arabia",
+    "eventsValue": "350",
+    "eventsSuffix": "+",
     "events": "events & conferences",
+    "clientsValue": "150",
+    "clientsSuffix": "+",
     "clients": "happy clients",
     "vision": "Proud to contribute to Saudi Vision 2030"
   },
@@ -124,7 +190,18 @@
     "follow": "Follow",
     "rights": "All rights reserved."
   },
-  "whatsapp": { "label": "WhatsApp", "aria": "Open WhatsApp chat" },
+  "inquiryFab": { "label": "Book now", "aria": "Open booking form" },
+  "inquiryForm": {
+    "defaultTitle": "Booking or consultation",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "message": "Details",
+    "send": "Submit request",
+    "success": "Request received — we will contact you soon.",
+    "error": "Could not send. Please try again.",
+    "close": "Close"
+  },
   "pages": {
     "about": {
       "eyebrow": "Meet Xora",
@@ -201,7 +278,7 @@
     },
     "contact": {
       "title": "Contact",
-      "intro": "Tell us about your idea or reach us instantly on WhatsApp.",
+      "intro": "Tell us about your idea and we will reply within one business day.",
       "name": "Name",
       "email": "Email",
       "message": "Message",

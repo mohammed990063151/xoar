@@ -1,5 +1,7 @@
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { EventCard } from "@/components/ui/EventCard";
+import { siteContainer } from "@/lib/layout";
+import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
 
@@ -22,14 +24,14 @@ export function EventsShowcase({
   section,
 }: EventsShowcaseProps): React.ReactElement {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <section className={cn(siteContainer, "py-16")}>
       <ScrollReveal>
         <div className="max-w-3xl">
           <h2 className="text-3xl font-bold sm:text-4xl">{section.title}</h2>
           <p className="mt-3 text-slate-400">{section.subtitle}</p>
         </div>
       </ScrollReveal>
-      <div className="mt-12 grid gap-8 md:grid-cols-3">
+      <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3 xl:gap-8">
         <ScrollReveal>
           <EventCard
             locale={locale}

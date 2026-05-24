@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
         hostname: "upload.wikimedia.org",
         pathname: "/wikipedia/**",
       },
+      { protocol: "http", hostname: "127.0.0.1", pathname: "/storage/**" },
+      { protocol: "http", hostname: "localhost", pathname: "/storage/**" },
     ],
   },
 };

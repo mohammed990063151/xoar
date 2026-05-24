@@ -6,7 +6,8 @@ import { EventCard } from "@/components/ui/EventCard";
 import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import type { Dictionary } from "@/lib/dictionary";
-import { eventGallery } from "@/lib/event-gallery";
+import { siteContainer } from "@/lib/layout";
+import type { EventGalleryItem } from "@/services/contentService";
 
 type Filter = "all" | "individual" | "exhibitions" | "entertainment";
 
@@ -14,19 +15,21 @@ interface EventsGalleryProps {
   readonly locale: Locale;
   readonly copy: Dictionary["pages"]["events"];
   readonly section: Dictionary["eventsSection"];
+  readonly events: readonly EventGalleryItem[];
 }
 
 export function EventsGallery({
   locale,
   copy,
   section,
+  events,
 }: EventsGalleryProps): React.ReactElement {
   const [filter, setFilter] = useState<Filter>("all");
 
   const items = useMemo(() => {
-    if (filter === "all") return eventGallery;
-    return eventGallery.filter((g) => g.filter === filter);
-  }, [filter]);
+    if (filter === "all") return events;
+    return events.filter((event) => event.filter === filter);
+  }, [filter, events]);
 
   const tabs: { id: Filter; label: string }[] = [
     { id: "all", label: copy.filterAll },
@@ -36,26 +39,26 @@ export function EventsGallery({
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className={cn(siteContainer, "py-16")}>
       <ScrollReveal>
         <h1 className="text-4xl font-bold">{copy.title}</h1>
         <p className="mt-4 max-w-2xl text-slate-300">{copy.intro}</p>
       </ScrollReveal>
 
       <div className="mt-10 flex flex-wrap gap-2">
-        {tabs.map((t) => (
+        {tabs.map((tab) => (
           <button
-            key={t.id}
+            key={tab.id}
             type="button"
-            onClick={() => setFilter(t.id)}
+            onClick={() => setFilter(tab.id)}
             className={cn(
               "rounded-full px-4 py-2 text-sm font-medium transition",
-              filter === t.id
+              filter === tab.id
                 ? "bg-gradient-to-l from-violet-600 to-cyan-500 text-white"
                 : "border border-white/15 text-slate-300 hover:border-cyan-400/40",
             )}
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -68,8 +71,8 @@ export function EventsGallery({
           <ScrollReveal key={item.id}>
             <EventCard
               locale={locale}
-              title={locale === "ar" ? item.titleAr : item.titleEn}
-              description={locale === "ar" ? item.descAr : item.descEn}
+              title={item.title}
+              description={item.description}
               imageSrc={item.image}
               href={`/events/${item.id}`}
               cta={section.viewDetails}

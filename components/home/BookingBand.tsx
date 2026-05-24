@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { BookButton } from "@/components/ui/BookButton";
+import { cn } from "@/lib/cn";
+import { siteContainer } from "@/lib/layout";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
@@ -10,14 +13,21 @@ import type { Dictionary } from "@/lib/dictionary";
 interface BookingBandProps {
   readonly locale: Locale;
   readonly booking: Dictionary["booking"];
+  readonly formCta: string;
 }
 
 export function BookingBand({
   locale,
   booking,
+  formCta,
 }: BookingBandProps): React.ReactElement {
   return (
-    <section className="relative mx-4 overflow-hidden rounded-3xl border border-emerald-500/20 py-16 sm:mx-6 lg:mx-auto lg:max-w-7xl lg:px-8">
+    <section
+      className={cn(
+        siteContainer,
+        "relative overflow-hidden rounded-3xl border border-emerald-500/20 py-16",
+      )}
+    >
       <motion.div
         className="absolute inset-0 bg-gradient-to-l from-violet-900/50 via-emerald-950/40 to-cyan-900/35"
         animate={{ opacity: [0.88, 1, 0.9, 0.95] }}
@@ -29,7 +39,7 @@ export function BookingBand({
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
       />
       <div className="dot-grid pointer-events-none absolute inset-0 opacity-35" />
-      <ScrollReveal className="relative mx-auto max-w-3xl px-6 text-center">
+      <ScrollReveal className="relative mx-auto max-w-3xl px-2 text-center sm:px-6">
         <motion.h2
           className="text-3xl font-bold"
           initial={{ opacity: 0, scale: 0.94 }}
@@ -64,14 +74,13 @@ export function BookingBand({
             </Link>
           </motion.span>
           <motion.span whileHover={{ scale: 1.04 }}>
-            <Link
-              href="https://wa.me/966563672097"
-              target="_blank"
-              rel="noopener noreferrer"
+            <BookButton
+              type="booking"
+              source="home-booking-band"
               className="inline-flex rounded-full border border-emerald-300/40 px-5 py-2.5 text-sm font-medium text-emerald-50 backdrop-blur-sm transition hover:bg-emerald-500/15"
             >
-              WhatsApp
-            </Link>
+              {formCta}
+            </BookButton>
           </motion.span>
         </motion.div>
         <p className="mt-6 text-xs text-slate-200/80">{booking.note}</p>

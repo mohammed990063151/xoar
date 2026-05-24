@@ -1,9 +1,14 @@
 import { Achievements } from "@/components/home/Achievements";
 import { HeroImageGallery } from "@/components/home/HeroImageGallery";
 import { HeroSection } from "@/components/home/HeroSection";
+<<<<<<< HEAD
 import { WorksShowcase } from "@/components/home/WorksShowcase";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
+=======
+import { ServiceStrip } from "@/components/home/ServiceStrip";
+import { getSiteContent } from "@/services/contentService";
+>>>>>>> 1adedd39babb7eb012618a5692b6bca1a59642a3
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
@@ -19,6 +24,7 @@ export default async function HomePage({
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
   const locale = loc;
+<<<<<<< HEAD
   const home = await getHomeContent(locale);
   const dict = getDictionary(locale);
 
@@ -29,6 +35,19 @@ export default async function HomePage({
         locale={locale}
         images={home.galleryImages}
         copy={home.heroGallery}
+=======
+  const dict = await getSiteContent(locale);
+
+  return (
+    <>
+      <HeroSection locale={locale} hero={dict.hero} />
+      <ServiceStrip data={dict.servicesStrip} />
+      <EntertainmentShowcase
+        section={dict.entertainmentSection}
+        activityCards={dict.activityCards}
+        bookCta={dict.eventsSection.book}
+        formTitle={dict.inquiryForm.defaultTitle}
+>>>>>>> 1adedd39babb7eb012618a5692b6bca1a59642a3
       />
       <WorksShowcase
         locale={locale}
