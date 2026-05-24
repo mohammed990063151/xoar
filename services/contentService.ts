@@ -30,6 +30,8 @@ function fallbackEvents(locale: Locale): EventGalleryItem[] {
 }
 
 export async function getSiteContent(locale: Locale): Promise<SiteContent> {
+  const dict = getDictionary(locale);
+
   try {
     const response = await fetch(`${API_BASE}/api/site/${locale}`, {
       headers: { Accept: "application/json" },
@@ -38,14 +40,17 @@ export async function getSiteContent(locale: Locale): Promise<SiteContent> {
     if (response.ok) {
       const json = (await response.json()) as { data?: SiteContent };
       if (json.data) {
-        return json.data;
+        const eventsGallery =
+          json.data.eventsGallery?.length > 0
+            ? json.data.eventsGallery
+            : fallbackEvents(locale);
+        return { ...dict, ...json.data, eventsGallery };
       }
     }
   } catch {
     // API unavailable — static fallback below
   }
 
-  const dict = getDictionary(locale);
   return { ...dict, eventsGallery: fallbackEvents(locale) };
 }
 

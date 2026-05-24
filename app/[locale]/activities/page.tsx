@@ -1,6 +1,4 @@
 import { ActivitiesDiscover } from "@/components/activities/ActivitiesDiscover";
-import { ActivitiesClient } from "@/components/activities/ActivitiesClient";
-import { getSiteContent } from "@/services/contentService";
 import { isLocale } from "@/lib/i18n";
 import { getActivitiesListingContent } from "@/lib/site-page";
 import { serverFetch } from "@/services/api";
@@ -27,17 +25,6 @@ export default async function ActivitiesPage({
   return (
     <Suspense fallback={<div className="min-h-[50vh]" />}>
       <ActivitiesDiscover locale={loc} page={page} initialActivities={activities} />
-  const dict = await getSiteContent(loc);
-
-  return (
-    <Suspense fallback={<div className="min-h-[40vh]" />}>
-      <ActivitiesClient
-        dict={dict.pages.activities}
-        activityTabs={dict.activityTabs}
-        activityCards={dict.activityCards}
-        cta={dict.eventsSection.book}
-        formTitle={dict.inquiryForm.defaultTitle}
-      />
     </Suspense>
   );
 }
