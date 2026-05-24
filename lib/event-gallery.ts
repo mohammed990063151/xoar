@@ -59,7 +59,7 @@ export const eventGallery: readonly EventGalleryItem[] = [
     descAr: "تجربة بصرية وصوتية للمجتمعات.",
     descEn: "Immersive audiovisual community experience.",
     image:
-      "https://images.unsplash.com/photo-1489599849927-2ee91cede1ba?w=800&q=80",
+      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80",
   },
   {
     id: "6",

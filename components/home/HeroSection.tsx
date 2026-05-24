@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
-import type { Dictionary } from "@/lib/dictionary";
+import type { HomeHero } from "@/lib/home-content";
 
 /**
  * Hero background video — Pexels (free use): concert stage, smoke & dynamic lights.
@@ -37,7 +37,7 @@ const item = {
 
 interface HeroSectionProps {
   readonly locale: Locale;
-  readonly hero: Dictionary["hero"];
+  readonly hero: HomeHero;
 }
 
 export function HeroSection({
@@ -45,13 +45,16 @@ export function HeroSection({
   hero,
 }: HeroSectionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
+  const videoSrc = hero.videoUrl?.trim() || HERO_VIDEO_SRC;
+  const posterSrc = hero.videoPoster?.trim() || HERO_VIDEO_POSTER;
 
   return (
     <section className="relative min-h-[78vh] overflow-hidden rounded-b-[2rem] border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem]">
       <div className="absolute inset-0">
         <video
+          key={videoSrc}
           className="h-full w-full scale-105 object-cover object-center"
-          poster={HERO_VIDEO_POSTER}
+          poster={posterSrc}
           muted
           loop
           playsInline
@@ -59,7 +62,7 @@ export function HeroSection({
           autoPlay={!reduceMotion}
           aria-hidden
         >
-          <source src={HERO_VIDEO_SRC} type="video/mp4" />
+          <source src={videoSrc} type="video/mp4" />
         </video>
         {/* Saudi / national palette hint: green + gold + violet wash over footage */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/50 to-[#020617]/30" />

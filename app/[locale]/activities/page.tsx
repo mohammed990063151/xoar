@@ -1,8 +1,12 @@
-import { ActivitiesClient } from "@/components/activities/ActivitiesClient";
-import { getDictionary } from "@/lib/dictionary";
+import { ActivitiesDiscover } from "@/components/activities/ActivitiesDiscover";
 import { isLocale } from "@/lib/i18n";
+import { getActivitiesListingContent } from "@/lib/site-page";
+import { serverFetch } from "@/services/api";
+import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 
 export default async function ActivitiesPage({
   params,
@@ -11,16 +15,16 @@ export default async function ActivitiesPage({
 }): Promise<React.ReactElement> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
-  const dict = getDictionary(loc);
+
+  const [page, res] = await Promise.all([
+    getActivitiesListingContent(loc),
+    serverFetch<{ data: Activity[] }>(`/api/activities/${loc}?per_page=24`),
+  ]);
+  const activities = res?.data ?? [];
 
   return (
-    <Suspense fallback={<div className="min-h-[40vh]" />}>
-      <ActivitiesClient
-        locale={loc}
-        dict={dict.pages.activities}
-        activityTabs={dict.activityTabs}
-        cta={dict.pages.activities.detailCta}
-      />
+    <Suspense fallback={<div className="min-h-[50vh]" />}>
+      <ActivitiesDiscover locale={loc} page={page} initialActivities={activities} />
     </Suspense>
   );
 }

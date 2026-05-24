@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
+import { isStorageImage, normalizeStorageImageUrl } from "@/lib/image-url";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 
@@ -18,6 +19,8 @@ interface EventCardProps {
   /** CSS aspect-ratio value, e.g. `"16 / 11"` */
   readonly imageAspect?: string;
   readonly imageObjectFit?: "cover" | "contain";
+  /** Opens booking flow instead of navigating via CTA link */
+  readonly onBook?: () => void;
 }
 
 export function EventCard({
@@ -28,11 +31,13 @@ export function EventCard({
   href,
   cta,
   className,
-  imageAspect = "60 / 100",
+  imageAspect = "16 / 10",
   imageObjectFit = "cover",
+  onBook,
 }: EventCardProps): React.ReactElement {
   const path = href.startsWith("/") ? localizedPath(locale, href) : href;
   const isContain = imageObjectFit === "contain";
+  const imageUrl = normalizeStorageImageUrl(imageSrc);
 
   return (
     <motion.div
@@ -54,9 +59,10 @@ export function EventCard({
             style={{ aspectRatio: imageAspect }}
           >
             <Image
-              src={imageSrc}
+              src={imageUrl}
               alt={title}
               fill
+              unoptimized={isStorageImage(imageUrl)}
               className={cn(
                 "transition duration-700 group-hover:scale-105",
                 isContain ? "object-contain" : "object-cover",
@@ -76,12 +82,22 @@ export function EventCard({
           <p className="line-clamp-3 flex-1 text-sm text-slate-400">
             {description}
           </p>
-          <Link
-            href={path}
-            className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-l from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/25"
-          >
-            {cta}
-          </Link>
+          {onBook ? (
+            <button
+              type="button"
+              onClick={onBook}
+              className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-l from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/25"
+            >
+              {cta}
+            </button>
+          ) : (
+            <Link
+              href={path}
+              className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-l from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/25"
+            >
+              {cta}
+            </Link>
+          )}
         </div>
       </div>
     </motion.div>

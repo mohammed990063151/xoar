@@ -1,11 +1,15 @@
 import { Achievements } from "@/components/home/Achievements";
-import { EntertainmentShowcase } from "@/components/home/EntertainmentShowcase";
+import { HeroImageGallery } from "@/components/home/HeroImageGallery";
 import { HeroSection } from "@/components/home/HeroSection";
-import { ServiceStrip } from "@/components/home/ServiceStrip";
+import { WorksShowcase } from "@/components/home/WorksShowcase";
 import { getDictionary } from "@/lib/dictionary";
+import { getHomeContent } from "@/lib/home-content";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
+
+/** Always read CMS from Laravel — never cache a static snapshot from build time. */
+export const dynamic = "force-dynamic";
 
 export default async function HomePage({
   params,
@@ -15,18 +19,29 @@ export default async function HomePage({
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
   const locale = loc;
+  const home = await getHomeContent(locale);
   const dict = getDictionary(locale);
 
   return (
     <>
-      <HeroSection locale={locale} hero={dict.hero} />
-      <ServiceStrip locale={locale} data={dict.servicesStrip} />
-      <EntertainmentShowcase
+      <HeroSection locale={locale} hero={home.hero} />
+      <HeroImageGallery
         locale={locale}
-        section={dict.entertainmentSection}
-        bookCta={dict.eventsSection.book}
+        images={home.galleryImages}
+        copy={home.heroGallery}
       />
-      <Achievements data={dict.achievements} />
+      <WorksShowcase
+        locale={locale}
+        section={home.worksSection}
+        works={home.works}
+        ownedActivitiesSection={home.ownedActivitiesSection}
+        ownedActivities={home.ownedActivities}
+        viewDetailsLabel={dict.eventsSection.viewDetails}
+        viewAllWorksLabel={locale === "ar" ? "عرض كل الأعمال" : "View all works"}
+        bookCta={dict.eventsSection.book}
+        viewAllActivitiesLabel={locale === "ar" ? "عرض كل الأنشطة" : "View all activities"}
+      />
+      <Achievements data={home.achievements} />
     </>
   );
 }

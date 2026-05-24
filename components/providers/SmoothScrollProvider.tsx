@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Lenis from "lenis";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect } from "react";
 
 interface SmoothScrollProviderProps {
   readonly children: React.ReactNode;
@@ -14,28 +10,24 @@ interface SmoothScrollProviderProps {
 export function SmoothScrollProvider({
   children,
 }: SmoothScrollProviderProps): React.ReactElement {
-  const lenisRef = useRef<Lenis | null>(null);
-
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.15,
+      duration: 1.1,
       smoothWheel: true,
-      autoRaf: false,
     });
-    lenisRef.current = lenis;
 
-    lenis.on("scroll", ScrollTrigger.update);
+    let frameId = 0;
 
-    const onTick = (time: number): void => {
-      lenis.raf(time * 1000);
-    };
-    gsap.ticker.add(onTick);
-    gsap.ticker.lagSmoothing(0);
+    function raf(time: number): void {
+      lenis.raf(time);
+      frameId = requestAnimationFrame(raf);
+    }
+
+    frameId = requestAnimationFrame(raf);
 
     return () => {
-      gsap.ticker.remove(onTick);
+      cancelAnimationFrame(frameId);
       lenis.destroy();
-      lenisRef.current = null;
     };
   }, []);
 

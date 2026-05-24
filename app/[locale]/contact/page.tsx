@@ -12,5 +12,5 @@ export default async function ContactPage({
   if (!isLocale(loc)) notFound();
   const dict = getDictionary(loc);
 
-  return <ContactForm copy={dict.pages.contact} />;
+  return <ContactForm copy={dict.pages.contact} locale={loc} />;
 }

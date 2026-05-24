@@ -24,6 +24,11 @@
     "primaryCta": "Explore services",
     "secondaryCta": "Watch our work"
   },
+  "heroGallery": {
+    "eyebrow": "Highlights",
+    "title": "Photo gallery",
+    "subtitle": "Curated shots from our events — browse slides or open any image full size."
+  },
   "eventsSection": {
     "title": "Events for every goal",
     "subtitle": "Individuals, exhibitions, and entertainment — full design & operations.",
@@ -35,6 +40,14 @@
     "entertainmentDesc": "Shows, activations, and high-energy moments that hold attention.",
     "viewDetails": "Details",
     "book": "Book now"
+  },
+  "activitiesSection": {
+    "title": "Most booked activities",
+    "subtitle": "Guest favorites — book your experience now."
+  },
+  "ownedActivitiesSection": {
+    "title": "Activities by Xora",
+    "subtitle": "Experiences we run directly — book with the Xora team."
   },
   "entertainmentSection": {
     "title": "Entertainment that makes the difference",
@@ -114,19 +127,62 @@
   "whatsapp": { "label": "WhatsApp", "aria": "Open WhatsApp chat" },
   "pages": {
     "about": {
-      "title": "About xora",
-      "p1": "xora is a Saudi team focused on designing and running events, conferences, and recreation. We blend creativity, technology, and disciplined operations.",
+      "eyebrow": "Meet Xora",
+      "title": "About us",
+      "intro": "A Saudi team delivering end-to-end event experiences — from concept to the last moment on site.",
+      "p1": "Xora is a Saudi team focused on designing and running events, conferences, and recreation. We blend creativity, technology, and disciplined operations.",
       "p2": "We partner with public and private organizations to deliver consistent guest journeys — from the first visual touchpoint to the final moment on site.",
-      "values": ["Quality", "Transparency", "Innovation", "Obsession with detail"]
+      "mission": {
+        "title": "Our mission",
+        "text": "Turn client goals into clear, engaging, measurable guest experiences — without operational friction."
+      },
+      "vision": {
+        "title": "Our vision",
+        "text": "To be the region’s first choice for events — global operations standards with unforgettable visual identity."
+      },
+      "values": [
+        {
+          "title": "Quality",
+          "description": "High standards in planning, delivery, and on-site quality control."
+        },
+        {
+          "title": "Transparency",
+          "description": "Clear communication, realistic timelines, and ongoing client updates."
+        },
+        {
+          "title": "Innovation",
+          "description": "Technology and activations tailored to your audience and event goals."
+        },
+        {
+          "title": "Obsession with detail",
+          "description": "Every touchpoint — lighting to guest reception — is designed with care."
+        }
+      ]
     },
     "services": {
-      "title": "Services",
+      "eyebrow": "What we offer",
+      "title": "Our services",
       "intro": "We cover the full event lifecycle — from advisory to post-event wrap-up.",
+      "closing": {
+        "text": "Talk to us to build a plan that fits your goals and budget."
+      },
       "items": [
-        { "title": "Event strategy", "body": "Goals, audience, messaging, and a realistic timeline." },
-        { "title": "Production & delivery", "body": "Vetted vendors, run-of-show, and risk management." },
-        { "title": "Content & experience", "body": "Run-of-event scripts, activations, and workshops." },
-        { "title": "Coverage & streaming", "body": "Photo/video, live streaming, and highlight edits." }
+        {
+          "title": "Event strategy",
+          "body": "Goals, audience, messaging, and a realistic timeline from day one."
+        },
+        {
+          "title": "Production & delivery",
+          "body": "Vetted vendors, run-of-show, and on-site risk management."
+        },
+        {
+          "title": "Content & experience",
+          "body": "Scripts, activations, and workshops that boost guest engagement."
+        },
+        {
+          "title": "Coverage & streaming",
+          "body": "Photo, video, live streaming, and short highlight edits for promotion."
+        }
       ]
     },
     "events": {
@@ -138,9 +194,10 @@
       "filterFun": "Entertainment"
     },
     "activities": {
-      "title": "Recreation",
-      "intro": "Five entertainment tracks you can book and tailor for your event.",
-      "detailCta": "Book this track"
+      "eyebrow": "Discover & choose",
+      "title": "Recreation activities",
+      "intro": "Browse available activities, compare details, and book the experience that fits your event or group.",
+      "detailCta": "View details"
     },
     "contact": {
       "title": "Contact",
