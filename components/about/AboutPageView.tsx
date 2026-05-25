@@ -5,6 +5,19 @@ import type { AboutPageContent } from "@/lib/site-page";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { isStorageImage } from "@/lib/image-url";
+import {
+  pageBottom,
+  pageEyebrow,
+  pageHeroCentered,
+  pageHeroInner,
+  pageHeroSection,
+  pageIntro,
+  pageTitle,
+  sectionBlock,
+  sectionHeading,
+  siteContainer,
+  siteContainerNarrow,
+} from "@/lib/layout";
 
 interface AboutPageViewProps {
   readonly locale: Locale;
@@ -46,33 +59,23 @@ export function AboutPageView({
   const gallery = galleryRest.length > 0 ? galleryRest : content.images;
 
   return (
-    <div className="pb-20">
-      <section className="relative overflow-hidden border-b border-white/5">
+    <div className={pageBottom}>
+      <section className={pageHeroSection}>
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(168,85,247,0.22),transparent),radial-gradient(ellipse_60%_50%_at_10%_80%,rgba(59,130,246,0.12),transparent)]"
           aria-hidden
         />
-        <div className="relative mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20 lg:px-8">
-          <ScrollReveal>
-            {content.eyebrow ? (
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-400/90">
-                {content.eyebrow}
-              </p>
-            ) : null}
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              {content.title}
-            </h1>
-            {content.intro ? (
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">
-                {content.intro}
-              </p>
-            ) : null}
+        <div className={pageHeroInner}>
+          <ScrollReveal className={pageHeroCentered}>
+            {content.eyebrow ? <p className={pageEyebrow}>{content.eyebrow}</p> : null}
+            <h1 className={pageTitle}>{content.title}</h1>
+            {content.intro ? <p className={pageIntro}>{content.intro}</p> : null}
           </ScrollReveal>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
-        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
+      <section className={sectionBlock}>
+        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-16">
           <div className="space-y-6">
             <ScrollReveal>
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-400/90">
@@ -152,20 +155,18 @@ export function AboutPageView({
         </div>
       </section>
 
-      <section className="border-y border-white/5 bg-white/[0.02] py-14 sm:py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="border-y border-white/5 bg-white/[0.02] py-12 sm:py-16 lg:py-20">
+        <div className={siteContainer}>
           <ScrollReveal>
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-400/90">
-                {locale === "ar" ? "ما يميزنا" : "What sets us apart"}
-              </p>
-              <h2 className="mt-3 text-2xl font-bold text-white sm:text-3xl">
+              <p className={pageEyebrow}>{locale === "ar" ? "ما يميزنا" : "What sets us apart"}</p>
+              <h2 className={`mt-3 ${sectionHeading}`}>
                 {locale === "ar" ? "قيمنا في العمل" : "Our values"}
               </h2>
             </div>
           </ScrollReveal>
 
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2">
+          <ul className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:gap-6">
             {content.values.map((value, index) => (
               <ScrollReveal key={`${value.title}-${index}`}>
                 <li className="group gradient-border h-full transition duration-300 hover:shadow-[0_20px_50px_rgba(59,130,246,0.12)]">
@@ -189,7 +190,7 @@ export function AboutPageView({
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-4 pt-14 text-center sm:px-6 lg:px-8">
+      <section className={`${siteContainerNarrow} pt-12 text-center sm:pt-14 lg:pt-16`}>
         <ScrollReveal>
           <p className="text-slate-400">
             {locale === "ar"

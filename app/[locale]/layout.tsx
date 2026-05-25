@@ -72,11 +72,19 @@ export default async function LocaleLayout({
             className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen flex-col`}
           >
             <Header locale={locale} nav={dict.nav} />
-            <main className="flex-1">{children}</main>
-            <Footer locale={locale} footer={dict.footer} nav={dict.nav} />
+            <main className="flex-1 min-w-0 overflow-x-clip">{children}</main>
+            <Footer
+              locale={locale}
+              footer={dict.footer}
+              nav={dict.nav}
+              settings={dict.settings}
+            />
             <InquiryFab
+              locale={locale}
               label={dict.inquiryFab.label}
               aria={dict.inquiryFab.aria}
+              whatsappAria={dict.inquiryFab.whatsappAria}
+              whatsapp={dict.settings?.whatsapp}
             />
           </div>
         </BookingModalProvider>

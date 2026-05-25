@@ -106,6 +106,21 @@
     "title": "Activities by Xora",
     "subtitle": "Experiences we run directly — book with the Xora team."
   },
+  "partnersSection": {
+    "eyebrow": "Trusted by",
+    "title": "Our partners",
+    "subtitle": "Trusted collaborators who help us deliver standout events."
+  },
+  "homeExperience": {
+    "eyebrow": "Live experiences",
+    "title": "Events · Activities · Celebrations",
+    "items": ["Conferences", "Exhibitions", "Galas", "Yoga", "Workshops", "Family fun"]
+  },
+  "homeContact": {
+    "eyebrow": "Contact us",
+    "title": "Let's build your next event",
+    "subtitle": "Tell us your idea — the Xora team replies within 24 hours."
+  },
   "entertainmentSection": {
     "title": "Entertainment that makes the difference",
     "subtitle": "Shows, activations, and guest moments tailored to your audience and goals.",
@@ -187,10 +202,21 @@
     "contactTitle": "Contact",
     "email": "hello@xora.events",
     "phone": "+966 56 367 2097",
-    "follow": "Follow",
-    "rights": "All rights reserved."
+    "follow": "Follow us on",
+    "whatsapp": "WhatsApp",
+    "rights": "All rights reserved.",
+    "social": {
+      "instagram": "https://www.instagram.com/",
+      "x": "https://x.com/",
+      "facebook": "https://www.facebook.com/",
+      "snapchat": "https://www.snapchat.com/"
+    }
   },
-  "inquiryFab": { "label": "Book now", "aria": "Open booking form" },
+  "inquiryFab": {
+    "label": "Book now",
+    "aria": "Open booking form",
+    "whatsappAria": "Chat on WhatsApp"
+  },
   "inquiryForm": {
     "defaultTitle": "Booking or consultation",
     "name": "Name",
@@ -279,11 +305,18 @@
     "contact": {
       "title": "Contact",
       "intro": "Tell us about your idea and we will reply within one business day.",
-      "name": "Name",
-      "email": "Email",
-      "message": "Message",
-      "send": "Send",
-      "success": "Message received — we will get back to you shortly."
+      "name": "Full name",
+      "email": "Email address",
+      "phone": "Phone number",
+      "message": "Your request details",
+      "send": "Send message",
+      "sending": "Sending…",
+      "successTitle": "Message sent successfully",
+      "success": "Thank you for reaching out to Xora. Check your inbox — we will reply within one business day.",
+      "sendAnother": "Send another message",
+      "channelsTitle": "Direct contact channels",
+      "whyTitle": "Why reach out?",
+      "formTitle": "Contact form"
     }
   }
 }

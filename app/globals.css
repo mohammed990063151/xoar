@@ -78,6 +78,108 @@ body {
   animation: header-line-flow 8s linear infinite;
 }
 
+@keyframes marquee-forward {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes marquee-forward-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
+}
+
+@keyframes marquee-reverse-rtl {
+  from {
+    transform: translateX(50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.marquee-track--forward {
+  animation: marquee-forward var(--marquee-duration, 32s) linear infinite;
+}
+
+.marquee-track--reverse {
+  animation: marquee-reverse var(--marquee-duration, 38s) linear infinite;
+}
+
+[dir="rtl"] .marquee-track--forward {
+  animation-name: marquee-forward-rtl;
+}
+
+[dir="rtl"] .marquee-track--reverse {
+  animation-name: marquee-reverse-rtl;
+}
+
+.marquee-fade {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+[dir="rtl"] .marquee-fade {
+  mask-image: linear-gradient(
+    to left,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to left,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track--forward,
+  .marquee-track--reverse {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100% !important;
+    gap: 1rem;
+  }
+
+  .marquee-fade {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
 .gradient-border {
   position: relative;
   border-radius: 1.25rem;
@@ -104,4 +206,22 @@ body {
 
 .hero-wave-lines {
   filter: blur(0.5px);
+}
+
+/* Responsive: prevent horizontal overflow from media / long strings */
+img,
+video,
+svg {
+  max-width: 100%;
+}
+
+.safe-fab {
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  inset-inline-end: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+@supports (inset-inline-end: env(safe-area-inset-left)) {
+  [dir="rtl"] .safe-fab {
+    inset-inline-end: max(1rem, env(safe-area-inset-left, 0px));
+  }
 }

@@ -3,7 +3,7 @@ import { isLocale, localizedPath } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import Image from "next/image";
 import { EventDetailBook } from "@/components/events/EventDetailBook";
-import { siteContainerNarrow } from "@/lib/layout";
+import { pageBottom, pageTitle, siteContainerNarrow } from "@/lib/layout";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getSiteContent } from "@/services/contentService";
@@ -21,7 +21,7 @@ export default async function EventDetailPage({
   if (!item) notFound();
 
   return (
-    <article className={`${siteContainerNarrow} py-16`}>
+    <article className={`${siteContainerNarrow} ${pageBottom} py-10 sm:py-14 lg:py-16`}>
       <ScrollReveal>
         <Link
           href={localizedPath(locale, "/events")}
@@ -29,7 +29,7 @@ export default async function EventDetailPage({
         >
           ← {dict.pages.events.title}
         </Link>
-        <h1 className="mt-4 text-4xl font-bold">{item.title}</h1>
+        <h1 className={`mt-4 ${pageTitle}`}>{item.title}</h1>
       </ScrollReveal>
       <ScrollReveal>
         <div className="relative mt-8 w-full overflow-hidden rounded-3xl border border-white/10 bg-slate-900/80">

@@ -18,6 +18,7 @@ import type { Activity } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { siteApi, ApiError } from "@/services/api";
+import { pageBottom, siteContainerNarrow } from "@/lib/layout";
 
 type WizardStep = "date" | "checkout" | "success";
 
@@ -78,7 +79,7 @@ export function ActivityBookingWizard({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className={`${siteContainerNarrow} ${pageBottom} py-8 sm:py-10 lg:py-12`}>
       <BookingStepper labels={labels.steps} current={stepIndex} />
 
       <div className="mt-8 gradient-border">

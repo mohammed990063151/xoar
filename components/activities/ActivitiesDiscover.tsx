@@ -8,6 +8,18 @@ import { toActivityCardData } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
 import type { ActivitiesListingContent } from "@/lib/site-page";
 import { getApiBaseUrl } from "@/lib/api-base";
+import {
+  gridCards3,
+  pageBottom,
+  pageEyebrow,
+  pageHeroCentered,
+  pageHeroInner,
+  pageHeroSection,
+  pageIntro,
+  pageTitle,
+  scrollRow,
+  sectionBlockTight,
+} from "@/lib/layout";
 import type { Locale } from "@/lib/i18n";
 import type { Activity } from "@/types/api";
 
@@ -82,26 +94,18 @@ export function ActivitiesDiscover({
       : `${filtered.length} activities available`;
 
   return (
-    <div className="pb-20">
-      <section className="relative overflow-hidden border-b border-white/5">
+    <div className={pageBottom}>
+      <section className={pageHeroSection}>
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(168,85,247,0.16),transparent),radial-gradient(ellipse_50%_45%_at_0%_100%,rgba(59,130,246,0.1),transparent)]"
           aria-hidden
         />
-        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className={pageHeroInner}>
           <ScrollReveal>
-            <div className="mx-auto max-w-3xl text-center">
-              {page.eyebrow ? (
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-purple-400/90">
-                  {page.eyebrow}
-                </p>
-              ) : null}
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                {page.title}
-              </h1>
-              <p className="mt-4 text-base leading-relaxed text-slate-400 sm:text-lg">
-                {page.intro}
-              </p>
+            <div className={pageHeroCentered}>
+              {page.eyebrow ? <p className={pageEyebrow}>{page.eyebrow}</p> : null}
+              <h1 className={pageTitle}>{page.title}</h1>
+              <p className={`${pageIntro} text-slate-400`}>{page.intro}</p>
             </div>
 
             <div className="relative mx-auto mt-8 max-w-2xl">
@@ -126,8 +130,8 @@ export function ActivitiesDiscover({
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,260px)_1fr] lg:gap-10">
+      <section className={sectionBlockTight}>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_1fr] xl:grid-cols-[minmax(0,280px)_1fr] lg:gap-10">
           <aside className="h-fit lg:sticky lg:top-24">
             <div className="gradient-border">
               <div className="inner p-5 sm:p-6">
@@ -153,7 +157,7 @@ export function ActivitiesDiscover({
                 {categories.length > 0 ? (
                   <div className="mt-5">
                     <p className="text-sm text-slate-400">{labels.filterCategory}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className={`${scrollRow} mt-2 sm:flex-wrap`}>
                       <button
                         type="button"
                         onClick={() => setCategory("")}
@@ -209,13 +213,13 @@ export function ActivitiesDiscover({
             </div>
 
             {loading ? (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className={gridCards3}>
                 {Array.from({ length: 6 }).map((_, i) => (
                   <ActivityCardSkeleton key={i} />
                 ))}
               </div>
             ) : filtered.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className={gridCards3}>
                 {filtered.map((activity, index) => (
                   <motion.div
                     key={activity.id}

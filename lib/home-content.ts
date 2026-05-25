@@ -37,6 +37,25 @@ export interface OwnedActivitiesSectionCopy {
   subtitle: string;
 }
 
+export interface PartnersSectionCopy {
+  eyebrow?: string;
+  title: string;
+  subtitle: string;
+}
+
+export interface HomeContactCopy {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}
+
+export interface HomePartner {
+  id: number;
+  name: string;
+  logo: string;
+  website?: string;
+}
+
 export interface HomeContent {
   hero: HomeHero;
   heroGallery: HeroGalleryCopy;
@@ -45,6 +64,9 @@ export interface HomeContent {
   works: HomeWork[];
   ownedActivitiesSection: OwnedActivitiesSectionCopy;
   ownedActivities: ActivityCardData[];
+  partnersSection: PartnersSectionCopy;
+  partners: HomePartner[];
+  homeContact: HomeContactCopy;
   achievements: Dictionary["achievements"];
 }
 
@@ -55,6 +77,9 @@ type HomeApiPayload = {
   achievements?: Partial<Dictionary["achievements"]>;
   works?: HomeWork[];
   ownedActivities?: ActivityCardData[];
+  partnersSection?: Partial<PartnersSectionCopy>;
+  partners?: HomePartner[];
+  homeContact?: Partial<HomeContactCopy>;
 };
 
 function nonEmpty(value: unknown): string | undefined {
@@ -114,6 +139,37 @@ function ownedActivitiesSectionCopy(
   };
 }
 
+function partnersSectionCopy(api: HomeApiPayload, dict: Dictionary): PartnersSectionCopy {
+  const fallback = dict.partnersSection as PartnersSectionCopy;
+
+  return {
+    eyebrow: nonEmpty(api.partnersSection?.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(api.partnersSection?.title) ?? fallback.title,
+    subtitle: nonEmpty(api.partnersSection?.subtitle) ?? fallback.subtitle,
+  };
+}
+
+function homeContactCopy(api: HomeApiPayload, dict: Dictionary): HomeContactCopy {
+  const fallback = dict.homeContact as HomeContactCopy;
+
+  return {
+    eyebrow: nonEmpty(api.homeContact?.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(api.homeContact?.title) ?? fallback.title,
+    subtitle: nonEmpty(api.homeContact?.subtitle) ?? fallback.subtitle,
+  };
+}
+
+function mapPartners(raw?: HomePartner[]): HomePartner[] {
+  if (!raw?.length) return [];
+
+  return raw.map((p) => ({
+    id: p.id,
+    name: p.name,
+    logo: p.logo ? normalizeStorageImageUrl(p.logo) : "",
+    website: p.website,
+  }));
+}
+
 function mapOwnedActivities(raw?: ActivityCardData[]): ActivityCardData[] {
   if (!raw?.length) return [];
 
@@ -155,6 +211,9 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
     works: mapWorks(api.works),
     ownedActivitiesSection: ownedActivitiesSectionCopy(api, dict),
     ownedActivities: mapOwnedActivities(api.ownedActivities),
+    partnersSection: partnersSectionCopy(api, dict),
+    partners: mapPartners(api.partners),
+    homeContact: homeContactCopy(api, dict),
     achievements: {
       ...dict.achievements,
       ...(api.achievements ?? {}),
@@ -197,6 +256,9 @@ export async function getHomeContent(locale: Locale): Promise<HomeContent> {
     works: [],
     ownedActivitiesSection: dict.ownedActivitiesSection as OwnedActivitiesSectionCopy,
     ownedActivities: [],
+    partnersSection: dict.partnersSection as PartnersSectionCopy,
+    partners: [],
+    homeContact: dict.homeContact as HomeContactCopy,
     achievements: dict.achievements,
   };
 

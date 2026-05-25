@@ -46,8 +46,31 @@ export function HeroSection({
   const videoSrc = hero.videoUrl?.trim() || HERO_VIDEO_SRC;
   const posterSrc = hero.videoPoster?.trim() || HERO_VIDEO_POSTER;
 
+  const orbs = reduceMotion
+    ? []
+    : [
+        { className: "start-[8%] top-[18%] h-56 w-56 bg-violet-500/25", duration: 14 },
+        { className: "end-[10%] top-[28%] h-44 w-44 bg-cyan-500/20", duration: 18 },
+        { className: "bottom-[22%] start-[38%] h-64 w-64 bg-amber-500/10", duration: 22 },
+      ];
+
   return (
-    <section className="relative min-h-[78vh] overflow-hidden rounded-b-[2rem] border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem]">
+    <section className="relative min-h-[min(78vh,720px)] overflow-hidden rounded-b-2xl border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem] lg:min-h-[85vh]">
+      {!reduceMotion
+        ? orbs.map((orb) => (
+            <motion.div
+              key={orb.className}
+              className={`pointer-events-none absolute rounded-full blur-3xl ${orb.className}`}
+              aria-hidden
+              animate={{
+                y: [0, -18, 8, 0],
+                x: [0, 12, -8, 0],
+                scale: [1, 1.08, 0.96, 1],
+              }}
+              transition={{ duration: orb.duration, repeat: Infinity, ease: "easeInOut" }}
+            />
+          ))
+        : null}
       <div className="absolute inset-0">
         <video
           key={videoSrc}
@@ -102,7 +125,7 @@ export function HeroSection({
       <div
         className={cn(
           siteContainer,
-          "relative z-[1] flex min-h-[78vh] flex-col justify-end pb-16 pt-28 sm:min-h-[82vh] sm:pb-20",
+          "relative z-[1] flex min-h-[min(78vh,720px)] flex-col justify-end pb-12 pt-24 sm:min-h-[82vh] sm:pb-16 sm:pt-28 lg:min-h-[85vh] lg:pb-20",
         )}
       >
         <motion.div
@@ -111,8 +134,18 @@ export function HeroSection({
           initial="hidden"
           animate="show"
         >
+          <motion.p
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/35 px-4 py-1.5 text-xs font-medium text-cyan-100/90 backdrop-blur-md"
+            variants={item}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            {locale === "ar" ? "فعاليات · أنشطة · احتفالات" : "Events · Activities · Celebrations"}
+          </motion.p>
           <motion.h1
-            className="text-4xl font-bold leading-[1.15] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]"
+            className="text-3xl font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]"
             variants={item}
           >
             <span className="block sm:inline">{hero.title}</span>{" "}

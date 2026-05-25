@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ActivityBookingPanel } from "@/components/activities/booking/ActivityBookingPanel";
 import { ActivityLocationMap } from "@/components/activities/ActivityLocationMap";
-import { ActivityPhotoGallery } from "@/components/activities/ActivityPhotoGallery";
 import { ActivityCard } from "@/components/ui/ActivityCard";
+import { AccordionImageGallery } from "@/components/ui/AccordionImageGallery";
 import { activityAllImages, toActivityCardData } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
-import { isStorageImage } from "@/lib/image-url";
 import type { Activity } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
+import { cn } from "@/lib/cn";
 import { localizedPath } from "@/lib/i18n";
+import { gridCards3, pageBottom, scrollRow, siteContainer } from "@/lib/layout";
 
 interface ActivityDetailViewProps {
   readonly activity: Activity;
@@ -29,6 +29,8 @@ export function ActivityDetailView({
 }: ActivityDetailViewProps): React.ReactElement {
   const labels = bookingLabels(locale);
   const gallery = activityAllImages(activity);
+  const organizer =
+    activity.organizer ?? activity.provider?.name ?? "Xora";
 
   const latitude = activity.latitude ?? (activity as Activity & { lat?: number }).lat;
   const longitude = activity.longitude ?? (activity as Activity & { lng?: number }).lng;
@@ -43,18 +45,21 @@ export function ActivityDetailView({
   const [tab, setTab] = useState<TabId>("description");
   const rating = activity.rating ?? (activity as Activity & { reviewsCount?: number }).reviewsCount;
 
-  const tabs: { id: TabId; label: string; show: boolean }[] = [
-    { id: "description", label: labels.description, show: true },
-    { id: "gallery", label: labels.gallery, show: gallery.length > 0 },
-    { id: "location", label: labels.location, show: hasLocationSection },
-    { id: "included", label: labels.included, show: Boolean(activity.whats_included) },
-    { id: "policies", label: labels.policies, show: Boolean(activity.policies) },
-  ].filter((t) => t.show);
+  const tabs = (
+    [
+      { id: "description" as const, label: labels.description, show: true },
+      { id: "gallery" as const, label: labels.gallery, show: gallery.length > 0 },
+      { id: "location" as const, label: labels.location, show: hasLocationSection },
+      { id: "included" as const, label: labels.included, show: Boolean(activity.whats_included) },
+      { id: "policies" as const, label: labels.policies, show: Boolean(activity.policies) },
+    ] satisfies { id: TabId; label: string; show: boolean }[]
+  ).filter((t) => t.show);
 
-  function selectGalleryImage(index: number): void {
-    setActiveImage(index);
-    document.getElementById("activity-hero")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  const galleryEyebrow =
+    locale === "ar" ? `${labels.organizer}: ${organizer}` : `${labels.organizer}: ${organizer}`;
+  const gallerySubtitle = [activity.location, activity.price ? `${activity.price} / ${labels.perPerson}` : ""]
+    .filter(Boolean)
+    .join(" · ");
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash === "#book") {
@@ -63,7 +68,7 @@ export function ActivityDetailView({
   }, []);
 
   return (
-    <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <div className={cn(siteContainer, pageBottom, "relative py-8 sm:py-10 lg:py-12")}>
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_70%_60%_at_50%_-20%,rgba(99,102,241,0.2),transparent)]"
         aria-hidden
@@ -77,59 +82,28 @@ export function ActivityDetailView({
         <span className="text-slate-300">{activity.title}</span>
       </nav>
 
-      <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1fr)_400px] xl:items-start">
+      <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] lg:items-start xl:gap-10">
         <div className="min-w-0 space-y-6">
-          <div
-            id="activity-hero"
-            className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950/80 shadow-2xl scroll-mt-24"
-          >
-            <div className="relative aspect-[16/10] w-full bg-slate-900">
-              <Image
-                src={gallery[activeImage] ?? gallery[0]}
-                alt={activity.title}
-                fill
-                className="object-cover"
-                unoptimized={isStorageImage(gallery[activeImage] ?? "")}
-                priority
-                sizes="(max-width:1280px) 100vw, 65vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05050c] via-transparent to-transparent opacity-60" />
-              {rating ? (
-                <span className="absolute start-4 top-4 rounded-full border border-amber-400/40 bg-black/50 px-3 py-1.5 text-sm font-semibold text-amber-200 backdrop-blur-md">
-                  ★ {Number(rating).toFixed(1)}
-                </span>
-              ) : null}
-              <div className="absolute bottom-4 end-4 start-4 sm:bottom-6 sm:start-6 sm:end-auto">
-                <p className="text-xs text-slate-300/90">
-                  {labels.organizer}: {activity.organizer ?? activity.provider?.name ?? "Xora"}
-                </p>
-                <h1 className="mt-1 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                  {activity.title}
-                </h1>
-              </div>
-            </div>
-
-            {gallery.length > 1 ? (
-              <div className="flex gap-2 overflow-x-auto border-t border-white/10 p-3">
-                {gallery.map((src, i) => (
-                  <button
-                    key={src}
-                    type="button"
-                    onClick={() => setActiveImage(i)}
-                    className={
-                      i === activeImage
-                        ? "relative h-16 w-24 shrink-0 overflow-hidden rounded-xl ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-950"
-                        : "relative h-16 w-24 shrink-0 overflow-hidden rounded-xl opacity-60 hover:opacity-100"
-                    }
-                  >
-                    <Image src={src} alt="" fill className="object-cover" unoptimized sizes="96px" />
-                  </button>
-                ))}
-              </div>
+          <div id="activity-hero" className="relative scroll-mt-24">
+            {rating ? (
+              <span className="absolute start-4 top-4 z-10 rounded-full border border-amber-400/40 bg-black/50 px-3 py-1.5 text-sm font-semibold text-amber-200 backdrop-blur-md">
+                ★ {Number(rating).toFixed(1)}
+              </span>
             ) : null}
+            <AccordionImageGallery
+              images={gallery}
+              locale={locale}
+              title={activity.title}
+              eyebrow={galleryEyebrow}
+              subtitle={gallerySubtitle || undefined}
+              activeIndex={activeImage}
+              onActiveChange={setActiveImage}
+              variant="dark"
+              autoplay={gallery.length > 1}
+            />
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className={cn(scrollRow, "sm:flex-wrap")}>
             {activity.location ? (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">
                 📍 {activity.location}
@@ -163,7 +137,7 @@ export function ActivityDetailView({
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-5 sm:p-6">
-            <div className="flex flex-wrap gap-1 border-b border-white/10 pb-px">
+            <div className={cn(scrollRow, "border-b border-white/10 pb-px")}>
               {tabs.map((t) => (
                 <button
                   key={t.id}
@@ -171,8 +145,8 @@ export function ActivityDetailView({
                   onClick={() => setTab(t.id)}
                   className={
                     tab === t.id
-                      ? "border-b-2 border-cyan-400 px-4 py-2.5 text-sm font-semibold text-cyan-100"
-                      : "px-4 py-2.5 text-sm text-slate-500 transition hover:text-slate-300"
+                      ? "shrink-0 border-b-2 border-cyan-400 px-3 py-2.5 text-sm font-semibold text-cyan-100 sm:px-4"
+                      : "shrink-0 px-3 py-2.5 text-sm text-slate-500 transition hover:text-slate-300 sm:px-4"
                   }
                 >
                   {t.label}
@@ -190,17 +164,23 @@ export function ActivityDetailView({
                 )
               ) : null}
               {tab === "gallery" ? (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <p className="text-xs text-slate-500">
                     {locale === "ar"
-                      ? `${gallery.length} ${gallery.length === 1 ? "صورة" : "صور"} — اضغط على صورة لعرضها في الأعلى`
-                      : `${gallery.length} photo${gallery.length === 1 ? "" : "s"} — tap to preview above`}
+                      ? "مرّر المؤشر على الصورة لتوسيعها — أو اضغط للتثبيت"
+                      : "Hover to expand — click to pin the slide"}
                   </p>
-                  <ActivityPhotoGallery
+                  <AccordionImageGallery
                     images={gallery}
+                    locale={locale}
                     title={activity.title}
+                    eyebrow={galleryEyebrow}
+                    subtitle={gallerySubtitle || undefined}
                     activeIndex={activeImage}
-                    onSelect={selectGalleryImage}
+                    onActiveChange={setActiveImage}
+                    variant="dark"
+                    showCaption={false}
+                    autoplay={false}
                   />
                 </div>
               ) : null}
@@ -250,7 +230,7 @@ export function ActivityDetailView({
           ) : null}
         </div>
 
-        <aside className="xl:sticky xl:top-24 xl:self-start">
+        <aside className="lg:sticky lg:top-24 lg:self-start">
           <ActivityBookingPanel activity={activity} locale={locale} />
         </aside>
       </div>

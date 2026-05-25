@@ -15,8 +15,17 @@ export type EventGalleryItem = {
   image: string;
 };
 
+export type SiteSettings = {
+  companyName?: string;
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+  social?: Record<string, string>;
+};
+
 export type SiteContent = Dictionary & {
   eventsGallery: EventGalleryItem[];
+  settings?: SiteSettings;
 };
 
 function fallbackEvents(locale: Locale): EventGalleryItem[] {

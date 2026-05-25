@@ -6,7 +6,14 @@ import { EventCard } from "@/components/ui/EventCard";
 import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import type { Dictionary } from "@/lib/dictionary";
-import { siteContainer } from "@/lib/layout";
+import {
+  gridCards3,
+  pageBottom,
+  pageIntro,
+  pageTitle,
+  scrollRow,
+  sectionBlock,
+} from "@/lib/layout";
 import type { EventGalleryItem } from "@/services/contentService";
 
 type Filter = "all" | "individual" | "exhibitions" | "entertainment";
@@ -39,13 +46,13 @@ export function EventsGallery({
   ];
 
   return (
-    <div className={cn(siteContainer, "py-16")}>
+    <div className={cn(pageBottom, sectionBlock)}>
       <ScrollReveal>
-        <h1 className="text-4xl font-bold">{copy.title}</h1>
-        <p className="mt-4 max-w-2xl text-slate-300">{copy.intro}</p>
+        <h1 className={pageTitle}>{copy.title}</h1>
+        <p className={cn(pageIntro, "max-w-2xl text-slate-300")}>{copy.intro}</p>
       </ScrollReveal>
 
-      <div className="mt-10 flex flex-wrap gap-2">
+      <div className={cn(scrollRow, "mt-8 sm:mt-10 sm:flex-wrap")}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -65,7 +72,7 @@ export function EventsGallery({
 
       <div
         id="individual"
-        className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+        className={cn(gridCards3, "mt-10 sm:mt-12")}
       >
         {items.map((item) => (
           <ScrollReveal key={item.id}>

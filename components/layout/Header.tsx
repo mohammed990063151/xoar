@@ -22,6 +22,7 @@ const navKeys = [
   { href: "/services", key: "services" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/contact", key: "contact" as const },
 ] satisfies ReadonlyArray<{ href: string; key: keyof Dictionary["nav"] }>;
 
 function ArrowOutIcon({ className }: { readonly className?: string }): React.ReactElement {
@@ -105,7 +106,7 @@ export function Header({
           <XoraLogo size="md" />
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:flex xl:gap-7">
+        <nav className="hidden min-w-0 items-center gap-4 lg:flex xl:gap-6">
           {navKeys.map(({ href, key }) => (
             <NavTextLink
               key={href}
@@ -125,7 +126,7 @@ export function Header({
           >
             {locale === "ar" ? "EN" : "عربي"}
           </Link>
-          <HeaderCta label={nav.cta} />
+          <HeaderCta locale={locale} label={nav.cta} />
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 lg:hidden"
@@ -155,7 +156,7 @@ export function Header({
       </div>
 
       {open ? (
-        <div className="flex flex-col gap-1 border-t border-white/10 px-4 py-3 lg:hidden">
+        <div className={cn(siteContainer, "flex flex-col gap-1 border-t border-white/10 py-3 lg:hidden")}>
           {navKeys.map(({ href, key }) => (
             <Link
               key={href}
@@ -167,7 +168,7 @@ export function Header({
             </Link>
           ))}
           <div className="mt-2 px-2 [&_button]:!flex [&_button]:w-full [&_button]:justify-center">
-            <HeaderCta label={nav.cta} />
+            <HeaderCta locale={locale} label={nav.cta} />
           </div>
         </div>
       ) : null}

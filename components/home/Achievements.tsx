@@ -3,9 +3,10 @@
 import { motion, animate } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { SlideInEdge } from "@/components/motion/SlideInEdge";
 import { XoraLogo } from "@/components/brand/XoraLogo";
 import type { Dictionary } from "@/lib/dictionary";
-import { siteContainer } from "@/lib/layout";
+import { gridCards4, homeSectionTitle, siteContainer } from "@/lib/layout";
 import { cn } from "@/lib/cn";
 
 interface AchievementsProps {
@@ -18,19 +19,37 @@ export function Achievements({
   const hasTitle = Boolean(data.title?.trim());
 
   return (
-    <section className={cn(siteContainer, "pb-12 pt-8")}>
+    <section className={cn(siteContainer, "pb-12 pt-8 sm:pb-14 sm:pt-10")}>
       {hasTitle ? (
-        <ScrollReveal>
-          <h2 className="text-center text-2xl font-bold text-white sm:text-3xl">{data.title}</h2>
-        </ScrollReveal>
+        <SlideInEdge from="bottom">
+          <h2 className={`text-center ${homeSectionTitle}`}>{data.title}</h2>
+        </SlideInEdge>
       ) : null}
-      <div
-        className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-4 ${hasTitle ? "mt-12" : "mt-0"}`}
-      >
-        <Stat value={10} suffix="+" label={data.years} icon={<IconStar />} />
-        <Stat value={20} suffix="+" label={data.cities} icon={<IconPin />} />
-        <Stat value={350} suffix="+" label={data.events} icon={<IconCalendar />} />
-        <Stat value={150} suffix="+" label={data.clients} icon={<IconUsers />} />
+      <div className={cn(gridCards4, hasTitle ? "mt-8 sm:mt-10" : "mt-0")}>
+        <Stat
+          value={Number(data.yearsValue) || 10}
+          suffix={data.yearsSuffix || "+"}
+          label={data.years}
+          icon={<IconStar />}
+        />
+        <Stat
+          value={Number(data.citiesValue) || 20}
+          suffix={data.citiesSuffix || "+"}
+          label={data.cities}
+          icon={<IconPin />}
+        />
+        <Stat
+          value={Number(data.eventsValue) || 350}
+          suffix={data.eventsSuffix || "+"}
+          label={data.events}
+          icon={<IconCalendar />}
+        />
+        <Stat
+          value={Number(data.clientsValue) || 150}
+          suffix={data.clientsSuffix || "+"}
+          label={data.clients}
+          icon={<IconUsers />}
+        />
       </div>
       <ScrollReveal>
         <div className="mt-14 flex flex-col items-center gap-4 border-t border-white/5 pt-12">
