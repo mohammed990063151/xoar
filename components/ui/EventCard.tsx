@@ -40,11 +40,10 @@ export function EventCard({
 
   return (
     <motion.div
-      className={cn("gradient-border group h-full", className)}
+      className={cn("gradient-border group h-full max-sm:transform-none", className)}
       whileHover={{
-        y: -10,
-        scale: 1.02,
-        rotateZ: locale === "ar" ? 0.4 : -0.4,
+        y: -8,
+        scale: 1.015,
       }}
       transition={{ type: "spring", stiffness: 320, damping: 22 }}
     >

@@ -132,7 +132,7 @@ export function ActivitiesDiscover({
 
       <section className={sectionBlockTight}>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_1fr] xl:grid-cols-[minmax(0,280px)_1fr] lg:gap-10">
-          <aside className="h-fit lg:sticky lg:top-24">
+          <aside className="order-2 h-fit lg:order-1 lg:sticky lg:top-24">
             <div className="gradient-border">
               <div className="inner p-5 sm:p-6">
                 <p className="flex items-center gap-2 text-sm font-semibold text-white">
@@ -204,7 +204,7 @@ export function ActivitiesDiscover({
             </div>
           </aside>
 
-          <div>
+          <div className="order-1 min-w-0 lg:order-2">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-slate-500">{resultLabel}</p>
               {loading ? (

@@ -38,6 +38,54 @@ function fallbackEvents(locale: Locale): EventGalleryItem[] {
   }));
 }
 
+function mergePages(
+  dictPages: Dictionary["pages"],
+  apiPages?: Partial<Dictionary["pages"]>,
+): Dictionary["pages"] {
+  if (!apiPages) return dictPages;
+
+  return {
+    about: { ...dictPages.about, ...apiPages.about },
+    services: { ...dictPages.services, ...apiPages.services },
+    events: { ...dictPages.events, ...apiPages.events },
+    activities: { ...dictPages.activities, ...apiPages.activities },
+    contact: { ...dictPages.contact, ...apiPages.contact },
+  };
+}
+
+function mergeSiteContent(
+  dict: Dictionary,
+  api: Partial<SiteContent>,
+  locale: Locale,
+): SiteContent {
+  const eventsGallery =
+    api.eventsGallery && api.eventsGallery.length > 0
+      ? api.eventsGallery
+      : fallbackEvents(locale);
+
+  return {
+    ...dict,
+    ...api,
+    pages: mergePages(dict.pages, api.pages),
+    hero: { ...dict.hero, ...api.hero },
+    heroGallery: { ...dict.heroGallery, ...api.heroGallery },
+    eventsSection: { ...dict.eventsSection, ...api.eventsSection },
+    activitiesSection: { ...dict.activitiesSection, ...api.activitiesSection },
+    ownedActivitiesSection: {
+      ...dict.ownedActivitiesSection,
+      ...api.ownedActivitiesSection,
+    },
+    partnersSection: { ...dict.partnersSection, ...api.partnersSection },
+    homeContact: { ...dict.homeContact, ...api.homeContact },
+    achievements: { ...dict.achievements, ...api.achievements },
+    footer: { ...dict.footer, ...api.footer },
+    nav: { ...dict.nav, ...api.nav },
+    inquiryForm: { ...dict.inquiryForm, ...api.inquiryForm },
+    inquiryFab: { ...dict.inquiryFab, ...api.inquiryFab },
+    eventsGallery,
+  };
+}
+
 export async function getSiteContent(locale: Locale): Promise<SiteContent> {
   const dict = getDictionary(locale);
 
@@ -49,11 +97,7 @@ export async function getSiteContent(locale: Locale): Promise<SiteContent> {
     if (response.ok) {
       const json = (await response.json()) as { data?: SiteContent };
       if (json.data) {
-        const eventsGallery =
-          json.data.eventsGallery?.length > 0
-            ? json.data.eventsGallery
-            : fallbackEvents(locale);
-        return { ...dict, ...json.data, eventsGallery };
+        return mergeSiteContent(dict, json.data, locale);
       }
     }
   } catch {

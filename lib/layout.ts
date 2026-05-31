@@ -5,8 +5,8 @@ export const siteContainer =
 export const siteContainerNarrow =
   "mx-auto w-full min-w-0 max-w-[min(100%,48rem)] px-4 sm:px-6 md:px-8";
 
-/** Bottom spacing for inner pages */
-export const pageBottom = "pb-16 sm:pb-20 lg:pb-24";
+/** Bottom spacing for inner pages (+ FAB clearance on mobile) */
+export const pageBottom = "pb-28 sm:pb-20 lg:pb-24";
 
 export const sectionSpacing = "py-12 sm:py-16 lg:py-20";
 
@@ -23,7 +23,7 @@ export const pageEyebrow =
   "text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400/90 sm:text-xs sm:tracking-[0.24em]";
 
 export const pageTitle =
-  "mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl";
+  "mt-3 text-[clamp(1.5rem,5.5vw,3rem)] font-bold tracking-tight text-white sm:text-4xl lg:text-5xl";
 
 export const pageIntro =
   "mt-4 text-base leading-relaxed text-slate-300 sm:mt-5 sm:text-lg";
@@ -33,9 +33,11 @@ export const sectionBlock = `${siteContainer} ${sectionSpacing}`;
 
 export const sectionBlockTight = `${siteContainer} ${sectionSpacingTight}`;
 
-export const sectionHeading = "text-2xl font-bold tracking-tight text-white sm:text-3xl";
+export const sectionHeading =
+  "text-[clamp(1.25rem,4vw,1.875rem)] font-bold tracking-tight text-white sm:text-3xl";
 
-export const homeSectionTitle = "text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl";
+export const homeSectionTitle =
+  "text-[clamp(1.35rem,4.5vw,2.25rem)] font-bold tracking-tight text-white sm:text-3xl lg:text-4xl";
 
 /** Responsive grids */
 export const gridCards2 = "grid gap-4 sm:gap-5 sm:grid-cols-2";

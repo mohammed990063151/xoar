@@ -7,7 +7,8 @@ import { MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/ContactChanne
 import { getSocialLinks, SocialIconLink } from "@/components/ui/SocialIconLink";
 import { formatPhoneDisplay, phoneTelHref } from "@/lib/phone";
 import { whatsappHref } from "@/lib/whatsapp";
-import { siteContainer } from "@/lib/layout";
+import { cn } from "@/lib/cn";
+import { pageBottom, pageTitle, siteContainer } from "@/lib/layout";
 import { submitInquiry } from "@/services/inquiryService";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
@@ -156,7 +157,7 @@ export function ContactPageView({
   ].filter((c) => c.value);
 
   return (
-    <div className="relative overflow-hidden pb-24">
+    <div className={cn(pageBottom, "relative overflow-hidden")}>
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(ellipse_80%_70%_at_50%_-10%,rgba(99,102,241,0.28),transparent)]"
         aria-hidden
@@ -180,7 +181,7 @@ export function ContactPageView({
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-400/90">
               {ar ? "نحن هنا لمساعدتك" : "We are here to help"}
             </p>
-            <h1 className="mt-3 text-4xl font-bold text-white sm:text-5xl lg:text-6xl">{copy.title}</h1>
+            <h1 className={pageTitle}>{copy.title}</h1>
             <p className="mt-4 text-base leading-relaxed text-slate-400 sm:text-lg">{copy.intro}</p>
           </div>
         </SlideInEdge>
@@ -190,7 +191,7 @@ export function ContactPageView({
             <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               {channelsTitle}
             </p>
-            <div className="mx-auto mt-6 grid w-full max-w-4xl gap-3 sm:grid-cols-3 sm:gap-4">
+          <div className="mt-6 grid w-full max-w-4xl gap-3 sm:grid-cols-3 sm:gap-4">
               {channels.map((channel, i) => (
                 <SlideInEdge key={channel.label} from={i % 2 === 0 ? "end" : "start"} delay={i * 0.08}>
                   <motion.div
