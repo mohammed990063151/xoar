@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useParams } from "next/navigation";
 import { paymentService } from "@/services/paymentService";
@@ -8,7 +8,7 @@ import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { siteContainer, pageBottom } from "@/lib/layout";
 
-export default function PaymentSuccessPage(): React.ReactElement {
+function PaymentSuccessContent(): React.ReactElement {
   const params = useParams();
   const search = useSearchParams();
   const locale = (params?.locale === "en" ? "en" : "ar") as Locale;
@@ -67,5 +67,21 @@ export default function PaymentSuccessPage(): React.ReactElement {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage(): React.ReactElement {
+  return (
+    <Suspense
+      fallback={
+        <div className={siteContainer}>
+          <div className={`${pageBottom} mx-auto max-w-lg py-16 text-center text-slate-400`}>
+            Loading…
+          </div>
+        </div>
+      }
+    >
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
