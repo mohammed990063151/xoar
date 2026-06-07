@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { ActivitiesFilters, type ActivitiesFilterState } from "@/components/activities/ActivitiesFilters";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { ActivityCard } from "@/components/ui/ActivityCard";
 import { toActivityCardData } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
 import type { ActivitiesListingContent } from "@/lib/site-page";
-import { getApiBaseUrl } from "@/lib/api-base";
+import { activitiesService } from "@/services/activitiesService";
 import {
   gridCards3,
   pageBottom,
@@ -17,10 +18,13 @@ import {
   pageHeroSection,
   pageIntro,
   pageTitle,
-  scrollRow,
   sectionBlockTight,
+  siteContainer,
 } from "@/lib/layout";
 import type { Locale } from "@/lib/i18n";
+import { ActivitiesLocationsMap } from "@/components/features/ActivitiesLocationsMap";
+import { useActivityRecommendations } from "@/hooks/useActivityRecommendations";
+import { usePlatformFeatures } from "@/hooks/usePlatformFeatures";
 import type { Activity } from "@/types/api";
 
 interface ActivitiesDiscoverProps {
@@ -32,11 +36,9 @@ interface ActivitiesDiscoverProps {
 function ActivityCardSkeleton(): React.ReactElement {
   return (
     <div className="animate-pulse overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80">
-      <div className="aspect-[4/3] bg-white/5" />
+      <div className="min-h-[240px] bg-white/5" />
       <div className="space-y-3 p-5">
-        <div className="h-3 w-1/3 rounded bg-white/10" />
         <div className="h-5 w-2/3 rounded bg-white/10" />
-        <div className="h-10 rounded-xl bg-white/5" />
         <div className="h-10 rounded-full bg-white/10" />
       </div>
     </div>
@@ -49,10 +51,20 @@ export function ActivitiesDiscover({
   initialActivities = [],
 }: ActivitiesDiscoverProps): React.ReactElement {
   const labels = bookingLabels(locale);
+  const { isEnabled, loading: featuresLoading } = usePlatformFeatures(locale);
+  const mapEnabled = featuresLoading || isEnabled("map_discovery");
+  const recommendationsEnabled = isEnabled("ai_recommendations");
+  const { highlightedSlugs, getHighlight } = useActivityRecommendations(
+    locale,
+    recommendationsEnabled,
+  );
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [search, setSearch] = useState("");
-  const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("");
+  const [geoFilters, setGeoFilters] = useState<ActivitiesFilterState>({
+    city: "",
+    date: "",
+    category: "",
+  });
   const [loading, setLoading] = useState(false);
 
   const categories = useMemo(() => {
@@ -65,46 +77,60 @@ export function ActivitiesDiscover({
   }, [initialActivities]);
 
   useEffect(() => {
-    if (initialActivities.length > 0 && !search && !location) return;
+    const hasFilters =
+      search || geoFilters.city || geoFilters.date || geoFilters.category;
+    if (initialActivities.length > 0 && !hasFilters) {
+      setActivities(initialActivities);
+      return;
+    }
 
     setLoading(true);
-    const qs = new URLSearchParams();
-    if (search) qs.set("search", search);
-    if (location) qs.set("location", location);
-    qs.set("per_page", "24");
-
-    fetch(`${getApiBaseUrl()}/api/activities/${locale}?${qs}`, {
-      headers: { Accept: "application/json" },
-    })
-      .then((r) => (r.ok ? r.json() : { data: initialActivities }))
-      .then((json: { data: Activity[] }) => setActivities(json.data ?? []))
+    activitiesService
+      .list(locale, {
+        search: search || undefined,
+        city: geoFilters.city || undefined,
+        date: geoFilters.date || undefined,
+        category: geoFilters.category || undefined,
+        per_page: 24,
+      })
+      .then((json) => setActivities(json.data ?? []))
       .catch(() => setActivities(initialActivities))
       .finally(() => setLoading(false));
-  }, [locale, search, location, initialActivities]);
-
-  const filtered = activities.filter((a) => {
-    if (!category) return true;
-    const label = a.short_label ?? (a as Activity & { shortLabel?: string }).shortLabel ?? "";
-    return label === category;
-  });
+  }, [locale, search, geoFilters, initialActivities]);
 
   const resultLabel =
     locale === "ar"
-      ? `${filtered.length} نشاط متاح`
-      : `${filtered.length} activities available`;
+      ? `${activities.length} نشاط متاح`
+      : `${activities.length} activities available`;
+
+  const hasActiveFilters =
+    search || geoFilters.city || geoFilters.date || geoFilters.category;
+
+  const sortedActivities = useMemo(() => {
+    if (hasActiveFilters || highlightedSlugs.size === 0) return activities;
+    const highlighted: Activity[] = [];
+    const rest: Activity[] = [];
+    for (const a of activities) {
+      if (highlightedSlugs.has(a.slug)) highlighted.push(a);
+      else rest.push(a);
+    }
+    return [...highlighted, ...rest];
+  }, [activities, highlightedSlugs, hasActiveFilters]);
 
   return (
     <div className={pageBottom}>
       <section className={pageHeroSection}>
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(168,85,247,0.16),transparent),radial-gradient(ellipse_50%_45%_at_0%_100%,rgba(59,130,246,0.1),transparent)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(168,85,247,0.16),transparent)]"
           aria-hidden
         />
         <div className={pageHeroInner}>
           <ScrollReveal>
             <div className={pageHeroCentered}>
               {page.eyebrow ? <p className={pageEyebrow}>{page.eyebrow}</p> : null}
-              <h1 className={pageTitle}>{page.title}</h1>
+              <h1 className={pageTitle}>
+                {locale === "ar" ? "الأنشطة الترفيهية" : page.title}
+              </h1>
               <p className={`${pageIntro} text-slate-400`}>{page.intro}</p>
             </div>
 
@@ -135,71 +161,25 @@ export function ActivitiesDiscover({
           <aside className="order-2 h-fit lg:order-1 lg:sticky lg:top-24">
             <div className="gradient-border">
               <div className="inner p-5 sm:p-6">
-                <p className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300">
-                    <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-                      <path d="M3 5h14M5 5V3h10v2M6 9h2M6 13h2M12 9h2M12 13h2" />
-                    </svg>
-                  </span>
-                  {locale === "ar" ? "تصفية النتائج" : "Filter results"}
-                </p>
+                <ActivitiesFilters
+                  locale={locale}
+                  value={geoFilters}
+                  onChange={setGeoFilters}
+                  fallbackCategories={categories}
+                />
 
-                <label className="mt-5 block text-sm text-slate-400">
-                  {labels.filterLocation}
-                  <input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder={locale === "ar" ? "مثال: الرياض" : "e.g. Riyadh"}
-                    className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none transition focus:border-cyan-400/50"
-                  />
-                </label>
-
-                {categories.length > 0 ? (
-                  <div className="mt-5">
-                    <p className="text-sm text-slate-400">{labels.filterCategory}</p>
-                    <div className={`${scrollRow} mt-2 sm:flex-wrap`}>
-                      <button
-                        type="button"
-                        onClick={() => setCategory("")}
-                        className={
-                          !category
-                            ? "rounded-full border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-medium text-cyan-100"
-                            : "rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400 transition hover:border-white/20 hover:text-slate-200"
-                        }
-                      >
-                        {labels.all}
-                      </button>
-                      {categories.map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setCategory(cat)}
-                          className={
-                            category === cat
-                              ? "rounded-full border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-medium text-cyan-100"
-                              : "rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400 transition hover:border-white/20 hover:text-slate-200"
-                          }
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {(search || location || category) && (
+                {hasActiveFilters ? (
                   <button
                     type="button"
                     onClick={() => {
                       setSearch("");
-                      setLocation("");
-                      setCategory("");
+                      setGeoFilters({ city: "", date: "", category: "" });
                     }}
                     className="mt-5 w-full rounded-xl border border-white/10 py-2 text-xs text-slate-400 transition hover:border-white/20 hover:text-white"
                   >
                     {locale === "ar" ? "مسح التصفية" : "Clear filters"}
                   </button>
-                )}
+                ) : null}
               </div>
             </div>
           </aside>
@@ -218,38 +198,65 @@ export function ActivitiesDiscover({
                   <ActivityCardSkeleton key={i} />
                 ))}
               </div>
-            ) : filtered.length > 0 ? (
+            ) : sortedActivities.length > 0 ? (
               <div className={gridCards3}>
-                {filtered.map((activity, index) => (
-                  <motion.div
-                    key={activity.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.04, duration: 0.45 }}
-                  >
-                    <ActivityCard
-                      locale={locale}
-                      activity={toActivityCardData(activity)}
-                      imageAspect="4 / 3"
-                      bookCta={page.detailCta}
-                      className="h-full shadow-[0_16px_40px_rgba(0,0,0,0.3)]"
-                    />
-                  </motion.div>
-                ))}
+                {sortedActivities.map((activity, index) => {
+                  const fromAdmin = activity.cardHighlight;
+                  const fromRec = getHighlight(activity.slug);
+                  const highlight = fromAdmin
+                    ? {
+                        label: fromAdmin.label,
+                        variant: (fromAdmin.variant ?? "trending") as "trending",
+                        hint: fromAdmin.hint ?? undefined,
+                      }
+                    : fromRec;
+                  return (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04, duration: 0.45 }}
+                    >
+                      <ActivityCard
+                        locale={locale}
+                        activity={toActivityCardData(activity)}
+                        bookCta={labels.bookNow}
+                        bookHref={`/activities/${activity.slug}#book`}
+                        className="h-full shadow-[0_16px_40px_rgba(0,0,0,0.3)]"
+                        highlightLabel={highlight?.label}
+                        highlightVariant={highlight?.variant}
+                        highlightHint={highlight?.hint}
+                        showSocialProof={isEnabled("social_proof")}
+                        showWishlist={activity.showWishlist ?? true}
+                        showCountdown={isEnabled("countdown")}
+                      />
+                    </motion.div>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-16 text-center">
                 <p className="text-lg font-medium text-slate-300">{labels.noResults}</p>
                 <p className="mt-2 text-sm text-slate-500">
                   {locale === "ar"
-                    ? "جرّب تغيير كلمات البحث أو الموقع."
-                    : "Try different search terms or location."}
+                    ? "جرّب تغيير المدينة أو التاريخ أو الفئة."
+                    : "Try a different city, date, or category."}
                 </p>
               </div>
             )}
           </div>
         </div>
       </section>
+
+      {mapEnabled ? (
+        <div className={`${siteContainer} mt-12 pb-4`}>
+          <ActivitiesLocationsMap
+            locale={locale}
+            activities={sortedActivities}
+            enabled={mapEnabled}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

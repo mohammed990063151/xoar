@@ -4,12 +4,14 @@ export function parsePriceAmount(price?: string): number {
   return match ? Number.parseFloat(match[1]) : 0;
 }
 
+import { SAR_SYMBOL } from "@/lib/format-price";
+
 export function formatMoney(amount: number, locale: "ar" | "en", currency = "SAR"): string {
   const formatted = amount.toLocaleString(locale === "ar" ? "ar-SA" : "en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
-  return locale === "ar" ? `${formatted} ر.س` : `${formatted} ${currency}`;
+  return locale === "ar" ? `${formatted} ${SAR_SYMBOL}` : `${formatted} ${currency}`;
 }
 
 export function calculateBookingTotal(

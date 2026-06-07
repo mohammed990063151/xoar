@@ -1,16 +1,45 @@
 export type ActivityStatus = "draft" | "pending" | "approved" | "rejected";
 
+export interface TicketHighlight {
+  icon?: string;
+  title: string;
+  description?: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 export interface Activity {
   id: number;
   slug: string;
   title: string;
   description: string;
   short_label?: string;
+  badge?: string;
+  badgeLabel?: string;
+  city?: string;
   location?: string;
+  promo_video_url?: string;
+  promoVideoUrl?: string;
+  ticket_highlights?: TicketHighlight[];
+  ticketHighlights?: TicketHighlight[];
+  terms_conditions?: string;
+  termsConditions?: string;
+  organizer_bio?: string;
+  organizerBio?: string;
+  faq?: FaqItem[];
+  available_times?: string[];
+  availableTimes?: string[];
+  /** 0=Sunday … 6=Saturday — weekly recurring booking days */
+  recurring_weekdays?: number[];
+  recurringWeekdays?: number[];
   latitude?: number | null;
   longitude?: number | null;
   price?: string;
   event_date?: string;
+  eventDate?: string;
   organizer?: string;
   whats_included?: string;
   policies?: string;
@@ -25,6 +54,38 @@ export interface Activity {
   rating?: number;
   reviews_count?: number;
   reviewsCount?: number;
+  capacity?: number;
+  endsAt?: string;
+  isFull?: boolean;
+  socialProof?: {
+    totalBookings?: number;
+    bookingsLast24h?: number;
+    seatsLeft?: number | null;
+    messageAr?: string;
+    messageEn?: string;
+  };
+  socialProofCard?: {
+    show?: boolean;
+    offerPeriod?: string | null;
+    viewsCount?: number;
+    rating?: number;
+    reviewsCount?: number;
+    monthlyBookings?: number;
+    seatsLeft?: number | null;
+    wishlistEnabled?: boolean;
+    urgency?: { show?: boolean; message?: string } | null;
+    highlight?: {
+      label: string;
+      hint?: string | null;
+      variant?: string;
+    } | null;
+  };
+  cardHighlight?: {
+    label: string;
+    hint?: string | null;
+    variant?: string;
+  } | null;
+  showWishlist?: boolean;
   provider_id?: number;
   provider?: { id: number; name: string };
   created_at?: string;
@@ -47,6 +108,12 @@ export interface InquiryPayload {
   message?: string;
   activity_id?: number;
   booking_date?: string;
+  booking_time?: string;
+  is_gift?: boolean;
+  gift_recipient_name?: string;
+  gift_recipient_phone?: string;
+  gift_recipient_email?: string;
+  gift_message?: string;
   adults?: number;
   children?: number;
   total_amount?: string;

@@ -10,6 +10,8 @@ interface BookingDatePickerProps {
   readonly selected: Date;
   readonly onSelect: (date: Date) => void;
   readonly daysAhead?: number;
+  /** When set, only these ISO dates (YYYY-MM-DD) are selectable. */
+  readonly bookableIsoSet?: ReadonlySet<string>;
 }
 
 function startOfMonth(d: Date): Date {
@@ -21,11 +23,14 @@ export function BookingDatePicker({
   selected,
   onSelect,
   daysAhead = 60,
+  bookableIsoSet,
 }: BookingDatePickerProps): React.ReactElement {
   const bookable = useMemo(() => {
-    const set = new Set(upcomingBookableDays(daysAhead).map((d) => toIsoDate(d)));
-    return set;
-  }, [daysAhead]);
+    if (bookableIsoSet && bookableIsoSet.size > 0) {
+      return bookableIsoSet;
+    }
+    return new Set(upcomingBookableDays(daysAhead).map((d) => toIsoDate(d)));
+  }, [daysAhead, bookableIsoSet]);
 
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(selected));
   const ar = locale === "ar";
@@ -56,7 +61,11 @@ export function BookingDatePicker({
     ? ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const quickDates = upcomingBookableDays(14);
+  const quickDates = useMemo(() => {
+    const days = upcomingBookableDays(14);
+    if (!bookable || bookable.size === 0) return days;
+    return days.filter((d) => bookable.has(toIsoDate(d)));
+  }, [bookable]);
 
   return (
     <div className="space-y-4">

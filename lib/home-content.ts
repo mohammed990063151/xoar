@@ -56,6 +56,11 @@ export interface HomePartner {
   website?: string;
 }
 
+export interface EntertainmentActivitiesSectionCopy {
+  title: string;
+  subtitle: string;
+}
+
 export interface HomeContent {
   hero: HomeHero;
   heroGallery: HeroGalleryCopy;
@@ -64,6 +69,8 @@ export interface HomeContent {
   works: HomeWork[];
   ownedActivitiesSection: OwnedActivitiesSectionCopy;
   ownedActivities: ActivityCardData[];
+  entertainmentActivitiesSection: EntertainmentActivitiesSectionCopy;
+  entertainmentActivities: ActivityCardData[];
   partnersSection: PartnersSectionCopy;
   partners: HomePartner[];
   homeContact: HomeContactCopy;
@@ -77,6 +84,8 @@ type HomeApiPayload = {
   achievements?: Partial<Dictionary["achievements"]>;
   works?: HomeWork[];
   ownedActivities?: ActivityCardData[];
+  entertainmentActivitiesSection?: Partial<EntertainmentActivitiesSectionCopy>;
+  entertainmentActivities?: ActivityCardData[];
   partnersSection?: Partial<PartnersSectionCopy>;
   partners?: HomePartner[];
   homeContact?: Partial<HomeContactCopy>;
@@ -139,6 +148,23 @@ function ownedActivitiesSectionCopy(
   };
 }
 
+function entertainmentActivitiesSectionCopy(
+  api: HomeApiPayload,
+  locale: Locale,
+): EntertainmentActivitiesSectionCopy {
+  const ar = locale === "ar";
+  return {
+    title:
+      nonEmpty(api.entertainmentActivitiesSection?.title) ??
+      (ar ? "الأنشطة الترفيهية" : "Entertainment activities"),
+    subtitle:
+      nonEmpty(api.entertainmentActivitiesSection?.subtitle) ??
+      (ar
+        ? "اكتشف تجارب حصرية واحجز مكانك خلال ثوانٍ"
+        : "Discover exclusive experiences and book in seconds"),
+  };
+}
+
 function partnersSectionCopy(api: HomeApiPayload, dict: Dictionary): PartnersSectionCopy {
   const fallback = dict.partnersSection as PartnersSectionCopy;
 
@@ -170,7 +196,7 @@ function mapPartners(raw?: HomePartner[]): HomePartner[] {
   }));
 }
 
-function mapOwnedActivities(raw?: ActivityCardData[]): ActivityCardData[] {
+function mapActivityCards(raw?: ActivityCardData[]): ActivityCardData[] {
   if (!raw?.length) return [];
 
   return raw.map((item) => ({
@@ -182,6 +208,11 @@ function mapOwnedActivities(raw?: ActivityCardData[]): ActivityCardData[] {
     location: item.location,
     eventDate: item.eventDate,
     price: item.price,
+    shortLabel: item.shortLabel,
+    badge: item.badge,
+    badgeLabel: item.badgeLabel,
+    rating: item.rating,
+    reviewsCount: item.reviewsCount,
   }));
 }
 
@@ -210,7 +241,13 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
     worksSection: worksSectionCopy(api, dict),
     works: mapWorks(api.works),
     ownedActivitiesSection: ownedActivitiesSectionCopy(api, dict),
-    ownedActivities: mapOwnedActivities(api.ownedActivities),
+    ownedActivities: mapActivityCards(api.ownedActivities),
+    entertainmentActivitiesSection: entertainmentActivitiesSectionCopy(api, locale),
+    entertainmentActivities: mapActivityCards(
+      api.entertainmentActivities?.length
+        ? api.entertainmentActivities
+        : api.ownedActivities,
+    ),
     partnersSection: partnersSectionCopy(api, dict),
     partners: mapPartners(api.partners),
     homeContact: homeContactCopy(api, dict),
@@ -256,6 +293,8 @@ export async function getHomeContent(locale: Locale): Promise<HomeContent> {
     works: [],
     ownedActivitiesSection: dict.ownedActivitiesSection as OwnedActivitiesSectionCopy,
     ownedActivities: [],
+    entertainmentActivitiesSection: entertainmentActivitiesSectionCopy({}, locale),
+    entertainmentActivities: [],
     partnersSection: dict.partnersSection as PartnersSectionCopy,
     partners: [],
     homeContact: dict.homeContact as HomeContactCopy,

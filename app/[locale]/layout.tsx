@@ -72,7 +72,7 @@ export default async function LocaleLayout({
             className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen flex-col`}
           >
             <Header locale={locale} nav={dict.nav} />
-            <main className="flex-1 min-w-0 overflow-x-clip pb-2 sm:pb-0">{children}</main>
+            <main className="flex-1 min-w-0 overflow-x-clip pb-[5.5rem] sm:pb-[4.5rem]">{children}</main>
             <Footer
               locale={locale}
               footer={dict.footer}

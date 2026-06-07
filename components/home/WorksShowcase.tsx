@@ -4,9 +4,8 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { SlideInEdge } from "@/components/motion/SlideInEdge";
-import { ActivityCard, type ActivityCardData } from "@/components/ui/ActivityCard";
 import { EventCard } from "@/components/ui/EventCard";
-import type { HomeWork, OwnedActivitiesSectionCopy, WorksSectionCopy } from "@/lib/home-content";
+import type { HomeWork, WorksSectionCopy } from "@/lib/home-content";
 import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import { localizedPath } from "@/lib/i18n";
@@ -16,12 +15,8 @@ interface WorksShowcaseProps {
   readonly locale: Locale;
   readonly section: WorksSectionCopy;
   readonly works: readonly HomeWork[];
-  readonly ownedActivitiesSection: OwnedActivitiesSectionCopy;
-  readonly ownedActivities: readonly ActivityCardData[];
   readonly viewDetailsLabel: string;
   readonly viewAllWorksLabel: string;
-  readonly bookCta: string;
-  readonly viewAllActivitiesLabel: string;
 }
 
 const PLACEHOLDER =
@@ -31,16 +26,11 @@ export function WorksShowcase({
   locale,
   section,
   works,
-  ownedActivitiesSection,
-  ownedActivities,
   viewDetailsLabel,
   viewAllWorksLabel,
-  bookCta,
-  viewAllActivitiesLabel,
 }: WorksShowcaseProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
   const eventsPath = localizedPath(locale, "/events");
-  const activitiesPath = localizedPath(locale, "/activities");
   const cardVariants = {
     hidden: { opacity: 0, y: 28 },
     show: (i: number) => ({
@@ -108,55 +98,6 @@ export function WorksShowcase({
           </div>
         )}
 
-        {(ownedActivities.length > 0 || ownedActivitiesSection.title) && (
-          <div className="mt-24 border-t border-white/10 pt-16">
-            <ScrollReveal>
-              <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-start">
-                <div className="max-w-2xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400/90">
-                    {locale === "ar" ? "أنشطة زورا" : "Xora activities"}
-                  </p>
-                  <h3 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                    {ownedActivitiesSection.title}
-                  </h3>
-                  <p className="mt-3 text-base leading-relaxed text-slate-400">
-                    {ownedActivitiesSection.subtitle}
-                  </p>
-                </div>
-                <Link
-                  href={activitiesPath}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-slate-200 transition hover:border-violet-500/40 hover:bg-violet-500/10 hover:text-white"
-                >
-                  {viewAllActivitiesLabel}
-                  <span className="text-lg rtl:rotate-180" aria-hidden>
-                    →
-                  </span>
-                </Link>
-              </div>
-            </ScrollReveal>
-
-            {ownedActivities.length === 0 ? (
-              <p className="mt-12 text-center text-slate-500">
-                {locale === "ar" ? "لا توجد أنشطة منشورة حالياً." : "No activities published yet."}
-              </p>
-            ) : (
-              <div className={gridCards3}>
-                {ownedActivities.map((activity) => (
-                  <ScrollReveal key={activity.slug}>
-                    <ActivityCard
-                      locale={locale}
-                      activity={activity}
-                      bookCta={bookCta}
-                      bookHref={`/activities/${activity.slug}#book`}
-                      imageAspect="4 / 3"
-                      className="h-full shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
-                    />
-                  </ScrollReveal>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </section>
   );

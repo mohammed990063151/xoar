@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 import { siteContainer } from "@/lib/layout";
 import { useHeaderPinned } from "@/hooks/useHeaderPinned";
 import type { Locale } from "@/lib/i18n";
-import { localizedPath } from "@/lib/i18n";
+import { localizedPath, resolveHref } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
 
 interface HeaderProps {
@@ -23,6 +23,7 @@ const navKeys = [
   { href: "/services", key: "services" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/account", key: "account" as const },
   { href: "/contact", key: "contact" as const },
 ] satisfies ReadonlyArray<{ href: string; key: keyof Dictionary["nav"] }>;
 
@@ -69,6 +70,9 @@ export function Header({
     `/${switchLocale}`;
 
   const isActive = (href: string): boolean => {
+    if (href === "/account") {
+      return pathname.includes("/account");
+    }
     const full = localizedPath(locale, href);
     if (href === "/") return pathname === full;
     return pathname.startsWith(full);
@@ -111,7 +115,7 @@ export function Header({
           {navKeys.map(({ href, key }) => (
             <NavTextLink
               key={href}
-              href={localizedPath(locale, href)}
+              href={resolveHref(locale, href)}
               active={isActive(href)}
             >
               {nav[key]}
@@ -179,7 +183,7 @@ export function Header({
               return (
                 <Link
                   key={href}
-                  href={localizedPath(locale, href)}
+                  href={resolveHref(locale, href)}
                   className={cn(
                     "block w-full rounded-xl px-4 py-3.5 text-base font-medium transition",
                     active

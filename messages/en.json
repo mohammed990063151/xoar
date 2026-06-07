@@ -5,7 +5,8 @@
     "about": "About",
     "services": "Services",
     "events": "Our work",
-    "activities": "Recreation",
+    "activities": "Entertainment",
+    "account": "My account",
     "contact": "Contact",
     "cta": "Contact us"
   },
@@ -76,7 +77,7 @@
     "titleHighlight": "experiences",
     "titleEnd": "you remember",
     "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
-    "primaryCta": "Explore services",
+    "primaryCta": "Explore entertainment activities",
     "secondaryCta": "Watch our work",
     "videoUrl": "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4",
     "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80"
@@ -101,6 +102,10 @@
   "activitiesSection": {
     "title": "Most booked activities",
     "subtitle": "Guest favorites — book your experience now."
+  },
+  "entertainmentActivitiesSection": {
+    "title": "Entertainment activities",
+    "subtitle": "Discover exclusive experiences and book in seconds"
   },
   "ownedActivitiesSection": {
     "title": "Activities by Xora",

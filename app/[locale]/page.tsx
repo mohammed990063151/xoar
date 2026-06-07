@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { HomeAmbientMotion } from "@/components/home/HomeAmbientMotion";
 import { HomeContactSection } from "@/components/home/HomeContactSection";
 import { PartnersMarquee } from "@/components/home/PartnersMarquee";
+import { EntertainmentActivitiesSection } from "@/components/home/EntertainmentActivitiesSection";
 import { WorksShowcase } from "@/components/home/WorksShowcase";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
@@ -35,16 +36,18 @@ export default async function HomePage({
         images={home.galleryImages}
         copy={home.heroGallery}
       />
+      <EntertainmentActivitiesSection
+        locale={locale}
+        section={home.entertainmentActivitiesSection}
+        activities={home.entertainmentActivities}
+        bookCta={dict.eventsSection.book}
+      />
       <WorksShowcase
         locale={locale}
         section={home.worksSection}
         works={home.works}
-        ownedActivitiesSection={home.ownedActivitiesSection}
-        ownedActivities={home.ownedActivities}
         viewDetailsLabel={dict.eventsSection.viewDetails}
         viewAllWorksLabel={locale === "ar" ? "عرض كل الأعمال" : "View all works"}
-        bookCta={dict.eventsSection.book}
-        viewAllActivitiesLabel={locale === "ar" ? "عرض كل الأنشطة" : "View all activities"}
       />
       <PartnersMarquee
         locale={locale}

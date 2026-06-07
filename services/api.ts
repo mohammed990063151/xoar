@@ -86,11 +86,18 @@ export const activitiesApi = {
     api<ApiResponse<Activity>>(`/api/activities/${locale}/${slug}`),
 };
 
-export async function serverFetch<T>(path: string): Promise<T | null> {
+export async function serverFetch<T>(
+  path: string,
+  options?: { cache?: RequestCache; revalidate?: number },
+): Promise<T | null> {
   try {
     const res = await fetch(`${API}${path}`, {
       headers: { Accept: "application/json" },
-      next: { revalidate: 60 },
+      cache: options?.cache === "no-store" ? "no-store" : "default",
+      next:
+        options?.cache === "no-store"
+          ? undefined
+          : { revalidate: options?.revalidate ?? 60 },
     });
     if (!res.ok) return null;
     return res.json() as Promise<T>;

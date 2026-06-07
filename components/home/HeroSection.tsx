@@ -154,11 +154,17 @@ export function HeroSection({
           >
             <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
               <Link
-                href={localizedPath(locale, "/services")}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.35)] sm:w-auto sm:px-7 sm:py-3.5"
+                href={localizedPath(locale, "/activities")}
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.35)] transition hover:brightness-110 sm:w-auto sm:px-7 sm:py-3.5"
               >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3-3" strokeLinecap="round" />
+                  </svg>
+                </span>
                 {hero.primaryCta}
-                <span className="text-lg rtl:rotate-180" aria-hidden>
+                <span className="text-lg transition group-hover:translate-x-0.5 rtl:-scale-x-100" aria-hidden>
                   →
                 </span>
               </Link>

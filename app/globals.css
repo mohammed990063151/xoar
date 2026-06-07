@@ -233,13 +233,189 @@ svg {
 }
 
 .safe-fab {
-  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-  inset-inline-end: max(0.75rem, env(safe-area-inset-right, 0px));
-  max-width: calc(100vw - 1.5rem);
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem));
+  inset-inline-end: max(1rem, env(safe-area-inset-right, 0px));
+  max-width: min(calc(100vw - 2rem), 22rem);
+  z-index: 70;
 }
 
 @supports (inset-inline-end: env(safe-area-inset-left)) {
   [dir="rtl"] .safe-fab {
     inset-inline-end: max(1rem, env(safe-area-inset-left, 0px));
   }
+}
+
+/* Activities map (Leaflet) */
+.activity-map-canvas {
+  background: #0f172a;
+  position: relative;
+  isolation: isolate;
+}
+
+.activity-map-canvas .leaflet-container {
+  font-family: inherit;
+  background: #0f172a;
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1;
+}
+
+.activity-map-canvas .leaflet-pane,
+.activity-map-canvas .leaflet-top,
+.activity-map-canvas .leaflet-bottom {
+  z-index: 2;
+}
+
+.activity-map-pin-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.activity-map-pin {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #22d3ee;
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 0.9),
+    0 6px 20px rgba(0, 0, 0, 0.5);
+  background: #0f172a;
+}
+
+.activity-map-pin img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.activity-map-popup-wrap .leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+.activity-map-popup-wrap .leaflet-popup-content {
+  margin: 0;
+  width: 268px !important;
+  line-height: 1.4;
+}
+
+.activity-map-popup-wrap .leaflet-popup-close-button {
+  top: 8px !important;
+  inset-inline-end: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 20px !important;
+  line-height: 26px !important;
+  color: #f8fafc !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  z-index: 5;
+}
+
+.activity-map-popup-wrap .leaflet-popup-close-button:hover {
+  background: rgba(239, 68, 68, 0.35) !important;
+  color: #fff !important;
+}
+
+.activity-map-popup-wrap .leaflet-popup-tip {
+  background: #0f172a;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+.activity-map-popup-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.activity-map-popup-link:hover .activity-map-popup-cta {
+  background: rgba(34, 211, 238, 0.25);
+}
+
+.activity-map-popup-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #020617;
+  overflow: hidden;
+}
+
+.activity-map-popup-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.activity-map-popup-content {
+  padding: 12px 14px 14px;
+}
+
+.activity-map-popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.activity-map-popup-loc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #cbd5e1;
+  margin: 0 0 12px;
+}
+
+.activity-map-popup-pin {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.activity-map-popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activity-map-popup-price-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-map-popup-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #22d3ee;
+  letter-spacing: -0.02em;
+}
+
+.activity-map-popup-per {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.activity-map-popup-cta {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e0f2fe;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  border-radius: 999px;
+  padding: 6px 12px;
+  transition: background 0.15s ease;
 }

@@ -4,8 +4,9 @@ import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
-import { isStorageImage } from "@/lib/image-url";
+import { useUnoptimizedImage } from "@/lib/image-url";
 import type { Locale } from "@/lib/i18n";
+import { isYoutubeUrl, youtubeEmbedUrl } from "@/lib/video-embed";
 
 export interface AccordionImageGalleryProps {
   readonly images: readonly string[];
@@ -19,6 +20,8 @@ export interface AccordionImageGalleryProps {
   readonly showCaption?: boolean;
   readonly autoplay?: boolean;
   readonly className?: string;
+  /** Promo video as the last accordion panel (no separate gallery tab). */
+  readonly videoUrl?: string | null;
 }
 
 const AUTOPLAY_MS = 5000;
@@ -35,6 +38,7 @@ export function AccordionImageGallery({
   showCaption = true,
   autoplay = true,
   className,
+  videoUrl,
 }: AccordionImageGalleryProps): React.ReactElement | null {
   const reduceMotion = useReducedMotion();
   const [internalIndex, setInternalIndex] = useState(0);
@@ -52,7 +56,10 @@ export function AccordionImageGallery({
   );
 
   const focusedIndex = hoveredIndex ?? activeIndex;
-  const count = images.length;
+  const safeVideo =
+    videoUrl && String(videoUrl).trim() !== "" ? String(videoUrl).trim() : null;
+  const count = images.length + (safeVideo ? 1 : 0);
+  const imageCount = images.length;
 
   useEffect(() => {
     if (activeIndex >= count && count > 0) {
@@ -72,12 +79,48 @@ export function AccordionImageGallery({
 
   const labels = {
     image: locale === "ar" ? "صورة" : "Image",
+    video: locale === "ar" ? "فيديو" : "Video",
     of: locale === "ar" ? "من" : "of",
   };
 
   const isCream = variant === "cream";
 
-  if (count === 1) {
+  if (images.length === 0 && safeVideo) {
+    return (
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl",
+          isCream ? "bg-[#fdf5f0] shadow-lg" : "border border-white/10 bg-slate-950",
+          className,
+        )}
+      >
+        <div className="relative aspect-[16/10] w-full min-h-[220px] sm:min-h-[320px]">
+          {isYoutubeUrl(safeVideo) ? (
+            <iframe
+              src={youtubeEmbedUrl(safeVideo)}
+              title={title}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          ) : (
+            <video
+              src={safeVideo}
+              className="h-full w-full object-cover"
+              controls
+              playsInline
+              preload="metadata"
+              title={title}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (count === 1 && images.length === 1) {
     const src = images[0];
     return (
       <div
@@ -95,7 +138,7 @@ export function AccordionImageGallery({
             className="object-cover"
             priority
             sizes="100vw"
-            unoptimized={isStorageImage(src)}
+            unoptimized={useUnoptimizedImage(src)}
           />
           <div
             className={cn(
@@ -141,7 +184,7 @@ export function AccordionImageGallery({
           const isFocused = index === focusedIndex;
           return (
             <motion.button
-              key={`${src}-${index}`}
+              key={`img-${src}-${index}`}
               type="button"
               role="listitem"
               layout={!reduceMotion}
@@ -177,7 +220,7 @@ export function AccordionImageGallery({
                 )}
                 sizes={isFocused ? "(max-width:768px) 70vw, 50vw" : "80px"}
                 priority={index === 0}
-                unoptimized={isStorageImage(src)}
+                unoptimized={useUnoptimizedImage(src)}
               />
               <div
                 className={cn(
@@ -199,6 +242,76 @@ export function AccordionImageGallery({
             </motion.button>
           );
         })}
+        {safeVideo ? (
+          <motion.button
+            key="promo-video"
+            type="button"
+            role="listitem"
+            layout={!reduceMotion}
+            onClick={() => setActive(imageCount)}
+            onMouseEnter={() => setHoveredIndex(imageCount)}
+            onFocus={() => setHoveredIndex(imageCount)}
+            onBlur={() => setHoveredIndex(null)}
+            aria-label={labels.video}
+            aria-current={imageCount === activeIndex ? "true" : undefined}
+            className={cn(
+              "relative shrink-0 overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
+              isCream ? "shadow-md" : "border border-violet-500/30",
+            )}
+            initial={false}
+            animate={{
+              flex: imageCount === focusedIndex ? 4.2 : 0.65,
+              opacity: imageCount === focusedIndex ? 1 : 0.72,
+            }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 220, damping: 28, mass: 0.8 }
+            }
+            style={{ minWidth: imageCount === focusedIndex ? undefined : "3.25rem" }}
+          >
+            {imageCount === focusedIndex ? (
+              <div className="absolute inset-0 bg-black">
+                {isYoutubeUrl(safeVideo) ? (
+                  <iframe
+                    src={youtubeEmbedUrl(safeVideo)}
+                    title={title}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                ) : (
+                  <video
+                    src={safeVideo}
+                    className="h-full w-full object-cover"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    title={title}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-violet-950 to-slate-950">
+                <span className="text-2xl" aria-hidden>
+                  ▶
+                </span>
+                <span className="text-[10px] font-bold text-violet-200">{labels.video}</span>
+              </div>
+            )}
+            <div
+              className={cn(
+                "absolute inset-0 transition-opacity duration-500",
+                imageCount === focusedIndex
+                  ? "opacity-0"
+                  : "bg-black/35 opacity-100",
+              )}
+              aria-hidden
+            />
+          </motion.button>
+        ) : null}
       </div>
 
       {showCaption ? (

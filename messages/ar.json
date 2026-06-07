@@ -6,6 +6,7 @@
     "services": "خدماتنا",
     "events": "أعمالنا",
     "activities": "الأنشطة الترفيهية",
+    "account": "حسابي",
     "contact": "تواصل معنا",
     "cta": "تواصل معنا"
   },
@@ -76,7 +77,7 @@
     "titleHighlight": "تجارب",
     "titleEnd": "لا تُنسى",
     "subtitle": "من الفكرة إلى التنفيذ: مؤتمرات، معارض، حفلات وأنشطة ترفيهية بحرفية تقنية وهوية بصرية قوية.",
-    "primaryCta": "استكشف خدماتنا",
+    "primaryCta": "استكشف الأنشطة الترفيهية",
     "secondaryCta": "مشاهدة أعمالنا",
     "videoUrl": "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4",
     "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80"
@@ -103,8 +104,12 @@
     "subtitle": "الأنشطة التي يفضّلها زوارنا — احجز تجربتك الآن."
   },
   "ownedActivitiesSection": {
-    "title": "أنشطة تابع لنا",
+    "title": "الأنشطة الترفيهية",
     "subtitle": "تجارب نقدّمها مباشرة — احجز مع فريق زورا."
+  },
+  "entertainmentActivitiesSection": {
+    "title": "الأنشطة الترفيهية",
+    "subtitle": "اكتشف تجارب حصرية واحجز مكانك خلال ثوانٍ"
   },
   "partnersSection": {
     "eyebrow": "شركاء النجاح",
