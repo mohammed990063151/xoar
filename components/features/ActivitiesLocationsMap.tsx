@@ -20,14 +20,14 @@ export type ActivityMapPin = {
 };
 
 function toMapPins(activities: Activity[]): ActivityMapPin[] {
-  return activities
-    .map((a) => {
-      const lat = a.latitude ?? null;
-      const lng = a.longitude ?? null;
-      if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
-        return null;
-      }
-      return {
+  return activities.flatMap((a): ActivityMapPin[] => {
+    const lat = a.latitude ?? null;
+    const lng = a.longitude ?? null;
+    if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+      return [];
+    }
+    return [
+      {
         slug: a.slug,
         title: a.title,
         lat,
@@ -35,9 +35,9 @@ function toMapPins(activities: Activity[]): ActivityMapPin[] {
         image: activityImageUrl(a),
         price: a.price,
         location: a.location ?? a.city,
-      };
-    })
-    .filter((p): p is ActivityMapPin => p !== null);
+      },
+    ];
+  });
 }
 
 function pinsFromMapApi(
