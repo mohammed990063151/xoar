@@ -27,24 +27,25 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Copy .next folder to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: ".next"
-          target: "/home/cjfyc2evye0k/public_html/xoraevents.com/xoar/"
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy .next to server
+        run: |
+          DEPLOY_PATH="/home/cjfyc2evye0k/public_html/xoraevents.com/xoar"
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+
+          ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "mkdir -p ${DEPLOY_PATH}/.next"
+
+          rsync -avz --delete -e "ssh $SSH_OPTS" \
+            .next/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${DEPLOY_PATH}/.next/
 
       - name: Restart app
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          request_pty: false
-          script: |
-            mkdir -p /home/cjfyc2evye0k/public_html/xoraevents.com/xoar/tmp
-            touch /home/cjfyc2evye0k/public_html/xoraevents.com/xoar/tmp/restart.txt
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "mkdir -p /home/cjfyc2evye0k/public_html/xoraevents.com/xoar/tmp && touch /home/cjfyc2evye0k/public_html/xoraevents.com/xoar/tmp/restart.txt"
