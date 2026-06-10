@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: ".next"
-          target: "~/public_html/xoraevents.com/xoar/"
+          target: "/home/cjfyc2evye0k/public_html/xoraevents.com/xoar/"
 
       - name: Restart app
         uses: appleboy/ssh-action@v1.0.3
@@ -44,6 +44,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          request_pty: false
           script: |
-            mkdir -p ~/public_html/xoraevents.com/xoar/tmp
-            touch ~/public_html/xoraevents.com/xoar/tmp/restart.txt
+            mkdir -p /home/cjfyc2evye0k/public_html/xoraevents.com/xoar/tmp
+            touch /home/cjfyc2evye0k/public_html/xoraevents.com/xoar/tmp/restart.txt
