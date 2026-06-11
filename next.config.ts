@@ -4,6 +4,8 @@ const apiProxyTarget =
   process.env.API_PROXY_TARGET?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
+  // Safety net if any route still attempts static generation during CI build.
+  staticPageGenerationTimeout: 120,
   async rewrites() {
     return [
       {

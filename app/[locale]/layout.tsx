@@ -23,9 +23,9 @@ const outfit = Outfit({
   weight: ["400", "500", "600", "700"],
 });
 
-export async function generateStaticParams(): Promise<{ locale: Locale }[]> {
-  return [{ locale: "ar" }, { locale: "en" }];
-}
+// CMS + API data — render at request time (avoids 60s+ static build against remote Laravel).
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,

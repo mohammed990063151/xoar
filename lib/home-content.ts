@@ -3,6 +3,7 @@ import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { API_PROXY_TARGET } from "@/lib/api-base";
+import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
 import type { ActivityCardData } from "@/components/ui/ActivityCard";
 import { normalizeActivityFromApi, toActivityCardData } from "@/lib/activity";
@@ -247,12 +248,19 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
 }
 
 async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
+  if (skipApiDuringBuild()) {
+    return null;
+  }
+
   const base = API_PROXY_TARGET;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
   try {
     const res = await fetch(`${base}/api/site/${locale}/home`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
       next: { revalidate: 0 },
+      signal: controller.signal,
     });
     if (!res.ok) {
       console.error(`[home] API ${res.status} for ${locale}`);
@@ -263,6 +271,8 @@ async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
   } catch (error) {
     console.error("[home] API fetch failed:", error);
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

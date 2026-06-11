@@ -30,7 +30,9 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          # Required GitHub secrets — rewrites + client API base are fixed at build time.
+          # GitHub sets CI=true — app skips remote API during build (see lib/skip-api-during-build.ts).
+          SKIP_API_DURING_BUILD: "1"
+          # Baked into next.config rewrites; runtime on cPanel uses server env too.
           API_PROXY_TARGET: ${{ secrets.API_PROXY_TARGET }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_ADMIN_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_URL }}

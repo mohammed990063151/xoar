@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/api-base";
+import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import type {
   Activity,
   ApiResponse,
@@ -90,10 +91,18 @@ export async function serverFetch<T>(
   path: string,
   options?: { cache?: RequestCache; revalidate?: number },
 ): Promise<T | null> {
+  if (skipApiDuringBuild()) {
+    return null;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+
   try {
     const res = await fetch(`${API}${path}`, {
       headers: { Accept: "application/json" },
       cache: options?.cache === "no-store" ? "no-store" : "default",
+      signal: controller.signal,
       next:
         options?.cache === "no-store"
           ? undefined
@@ -103,5 +112,7 @@ export async function serverFetch<T>(
     return res.json() as Promise<T>;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }

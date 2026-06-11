@@ -1,4 +1,6 @@
 import { EventsGallery } from "@/components/events/EventsGallery";
+
+export const dynamic = "force-dynamic";
 import { getSiteContent } from "@/services/contentService";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";

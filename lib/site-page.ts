@@ -3,6 +3,7 @@ import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { API_PROXY_TARGET } from "@/lib/api-base";
+import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
 
 export interface AboutValue {
@@ -268,11 +269,18 @@ interface PageApiBundle {
 }
 
 async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBundle | null> {
+  if (skipApiDuringBuild()) {
+    return null;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
   try {
     const res = await fetch(`${API_PROXY_TARGET}/api/site/${locale}/pages/${page}`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
       next: { revalidate: 0 },
+      signal: controller.signal,
     });
     if (!res.ok) return null;
     const json = (await res.json()) as {
@@ -286,6 +294,8 @@ async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBun
     };
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
