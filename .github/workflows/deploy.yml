@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+env:
+  DEPLOY_PATH: /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
 
 jobs:
   build-and-deploy:
@@ -16,8 +20,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -26,6 +30,17 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          # GitHub sets CI=true — app skips remote API during build (see lib/skip-api-during-build.ts).
+          SKIP_API_DURING_BUILD: "1"
+          # Baked into next.config rewrites; runtime on cPanel uses server env too.
+          API_PROXY_TARGET: ${{ secrets.API_PROXY_TARGET }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_ADMIN_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_URL }}
+          NEXT_PUBLIC_PORTAL_URL: ${{ secrets.NEXT_PUBLIC_PORTAL_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+
+      - name: Prune dev dependencies for production
+        run: npm prune --omit=dev
 
       - name: Setup SSH
         run: |
@@ -34,121 +49,36 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy to server
+      - name: Deploy build artifacts to server
         run: |
-          DEPLOY_PATH="/home/cjfyc2evye0k/public_html/xoraevents.com/xoar"
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          # نقل .next
+          ssh $SSH_OPTS "$HOST" "mkdir -p ${DEPLOY_PATH}/.next ${DEPLOY_PATH}/public"
+
           rsync -avz --delete -e "ssh $SSH_OPTS" \
-            .next/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${DEPLOY_PATH}/.next/
+            .next/ "$HOST:${DEPLOY_PATH}/.next/"
 
-          # نقل public
           rsync -avz --delete -e "ssh $SSH_OPTS" \
-            public/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${DEPLOY_PATH}/public/
+            public/ "$HOST:${DEPLOY_PATH}/public/"
 
-          # نقل package.json و next.config
           rsync -avz -e "ssh $SSH_OPTS" \
-            package.json next.config.* \
-            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${DEPLOY_PATH}/
+            package.json package-lock.json next.config.ts \
+            "$HOST:${DEPLOY_PATH}/"
 
-      - name: Install production deps on server
+          # cPanel SSH shell often has no npm in PATH — ship node_modules from CI instead.
+          rsync -avz --delete -e "ssh $SSH_OPTS" \
+            node_modules/ "$HOST:${DEPLOY_PATH}/node_modules/"
+
+      - name: Restart Passenger app
         run: |
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-          DEPLOY_PATH="/home/cjfyc2evye0k/public_html/xoraevents.com/xoar"
-
-          ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-            "cd ${DEPLOY_PATH} && npm ci --omit=dev"
-
-      - name: Restart app
-        run: |
-          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-          DEPLOY_PATH="/home/cjfyc2evye0k/public_html/xoraevents.com/xoar"
-
           ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
             "mkdir -p ${DEPLOY_PATH}/tmp && touch ${DEPLOY_PATH}/tmp/restart.txt"
 
-# name: Build and Deploy to cPanel
-
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
-
-# env:
-#   DEPLOY_PATH: /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
-
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: "20"
-#           cache: "npm"
-
-#       - name: Install dependencies
-#         run: npm ci
-
-#       - name: Build Next.js
-#         run: npm run build
-#         env:
-#           NODE_ENV: production
-#           # GitHub sets CI=true — app skips remote API during build (see lib/skip-api-during-build.ts).
-#           SKIP_API_DURING_BUILD: "1"
-#           # Baked into next.config rewrites; runtime on cPanel uses server env too.
-#           API_PROXY_TARGET: ${{ secrets.API_PROXY_TARGET }}
-#           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-#           NEXT_PUBLIC_ADMIN_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_URL }}
-#           NEXT_PUBLIC_PORTAL_URL: ${{ secrets.NEXT_PUBLIC_PORTAL_URL }}
-#           NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
-
-#       - name: Prune dev dependencies for production
-#         run: npm prune --omit=dev
-
-#       - name: Setup SSH
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
-#           chmod 600 ~/.ssh/id_ed25519
-#           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
-
-#       - name: Deploy build artifacts to server
-#         run: |
-#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
-
-#           ssh $SSH_OPTS "$HOST" "mkdir -p ${DEPLOY_PATH}/.next ${DEPLOY_PATH}/public"
-
-#           rsync -avz --delete -e "ssh $SSH_OPTS" \
-#             .next/ "$HOST:${DEPLOY_PATH}/.next/"
-
-#           rsync -avz --delete -e "ssh $SSH_OPTS" \
-#             public/ "$HOST:${DEPLOY_PATH}/public/"
-
-#           rsync -avz -e "ssh $SSH_OPTS" \
-#             package.json package-lock.json next.config.ts \
-#             "$HOST:${DEPLOY_PATH}/"
-
-#           # cPanel SSH shell often has no npm in PATH — ship node_modules from CI instead.
-#           rsync -avz --delete -e "ssh $SSH_OPTS" \
-#             node_modules/ "$HOST:${DEPLOY_PATH}/node_modules/"
-
-#       - name: Restart Passenger app
-#         run: |
-#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-#           ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-#             "mkdir -p ${DEPLOY_PATH}/tmp && touch ${DEPLOY_PATH}/tmp/restart.txt"
-
-#       - name: Verify deployment
-#         run: |
-#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-#           echo "Remote BUILD_ID:"
-#           ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-#             "cat ${DEPLOY_PATH}/.next/BUILD_ID"
+      - name: Verify deployment
+        run: |
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          echo "Remote BUILD_ID:"
+          ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "cat ${DEPLOY_PATH}/.next/BUILD_ID"
