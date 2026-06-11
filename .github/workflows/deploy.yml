@@ -64,7 +64,7 @@ jobs:
             public/ "$HOST:${DEPLOY_PATH}/public/"
 
           rsync -avz -e "ssh $SSH_OPTS" \
-            package.json package-lock.json next.config.ts \
+            package.json package-lock.json next.config.mjs server.js \
             "$HOST:${DEPLOY_PATH}/"
 
           # cPanel SSH shell often has no npm in PATH — ship node_modules from CI instead.
@@ -83,7 +83,7 @@ jobs:
           echo "Remote BUILD_ID:"
           ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
             "cat ${DEPLOY_PATH}/.next/BUILD_ID"
-          echo "Set cPanel Node runtime env: API_PROXY_TARGET=https://xoraplus.com NEXT_PUBLIC_API_URL=https://xoraplus.com"
+          echo "cPanel: startup file=server.js, Node 20+, env API_PROXY_TARGET=https://xoraplus.com"
 
       - name: Smoke test live API
         run: |
