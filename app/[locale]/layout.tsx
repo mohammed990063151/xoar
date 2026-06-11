@@ -69,7 +69,7 @@ export default async function LocaleLayout({
       <SmoothScrollProvider>
         <BookingModalProvider locale={locale} labels={dict.inquiryForm}>
           <div
-            className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen flex-col`}
+            className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen min-w-0 flex-col overflow-x-clip`}
           >
             <Header locale={locale} nav={dict.nav} />
             <main className="flex-1 min-w-0 overflow-x-clip pb-[5.5rem] sm:pb-[4.5rem]">{children}</main>

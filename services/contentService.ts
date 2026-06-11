@@ -49,6 +49,8 @@ function mergePages(
     services: { ...dictPages.services, ...apiPages.services },
     events: { ...dictPages.events, ...apiPages.events },
     activities: { ...dictPages.activities, ...apiPages.activities },
+    partners: { ...dictPages.partners, ...apiPages.partners },
+    careers: { ...dictPages.careers, ...apiPages.careers },
     contact: { ...dictPages.contact, ...apiPages.contact },
   };
 }

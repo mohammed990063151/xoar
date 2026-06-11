@@ -15,6 +15,19 @@ export interface AboutMissionVision {
   text: string;
 }
 
+export interface AboutTeamMember {
+  name: string;
+  role: string;
+  image: string;
+}
+
+export interface AboutTeamSection {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  members: AboutTeamMember[];
+}
+
 export interface AboutPageContent {
   eyebrow: string;
   title: string;
@@ -25,6 +38,65 @@ export interface AboutPageContent {
   vision: AboutMissionVision;
   values: AboutValue[];
   images: string[];
+  team: AboutTeamSection;
+}
+
+export interface PageStat {
+  value: string;
+  label: string;
+}
+
+export interface PageBenefit {
+  title: string;
+  text: string;
+}
+
+export interface PageClosing {
+  title: string;
+  text: string;
+}
+
+export interface PartnerItem {
+  id: number | string;
+  name: string;
+  logo: string;
+  website: string;
+}
+
+export interface PartnersPageContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  stats: PageStat[];
+  closing: PageClosing;
+  partners: PartnerItem[];
+}
+
+export interface JobPostingItem {
+  id: number | string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: string;
+  employmentTypeLabel: string;
+  summary: string;
+  description: string;
+  requirements: string;
+  applyEmail: string;
+  applyUrl: string;
+}
+
+export interface CareersPageContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  culture: { title: string; text: string };
+  benefits: PageBenefit[];
+  closing: PageClosing;
+  applyCta: string;
+  openRoles: string;
+  noJobs: string;
+  jobs: JobPostingItem[];
 }
 
 type AboutApiContent = Record<string, unknown>;
@@ -111,8 +183,49 @@ function mapImages(raw: unknown): string[] {
     .filter(Boolean);
 }
 
+function normalizeTeamMembers(raw: unknown, fallback: AboutTeamMember[]): AboutTeamMember[] {
+  if (!Array.isArray(raw)) return fallback;
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const obj = item as Record<string, unknown>;
+      const name = nonEmpty(obj.name) ?? "";
+      const role = nonEmpty(obj.role) ?? "";
+      const imageRaw = nonEmpty(obj.image) ?? "";
+      const image = imageRaw ? normalizeStorageImageUrl(imageRaw) : "";
+      if (!name || !image) return null;
+      return { name, role, image };
+    })
+    .filter((item): item is AboutTeamMember => item !== null);
+}
+
+function pickTeam(raw: AboutApiContent | undefined, fallback: AboutTeamSection): AboutTeamSection {
+  const block = raw?.team;
+  if (!block || typeof block !== "object" || Array.isArray(block)) {
+    return fallback;
+  }
+
+  const obj = block as Record<string, unknown>;
+
+  return {
+    eyebrow: nonEmpty(obj.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(obj.title) ?? fallback.title,
+    subtitle: nonEmpty(obj.subtitle) ?? fallback.subtitle,
+    members: normalizeTeamMembers(obj.members, fallback.members),
+  };
+}
+
 function fallbackAbout(dict: Dictionary): AboutPageContent {
-  const about = dict.pages.about as AboutPageContent;
+  const about = dict.pages.about as AboutPageContent & AboutApiContent;
+  const defaultTeam: AboutTeamSection = {
+    eyebrow: "",
+    title: "",
+    subtitle: "",
+    members: [],
+  };
 
   return {
     eyebrow: about.eyebrow ?? "",
@@ -124,6 +237,7 @@ function fallbackAbout(dict: Dictionary): AboutPageContent {
     vision: about.vision,
     values: normalizeValues(about.values, about.values),
     images: [],
+    team: pickTeam(about, about.team ?? defaultTeam),
   };
 }
 
@@ -142,12 +256,18 @@ function mergeAbout(apiContent: AboutApiContent, dict: Dictionary): AboutPageCon
     images: mapImages(apiContent.images).length
       ? mapImages(apiContent.images)
       : fallback.images,
+    team: pickTeam(apiContent, fallback.team),
   };
 }
 
 type PageApiContent = Record<string, unknown>;
 
-async function fetchPageApi(locale: Locale, page: string): Promise<PageApiContent | null> {
+interface PageApiBundle {
+  content: PageApiContent;
+  items: unknown[];
+}
+
+async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBundle | null> {
   try {
     const res = await fetch(`${API_PROXY_TARGET}/api/site/${locale}/pages/${page}`, {
       headers: { Accept: "application/json" },
@@ -155,11 +275,72 @@ async function fetchPageApi(locale: Locale, page: string): Promise<PageApiConten
       next: { revalidate: 0 },
     });
     if (!res.ok) return null;
-    const json = (await res.json()) as { data?: { content?: PageApiContent } };
-    return json.data?.content ?? null;
+    const json = (await res.json()) as {
+      data?: { content?: PageApiContent; items?: unknown[] };
+    };
+    if (!json.data?.content) return null;
+
+    return {
+      content: json.data.content,
+      items: Array.isArray(json.data.items) ? json.data.items : [],
+    };
   } catch {
     return null;
   }
+}
+
+async function fetchPageApi(locale: Locale, page: string): Promise<PageApiContent | null> {
+  const bundle = await fetchPageBundle(locale, page);
+  return bundle?.content ?? null;
+}
+
+function normalizeStatItems(raw: unknown, fallback: PageStat[]): PageStat[] {
+  if (!Array.isArray(raw)) return fallback;
+
+  return raw.map((item, index) => {
+    if (!item || typeof item !== "object") {
+      return fallback[index] ?? { value: "", label: "" };
+    }
+    const obj = item as Record<string, unknown>;
+    return {
+      value: nonEmpty(obj.value) ?? fallback[index]?.value ?? "",
+      label: nonEmpty(obj.label) ?? fallback[index]?.label ?? "",
+    };
+  });
+}
+
+function normalizeBenefitItems(raw: unknown, fallback: PageBenefit[]): PageBenefit[] {
+  if (!Array.isArray(raw)) return fallback;
+
+  return raw.map((item, index) => {
+    if (!item || typeof item !== "object") {
+      return fallback[index] ?? { title: "", text: "" };
+    }
+    const obj = item as Record<string, unknown>;
+    return {
+      title: nonEmpty(obj.title) ?? fallback[index]?.title ?? "",
+      text: nonEmpty(obj.text) ?? fallback[index]?.text ?? "",
+    };
+  });
+}
+
+function pickClosingBlock(
+  raw: PageApiContent,
+  fallback: { title: string; text: string },
+): { title: string; text: string } {
+  const closing = raw.closing;
+  if (closing && typeof closing === "object" && !Array.isArray(closing)) {
+    const obj = closing as Record<string, unknown>;
+    return {
+      title: nonEmpty(obj.title) ?? fallback.title,
+      text: nonEmpty(obj.text) ?? fallback.text,
+    };
+  }
+
+  return {
+    title: nonEmpty(raw["closing.title"]) ?? fallback.title,
+    text: nonEmpty(raw["closing.text"]) ?? fallback.text,
+  };
 }
 
 export async function getAboutPageContent(locale: Locale): Promise<AboutPageContent> {
@@ -309,4 +490,150 @@ export async function getActivitiesListingContent(
   if (!api) return fallback;
 
   return mergeActivitiesListing(api, dict);
+}
+
+function normalizePartnerItems(raw: unknown): PartnerItem[] {
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const obj = item as Record<string, unknown>;
+      const name = nonEmpty(obj.name) ?? "";
+      const logoRaw = nonEmpty(obj.logo) ?? "";
+      if (!name) return null;
+
+      return {
+        id: (obj.id as number | string) ?? name,
+        name,
+        logo: logoRaw ? normalizeStorageImageUrl(logoRaw) : "",
+        website: nonEmpty(obj.website) ?? "",
+      };
+    })
+    .filter((item): item is PartnerItem => item !== null);
+}
+
+function fallbackPartners(dict: Dictionary): PartnersPageContent {
+  const page = dict.pages.partners as PartnersPageContent;
+
+  return {
+    eyebrow: page.eyebrow ?? "",
+    title: page.title,
+    intro: page.intro,
+    stats: normalizeStatItems(page.stats, page.stats ?? []),
+    closing: page.closing ?? { title: "", text: "" },
+    partners: [],
+  };
+}
+
+function mergePartners(
+  apiContent: PageApiContent,
+  items: unknown[],
+  dict: Dictionary,
+): PartnersPageContent {
+  const fallback = fallbackPartners(dict);
+
+  return {
+    eyebrow: nonEmpty(apiContent.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(apiContent.title) ?? fallback.title,
+    intro: nonEmpty(apiContent.intro) ?? fallback.intro,
+    stats: normalizeStatItems(apiContent.stats, fallback.stats),
+    closing: pickClosingBlock(apiContent, fallback.closing),
+    partners: normalizePartnerItems(items),
+  };
+}
+
+export async function getPartnersPageContent(locale: Locale): Promise<PartnersPageContent> {
+  noStore();
+  const dict = getDictionary(locale);
+  const fallback = fallbackPartners(dict);
+  const bundle = await fetchPageBundle(locale, "partners");
+  if (!bundle) return fallback;
+
+  return mergePartners(bundle.content, bundle.items, dict);
+}
+
+function normalizeJobItems(raw: unknown): JobPostingItem[] {
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const obj = item as Record<string, unknown>;
+      const title = nonEmpty(obj.title) ?? "";
+      if (!title) return null;
+
+      return {
+        id: (obj.id as number | string) ?? title,
+        title,
+        department: nonEmpty(obj.department) ?? "",
+        location: nonEmpty(obj.location) ?? "",
+        employmentType: nonEmpty(obj.employmentType) ?? "",
+        employmentTypeLabel: nonEmpty(obj.employmentTypeLabel) ?? "",
+        summary: nonEmpty(obj.summary) ?? "",
+        description: nonEmpty(obj.description) ?? "",
+        requirements: nonEmpty(obj.requirements) ?? "",
+        applyEmail: nonEmpty(obj.applyEmail) ?? "",
+        applyUrl: nonEmpty(obj.applyUrl) ?? "",
+      };
+    })
+    .filter((item): item is JobPostingItem => item !== null);
+}
+
+function fallbackCareers(dict: Dictionary): CareersPageContent {
+  const page = dict.pages.careers as CareersPageContent;
+
+  return {
+    eyebrow: page.eyebrow ?? "",
+    title: page.title,
+    intro: page.intro,
+    culture: page.culture ?? { title: "", text: "" },
+    benefits: normalizeBenefitItems(page.benefits, page.benefits ?? []),
+    closing: page.closing ?? { title: "", text: "" },
+    applyCta: page.applyCta ?? "",
+    openRoles: page.openRoles ?? "",
+    noJobs: page.noJobs ?? "",
+    jobs: [],
+  };
+}
+
+function mergeCareers(
+  apiContent: PageApiContent,
+  items: unknown[],
+  dict: Dictionary,
+): CareersPageContent {
+  const fallback = fallbackCareers(dict);
+  const culture = apiContent.culture;
+
+  let cultureBlock = fallback.culture;
+  if (culture && typeof culture === "object" && !Array.isArray(culture)) {
+    const obj = culture as Record<string, unknown>;
+    cultureBlock = {
+      title: nonEmpty(obj.title) ?? fallback.culture.title,
+      text: nonEmpty(obj.text) ?? fallback.culture.text,
+    };
+  }
+
+  return {
+    eyebrow: nonEmpty(apiContent.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(apiContent.title) ?? fallback.title,
+    intro: nonEmpty(apiContent.intro) ?? fallback.intro,
+    culture: cultureBlock,
+    benefits: normalizeBenefitItems(apiContent.benefits, fallback.benefits),
+    closing: pickClosingBlock(apiContent, fallback.closing),
+    applyCta: fallback.applyCta,
+    openRoles: fallback.openRoles,
+    noJobs: fallback.noJobs,
+    jobs: normalizeJobItems(items),
+  };
+}
+
+export async function getCareersPageContent(locale: Locale): Promise<CareersPageContent> {
+  noStore();
+  const dict = getDictionary(locale);
+  const fallback = fallbackCareers(dict);
+  const bundle = await fetchPageBundle(locale, "careers");
+  if (!bundle) return fallback;
+
+  return mergeCareers(bundle.content, bundle.items, dict);
 }

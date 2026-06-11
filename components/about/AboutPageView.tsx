@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AboutTeamSection } from "@/components/about/AboutTeamSection";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import type { AboutPageContent } from "@/lib/site-page";
 import type { Locale } from "@/lib/i18n";
@@ -189,6 +190,8 @@ export function AboutPageView({
           </ul>
         </div>
       </section>
+
+      <AboutTeamSection locale={locale} team={content.team} />
 
       <section className={`${siteContainerNarrow} pt-12 text-center sm:pt-14 lg:pt-16`}>
         <ScrollReveal>

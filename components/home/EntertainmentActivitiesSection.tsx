@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { ActivityCardGrid } from "@/components/activities/ActivityCardGrid";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
-import { ActivityCard, type ActivityCardData } from "@/components/ui/ActivityCard";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
-import { gridCards3, homeSection, homeSectionTitle, siteContainer } from "@/lib/layout";
+import { homeSection, homeSectionTitle, siteContainer } from "@/lib/layout";
+import type { Activity } from "@/types/api";
 
 export interface EntertainmentSectionCopy {
   readonly title: string;
@@ -15,15 +16,13 @@ export interface EntertainmentSectionCopy {
 interface EntertainmentActivitiesSectionProps {
   readonly locale: Locale;
   readonly section: EntertainmentSectionCopy;
-  readonly activities: readonly ActivityCardData[];
-  readonly bookCta: string;
+  readonly activities: readonly Activity[];
 }
 
 export function EntertainmentActivitiesSection({
   locale,
   section,
   activities,
-  bookCta,
 }: EntertainmentActivitiesSectionProps): React.ReactElement {
   const activitiesPath = localizedPath(locale, "/activities");
   const ar = locale === "ar";
@@ -67,18 +66,7 @@ export function EntertainmentActivitiesSection({
             {ar ? "لا توجد أنشطة منشورة حالياً." : "No activities published yet."}
           </p>
         ) : (
-          <div className={`${gridCards3} mt-10 sm:mt-14`}>
-            {activities.map((activity) => (
-              <ScrollReveal key={activity.slug}>
-                <ActivityCard
-                  locale={locale}
-                  activity={activity}
-                  bookCta={bookCta}
-                  bookHref={`/activities/${activity.slug}#book`}
-                />
-              </ScrollReveal>
-            ))}
-          </div>
+          <ActivityCardGrid locale={locale} activities={activities} className="mt-10 sm:mt-14" />
         )}
       </div>
     </section>

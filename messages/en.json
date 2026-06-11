@@ -6,7 +6,9 @@
     "services": "Services",
     "events": "Our work",
     "activities": "Entertainment",
-    "account": "My account",
+    "partners": "Partners",
+    "careers": "Careers",
+    "account": "Sign in",
     "contact": "Contact",
     "cta": "Contact us"
   },
@@ -265,7 +267,34 @@
           "title": "Obsession with detail",
           "description": "Every touchpoint — lighting to guest reception — is designed with care."
         }
-      ]
+      ],
+      "team": {
+        "eyebrow": "Our team",
+        "title": "The minds behind Xora",
+        "subtitle": "A specialized male team turning every idea into a vivid live experience.",
+        "members": [
+          {
+            "name": "Mohammed Al-Harbi",
+            "role": "Chief Executive",
+            "image": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=1400&q=95&fit=crop&crop=faces"
+          },
+          {
+            "name": "Khalid Al-Dosari",
+            "role": "Operations Director",
+            "image": "https://images.unsplash.com/photo-1519085368733-050f042f9652?w=1400&q=95&fit=crop&crop=faces"
+          },
+          {
+            "name": "Faisal Al-Ghamdi",
+            "role": "Head of Production",
+            "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=95&fit=crop&crop=faces"
+          },
+          {
+            "name": "Abdullah Al-Qahtani",
+            "role": "Technology & Innovation",
+            "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=1400&q=95&fit=crop&crop=faces"
+          }
+        ]
+      }
     },
     "services": {
       "eyebrow": "What we offer",
@@ -306,6 +335,41 @@
       "title": "Recreation activities",
       "intro": "Browse available activities, compare details, and book the experience that fits your event or group.",
       "detailCta": "View details"
+    },
+    "partners": {
+      "eyebrow": "Trusted by",
+      "title": "Our partners",
+      "intro": "We are proud to work with leading organizations that trust Xora to deliver exceptional event experiences.",
+      "stats": [
+        { "value": "50+", "label": "Strategic partners" },
+        { "value": "12", "label": "Industries" },
+        { "value": "8", "label": "Years of trust" }
+      ],
+      "closing": {
+        "title": "Want to partner with us?",
+        "text": "Contact our partnerships team to explore collaboration in events, exhibitions, and entertainment."
+      }
+    },
+    "careers": {
+      "eyebrow": "Join the team",
+      "title": "Careers",
+      "intro": "We are looking for passionate talent in events, creativity, and precise operations. Explore open roles and join Xora.",
+      "culture": {
+        "title": "Why Xora?",
+        "text": "A dynamic workplace, diverse projects, and real growth opportunities in Saudi Arabia's events industry."
+      },
+      "benefits": [
+        { "title": "Major projects", "text": "Work on high-impact events and exhibitions." },
+        { "title": "Expert team", "text": "Learn from production, tech, and operations specialists." },
+        { "title": "Continuous growth", "text": "Clear development paths and a culture that celebrates achievement." }
+      ],
+      "closing": {
+        "title": "Don't see the right role?",
+        "text": "Send your CV to careers@xora.sa and we will reach out when a fit opens up."
+      },
+      "applyCta": "Apply now",
+      "openRoles": "Open positions",
+      "noJobs": "No open roles right now — follow us or send your CV."
     },
     "contact": {
       "title": "Contact",

@@ -118,6 +118,26 @@ export function ActivityCard({
   const highlightVariantResolved = (activity.cardHighlight?.variant ??
     highlightVariant) as RecommendationHighlightVariant;
   const wishlistVisible = showWishlist && (activity.showWishlist ?? true);
+  const proofOn = showSocialProof && activity.socialProofCard?.show;
+  const cardRating =
+    proofOn && typeof activity.socialProofCard?.rating === "number"
+      ? activity.socialProofCard.rating
+      : null;
+  const monthlyBookings = proofOn ? (activity.socialProofCard?.monthlyBookings ?? 0) : 0;
+  const offerPeriod = proofOn ? activity.socialProofCard?.offerPeriod?.trim() : "";
+  const periodHint =
+    highlightHintResolved?.trim() && highlightHintResolved.trim() !== offerPeriod
+      ? highlightHintResolved.trim()
+      : "";
+  const periodLabel = offerPeriod || periodHint;
+  const hasPriceStats = cardRating !== null || monthlyBookings > 0 || Boolean(periodLabel);
+  const hasPrice = Boolean(activity.price?.trim());
+  const urgencyMessage =
+    proofOn && activity.socialProofCard?.urgency?.show
+      ? activity.socialProofCard.urgency.message?.trim()
+      : "";
+  const statChipClass =
+    "inline-flex items-center gap-1 rounded-full border border-white/15 bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur-md";
 
   const bookButtonClass =
     "flex w-full items-center justify-center rounded-xl bg-gradient-to-l from-violet-600 via-blue-500 to-cyan-400 py-2.5 text-sm font-semibold text-white shadow-[0_6px_20px_rgba(99,102,241,0.3)] transition hover:brightness-110";
@@ -172,15 +192,39 @@ export function ActivityCard({
             socialProof={activity.socialProofCard}
             showSocialProof={showSocialProof}
             highlightLabel={highlightLabelResolved}
-            highlightHint={highlightHintResolved}
             highlightVariant={highlightVariantResolved}
-            hasPrice={Boolean(activity.price?.trim())}
           />
 
-          {activity.price?.trim() ? (
+          {hasPrice || hasPriceStats ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-gradient-to-t from-[#05050c] to-[#05050c]/85 px-3 py-2 backdrop-blur-sm">
-              <p className="text-base font-bold tracking-tight text-white">{priceDisplay}</p>
-              <p className="text-[9px] text-slate-500">{ar ? "للشخص" : "per person"}</p>
+              <div className="flex items-end gap-2">
+                {hasPrice ? (
+                  <div className="shrink-0">
+                    <p className="text-base font-bold tracking-tight text-white">{priceDisplay}</p>
+                    <p className="text-[9px] text-slate-500">{ar ? "للشخص" : "per person"}</p>
+                  </div>
+                ) : null}
+                {hasPriceStats ? (
+                  <div className="ms-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
+                    {cardRating !== null ? (
+                      <span className={cn(statChipClass, "text-amber-200")}>
+                        <span aria-hidden>★</span>
+                        {cardRating.toFixed(1)}/5
+                      </span>
+                    ) : null}
+                    {monthlyBookings > 0 ? (
+                      <span className={cn(statChipClass, "font-medium text-slate-200")}>
+                        {ar ? `حجز هذا الشهر: ${monthlyBookings}` : `Booked: ${monthlyBookings}`}
+                      </span>
+                    ) : null}
+                    {periodLabel ? (
+                      <span className={cn(statChipClass, "border-amber-400/30 text-amber-100")}>
+                        {periodLabel}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
             </div>
           ) : null}
         </div>
@@ -212,6 +256,15 @@ export function ActivityCard({
               </span>
             ) : null}
           </div>
+
+          {urgencyMessage ? (
+            <p className="text-[10px] font-bold text-red-300">
+              <span className="inline-flex items-center gap-1 rounded-full border border-red-400/35 bg-red-950/50 px-2 py-0.5">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" aria-hidden />
+                {urgencyMessage}
+              </span>
+            </p>
+          ) : null}
 
           {showCountdown && activity.endsAt ? (
             <BookingCountdown

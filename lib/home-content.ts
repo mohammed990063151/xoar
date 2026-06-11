@@ -5,6 +5,8 @@ import type { Locale } from "@/lib/i18n";
 import { API_PROXY_TARGET } from "@/lib/api-base";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
 import type { ActivityCardData } from "@/components/ui/ActivityCard";
+import { normalizeActivityFromApi, toActivityCardData } from "@/lib/activity";
+import type { Activity } from "@/types/api";
 
 export type HomeHero = Dictionary["hero"] & {
   videoUrl?: string;
@@ -83,9 +85,9 @@ type HomeApiPayload = {
   ownedActivitiesSection?: Partial<OwnedActivitiesSectionCopy>;
   achievements?: Partial<Dictionary["achievements"]>;
   works?: HomeWork[];
-  ownedActivities?: ActivityCardData[];
+  ownedActivities?: Activity[];
   entertainmentActivitiesSection?: Partial<EntertainmentActivitiesSectionCopy>;
-  entertainmentActivities?: ActivityCardData[];
+  entertainmentActivities?: Activity[];
   partnersSection?: Partial<PartnersSectionCopy>;
   partners?: HomePartner[];
   homeContact?: Partial<HomeContactCopy>;
@@ -196,24 +198,10 @@ function mapPartners(raw?: HomePartner[]): HomePartner[] {
   }));
 }
 
-function mapActivityCards(raw?: ActivityCardData[]): ActivityCardData[] {
+function mapActivityCards(raw?: Activity[]): ActivityCardData[] {
   if (!raw?.length) return [];
 
-  return raw.map((item) => ({
-    slug: item.slug,
-    title: item.title,
-    description: item.description,
-    image: item.image ? normalizeStorageImageUrl(item.image) : "",
-    organizer: item.organizer,
-    location: item.location,
-    eventDate: item.eventDate,
-    price: item.price,
-    shortLabel: item.shortLabel,
-    badge: item.badge,
-    badgeLabel: item.badgeLabel,
-    rating: item.rating,
-    reviewsCount: item.reviewsCount,
-  }));
+  return raw.map((item) => toActivityCardData(normalizeActivityFromApi(item)));
 }
 
 function mapWorks(raw?: HomeWork[]): HomeWork[] {

@@ -9,8 +9,10 @@ import { WorksShowcase } from "@/components/home/WorksShowcase";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
 import { getSiteContent } from "@/services/contentService";
+import { serverFetch } from "@/services/api";
 import { isLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
 
 /** Always read CMS from Laravel — never cache a static snapshot from build time. */
@@ -25,7 +27,14 @@ export default async function HomePage({
   if (!isLocale(loc)) notFound();
   const locale = loc as Locale;
   const dict = getDictionary(locale);
-  const [home, site] = await Promise.all([getHomeContent(locale), getSiteContent(locale)]);
+  const [home, site, activitiesRes] = await Promise.all([
+    getHomeContent(locale),
+    getSiteContent(locale),
+    serverFetch<{ data: Activity[] }>(`/api/activities/${locale}?per_page=6`, {
+      cache: "no-store",
+    }),
+  ]);
+  const entertainmentActivities = activitiesRes?.data ?? [];
 
   return (
     <div className="relative overflow-x-hidden">
@@ -39,8 +48,7 @@ export default async function HomePage({
       <EntertainmentActivitiesSection
         locale={locale}
         section={home.entertainmentActivitiesSection}
-        activities={home.entertainmentActivities}
-        bookCta={dict.eventsSection.book}
+        activities={entertainmentActivities}
       />
       <WorksShowcase
         locale={locale}

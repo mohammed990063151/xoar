@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { HeaderAccountLink } from "@/components/layout/HeaderAccountLink";
 import { HeaderCta } from "@/components/layout/HeaderCta";
 import { XoraLogo } from "@/components/brand/XoraLogo";
 import { cn } from "@/lib/cn";
@@ -23,9 +24,12 @@ const navKeys = [
   { href: "/services", key: "services" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
-  { href: "/account", key: "account" as const },
+  { href: "/partners", key: "partners" as const },
+  { href: "/careers", key: "careers" as const },
   { href: "/contact", key: "contact" as const },
 ] satisfies ReadonlyArray<{ href: string; key: keyof Dictionary["nav"] }>;
+
+const accountActive = (pathname: string): boolean => pathname.includes("/account");
 
 function NavTextLink({
   href,
@@ -70,9 +74,6 @@ export function Header({
     `/${switchLocale}`;
 
   const isActive = (href: string): boolean => {
-    if (href === "/account") {
-      return pathname.includes("/account");
-    }
     const full = localizedPath(locale, href);
     if (href === "/") return pathname === full;
     return pathname.startsWith(full);
@@ -124,6 +125,11 @@ export function Header({
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <HeaderAccountLink
+            locale={locale}
+            label={nav.account}
+            active={accountActive(pathname)}
+          />
           <Link
             href={switchHref}
             className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300 transition hover:border-purple-400/40 hover:text-white sm:px-3 sm:text-xs"
@@ -176,6 +182,13 @@ export function Header({
             )}
             aria-label="Mobile"
           >
+            <HeaderAccountLink
+              locale={locale}
+              label={nav.account}
+              active={accountActive(pathname)}
+              compact
+            />
+            <div className="my-1 h-px bg-white/10" role="separator" aria-hidden />
             {navKeys.map(({ href, key }) => {
               const active = isActive(href);
               const isContact = href === "/contact";

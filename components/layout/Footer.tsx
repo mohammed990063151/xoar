@@ -27,6 +27,8 @@ const navLinks = [
   { href: "/services", key: "services" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/partners", key: "partners" as const },
+  { href: "/careers", key: "careers" as const },
   { href: "/contact", key: "contact" as const },
 ];
 
