@@ -73,7 +73,8 @@ export interface HomeContent {
   ownedActivitiesSection: OwnedActivitiesSectionCopy;
   ownedActivities: ActivityCardData[];
   entertainmentActivitiesSection: EntertainmentActivitiesSectionCopy;
-  entertainmentActivities: ActivityCardData[];
+  /** Curated from `/api/site/{locale}/home` (most-booked, then platform-owned). */
+  entertainmentActivities: Activity[];
   partnersSection: PartnersSectionCopy;
   partners: HomePartner[];
   homeContact: HomeContactCopy;
@@ -205,6 +206,12 @@ function mapActivityCards(raw?: Activity[]): ActivityCardData[] {
   return raw.map((item) => toActivityCardData(normalizeActivityFromApi(item)));
 }
 
+function mapActivities(raw?: Activity[]): Activity[] {
+  if (!raw?.length) return [];
+
+  return raw.map((item) => normalizeActivityFromApi(item));
+}
+
 function mapWorks(raw?: HomeWork[]): HomeWork[] {
   if (!raw?.length) return [];
 
@@ -232,7 +239,7 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
     ownedActivitiesSection: ownedActivitiesSectionCopy(api, dict),
     ownedActivities: mapActivityCards(api.ownedActivities),
     entertainmentActivitiesSection: entertainmentActivitiesSectionCopy(api, locale),
-    entertainmentActivities: mapActivityCards(
+    entertainmentActivities: mapActivities(
       api.entertainmentActivities?.length
         ? api.entertainmentActivities
         : api.ownedActivities,

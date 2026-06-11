@@ -8,10 +8,11 @@ import { EntertainmentActivitiesSection } from "@/components/home/EntertainmentA
 import { WorksShowcase } from "@/components/home/WorksShowcase";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
-import { getSiteContent } from "@/services/contentService";
-import { serverFetch } from "@/services/api";
+import { normalizeActivityFromApi } from "@/lib/activity";
 import { isLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import { getSiteContent } from "@/services/contentService";
+import { serverFetch } from "@/services/api";
 import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
 
@@ -27,14 +28,20 @@ export default async function HomePage({
   if (!isLocale(loc)) notFound();
   const locale = loc as Locale;
   const dict = getDictionary(locale);
-  const [home, site, activitiesRes] = await Promise.all([
+  const [home, site] = await Promise.all([
     getHomeContent(locale),
     getSiteContent(locale),
-    serverFetch<{ data: Activity[] }>(`/api/activities/${locale}?per_page=6`, {
-      cache: "no-store",
-    }),
   ]);
-  const entertainmentActivities = activitiesRes?.data ?? [];
+
+  let entertainmentActivities = home.entertainmentActivities;
+
+  if (entertainmentActivities.length === 0) {
+    const activitiesRes = await serverFetch<{ data: Activity[] }>(
+      `/api/activities/${locale}?per_page=6`,
+      { cache: "no-store" },
+    );
+    entertainmentActivities = (activitiesRes?.data ?? []).map(normalizeActivityFromApi);
+  }
 
   return (
     <div className="relative overflow-x-hidden">
