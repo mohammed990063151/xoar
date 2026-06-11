@@ -3,12 +3,16 @@ export function getPortalBaseUrl(): string {
   const portal = process.env.NEXT_PUBLIC_PORTAL_URL?.trim().replace(/\/$/, "");
   if (portal) return portal;
 
+  const api = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "");
+  if (api) return api;
+
   const admin = process.env.NEXT_PUBLIC_ADMIN_URL?.trim().replace(/\/$/, "");
   if (admin) return admin;
 
   return "http://127.0.0.1:8000";
 }
 
+/** Customer portal route on Laravel (register/login/bookings live in DB → admin dashboard). */
 export function portalPath(path = ""): string {
   const normalized = path.startsWith("/") ? path : path ? `/${path}` : "";
   return `${getPortalBaseUrl()}/portal${normalized}`;

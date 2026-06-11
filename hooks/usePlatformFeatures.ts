@@ -4,23 +4,26 @@ import { useEffect, useState } from "react";
 import { featureService, type PlatformFeature } from "@/services/featureService";
 import type { Locale } from "@/lib/i18n";
 
-export function usePlatformFeatures(locale: Locale): {
+export function usePlatformFeatures(
+  locale: Locale,
+  initialFeatures?: PlatformFeature[],
+): {
   features: PlatformFeature[];
   isEnabled: (key: string) => boolean;
   loading: boolean;
 } {
-  const [features, setFeatures] = useState<PlatformFeature[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [features, setFeatures] = useState<PlatformFeature[]>(initialFeatures ?? []);
+  const [fromApi, setFromApi] = useState(Boolean(initialFeatures?.length));
+  const [loading, setLoading] = useState(!initialFeatures?.length);
 
   useEffect(() => {
     let active = true;
     featureService
       .list(locale)
-      .then((list) => {
-        if (active) setFeatures(list);
-      })
-      .catch(() => {
-        if (active) setFeatures([]);
+      .then(({ features: list, fromApi: loaded }) => {
+        if (!active) return;
+        setFeatures(list);
+        setFromApi(loaded);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -33,6 +36,6 @@ export function usePlatformFeatures(locale: Locale): {
   return {
     features,
     loading,
-    isEnabled: (key) => featureService.isEnabled(features, key),
+    isEnabled: (key) => featureService.isEnabled(features, key, { fromApi }),
   };
 }

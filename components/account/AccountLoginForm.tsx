@@ -1,17 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { customerService } from "@/services/customerService";
 import type { Locale } from "@/lib/i18n";
-import { localizedPath } from "@/lib/i18n";
+import { portalPath } from "@/lib/portal-url";
 
 interface AccountLoginFormProps {
   readonly locale: Locale;
 }
 
 export function AccountLoginForm({ locale }: AccountLoginFormProps): React.ReactElement {
-  const router = useRouter();
   const ar = locale === "ar";
   const [mode, setMode] = useState<"login" | "register">("login");
   const [error, setError] = useState("");
@@ -39,7 +37,7 @@ export function AccountLoginForm({ locale }: AccountLoginFormProps): React.React
           locale,
         });
       }
-      router.push(localizedPath(locale, "/account/bookings"));
+      window.location.assign(portalPath("/bookings"));
     } catch (err) {
       setError(err instanceof Error ? err.message : ar ? "تعذّر تسجيل الدخول" : "Auth failed");
     } finally {

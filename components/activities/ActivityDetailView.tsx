@@ -9,6 +9,7 @@ import { AddToCalendarButton } from "@/components/features/AddToCalendarButton";
 import { GroupBookingPanel } from "@/components/features/GroupBookingPanel";
 import { WaitlistPanel } from "@/components/features/WaitlistPanel";
 import { usePlatformFeatures } from "@/hooks/usePlatformFeatures";
+import type { PlatformFeature } from "@/services/featureService";
 import { ActivityLocationMap } from "@/components/activities/ActivityLocationMap";
 import { ActivityProductHighlights } from "@/components/activities/ActivityProductHighlights";
 import { ActivityBadgeRibbon } from "@/components/ui/ActivityBadgeRibbon";
@@ -35,6 +36,7 @@ interface ActivityDetailViewProps {
   readonly activity: Activity;
   readonly locale: Locale;
   readonly related?: readonly Activity[];
+  readonly initialFeatures?: readonly PlatformFeature[];
 }
 
 type TabId = "description" | "terms" | "organizer" | "faq" | "location";
@@ -43,9 +45,10 @@ export function ActivityDetailView({
   activity,
   locale,
   related = [],
+  initialFeatures,
 }: ActivityDetailViewProps): React.ReactElement {
   const labels = bookingLabels(locale);
-  const { isEnabled } = usePlatformFeatures(locale);
+  const { isEnabled } = usePlatformFeatures(locale, initialFeatures ? [...initialFeatures] : undefined);
   const galleryImages = activityAllImages(activity);
   const promoVideo = activityPromoVideoUrl(activity);
   const organizer = activity.organizer ?? activity.provider?.name ?? "Xora";

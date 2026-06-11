@@ -1,4 +1,8 @@
 import { getApiBaseUrl } from "@/lib/api-base";
+import {
+  defaultPlatformFeatures,
+  resolveFeatureEnabled,
+} from "@/lib/platform-features";
 import type { Locale } from "@/lib/i18n";
 
 export type PlatformFeature = {
@@ -10,17 +14,33 @@ export type PlatformFeature = {
 };
 
 export const featureService = {
-  async list(locale: Locale): Promise<PlatformFeature[]> {
-    const res = await fetch(`${getApiBaseUrl()}/api/site/${locale}/features`, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    const json = (await res.json()) as { data?: PlatformFeature[] };
-    return json.data ?? [];
+  async list(locale: Locale): Promise<{ features: PlatformFeature[]; fromApi: boolean }> {
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/site/${locale}/features`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        return { features: defaultPlatformFeatures(), fromApi: false };
+      }
+      const json = (await res.json()) as { data?: PlatformFeature[] };
+      const features = json.data ?? [];
+      if (features.length === 0) {
+        return { features: defaultPlatformFeatures(), fromApi: false };
+      }
+      return { features, fromApi: true };
+    } catch {
+      return { features: defaultPlatformFeatures(), fromApi: false };
+    }
   },
 
-  isEnabled(features: PlatformFeature[], key: string): boolean {
-    return features.find((f) => f.key === key)?.enabled ?? false;
+  isEnabled(
+    features: PlatformFeature[],
+    key: string,
+    options?: { fromApi?: boolean },
+  ): boolean {
+    return resolveFeatureEnabled(features, key, {
+      apiLoaded: options?.fromApi ?? features.length > 0,
+    });
   },
 };
