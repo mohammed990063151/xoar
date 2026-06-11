@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/api-base";
+import { API_PROXY_TARGET, getApiBaseUrl } from "@/lib/api-base";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import type {
   Activity,
@@ -108,6 +108,27 @@ export async function serverFetch<T>(
           ? undefined
           : { revalidate: options?.revalidate ?? 60 },
     });
+    // #region agent log
+    fetch("http://127.0.0.1:7261/ingest/e7809984-b4f1-47d5-95fe-9c98ade0e8c9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1e948e" },
+      body: JSON.stringify({
+        sessionId: "1e948e",
+        runId: "post-fix",
+        hypothesisId: "B",
+        location: "services/api.ts:serverFetch",
+        message: "SSR API fetch",
+        data: {
+          apiBase: API,
+          apiProxyTarget: API_PROXY_TARGET,
+          path,
+          status: res.status,
+          ok: res.ok,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     if (!res.ok) return null;
     return res.json() as Promise<T>;
   } catch {

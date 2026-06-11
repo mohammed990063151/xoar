@@ -1,11 +1,12 @@
 /** Laravel customer portal base (no trailing slash). */
 export function getPortalBaseUrl(): string {
-  const base =
-    process.env.NEXT_PUBLIC_PORTAL_URL?.replace(/\/$/, "") ??
-    process.env.NEXT_PUBLIC_ADMIN_URL?.replace(/\/$/, "") ??
-    "http://127.0.0.1:8000";
+  const portal = process.env.NEXT_PUBLIC_PORTAL_URL?.trim().replace(/\/$/, "");
+  if (portal) return portal;
 
-  return base;
+  const admin = process.env.NEXT_PUBLIC_ADMIN_URL?.trim().replace(/\/$/, "");
+  if (admin) return admin;
+
+  return "http://127.0.0.1:8000";
 }
 
 export function portalPath(path = ""): string {

@@ -23,7 +23,24 @@ export default async function ActivityDetailPage({
   ]);
 
   const raw = detailRes?.data;
-  if (!raw) notFound();
+  if (!raw) {
+    // #region agent log
+    fetch("http://127.0.0.1:7261/ingest/e7809984-b4f1-47d5-95fe-9c98ade0e8c9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1e948e" },
+      body: JSON.stringify({
+        sessionId: "1e948e",
+        runId: "post-fix",
+        hypothesisId: "B",
+        location: "activities/[slug]/page.tsx",
+        message: "activity detail notFound — API returned no data",
+        data: { locale: loc, slug, hasDetailRes: Boolean(detailRes) },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    notFound();
+  }
 
   const activity = normalizeActivityFromApi(raw);
   const related = (listRes?.data ?? [])

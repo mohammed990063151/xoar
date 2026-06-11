@@ -1,15 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { defaultLocale, isLocale } from "./lib/i18n";
-
-const adminBase = process.env.NEXT_PUBLIC_ADMIN_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
-const portalBase =
-  process.env.NEXT_PUBLIC_PORTAL_URL?.replace(/\/$/, "") ?? adminBase;
-
-function isAccountPath(pathname: string): boolean {
-  return /^\/(ar|en)\/account(\/|$)/.test(pathname);
-}
-
 function isAdminPath(pathname: string): boolean {
   return (
     pathname === "/admin" ||
@@ -24,28 +15,11 @@ export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
   if (isAdminPath(pathname)) {
+    const adminBase =
+      process.env.NEXT_PUBLIC_ADMIN_URL?.trim().replace(/\/$/, "") ??
+      "http://127.0.0.1:8000";
     const adminPath = pathname.match(/^\/(ar|en)\/admin(\/.*)?$/)?.[2] ?? "";
     return NextResponse.redirect(`${adminBase}/admin${adminPath || "/login"}`);
-  }
-
-  if (isAccountPath(pathname)) {
-    const sub = pathname.match(/^\/(ar|en)\/account(\/.*)?$/)?.[2] ?? "";
-    if (sub === "/login" || sub === "") {
-      return NextResponse.redirect(`${portalBase}/portal/login`);
-    }
-    if (sub === "/register") {
-      return NextResponse.redirect(`${portalBase}/portal/register`);
-    }
-    if (sub?.startsWith("/bookings")) {
-      return NextResponse.redirect(`${portalBase}/portal/bookings`);
-    }
-    if (sub?.startsWith("/profile")) {
-      return NextResponse.redirect(`${portalBase}/portal/profile`);
-    }
-    if (sub?.startsWith("/wishlist")) {
-      return NextResponse.redirect(`${portalBase}/portal`);
-    }
-    return NextResponse.redirect(`${portalBase}/portal`);
   }
 
   if (

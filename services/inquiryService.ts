@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from "@/lib/api-base";
+
 export type InquiryType = "booking" | "contact" | "service";
 
 export interface InquiryPayload {
@@ -10,12 +12,10 @@ export interface InquiryPayload {
   message?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
-
 export async function submitInquiry(
   payload: InquiryPayload,
 ): Promise<{ id: number }> {
-  const response = await fetch(`${API_BASE}/api/inquiries`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/inquiries`, {
     method: "POST",
     headers: {
       Accept: "application/json",

@@ -82,3 +82,10 @@ jobs:
           echo "Remote BUILD_ID:"
           ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
             "cat ${DEPLOY_PATH}/.next/BUILD_ID"
+          echo "Ensure cPanel Node app runtime env includes API_PROXY_TARGET (same Laravel URL as NEXT_PUBLIC_API_URL)."
+
+      - name: Smoke test live API
+        run: |
+          API="${{ secrets.API_PROXY_TARGET }}"
+          test -n "$API"
+          curl -fsS "$API/api/activities/ar?per_page=1" | head -c 200

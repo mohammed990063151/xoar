@@ -1,10 +1,9 @@
 import type { Dictionary } from "@/lib/dictionary";
 import { getDictionary } from "@/lib/dictionary";
+import { getApiBaseUrl } from "@/lib/api-base";
 import { eventGallery } from "@/lib/event-gallery";
 import type { Locale } from "@/lib/i18n";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const REVALIDATE_SECONDS = 60;
 const API_FETCH_TIMEOUT_MS = 8_000;
 
@@ -108,7 +107,7 @@ export async function getSiteContent(locale: Locale): Promise<SiteContent> {
   }
 
   try {
-    const response = await apiFetch(`${API_BASE}/api/site/${locale}`, {
+    const response = await apiFetch(`${getApiBaseUrl()}/api/site/${locale}`, {
       headers: { Accept: "application/json" },
       next: { revalidate: REVALIDATE_SECONDS },
     });
@@ -134,7 +133,7 @@ export async function getEventBySlug(
   }
 
   try {
-    const response = await apiFetch(`${API_BASE}/api/site/${locale}/events/${slug}`, {
+    const response = await apiFetch(`${getApiBaseUrl()}/api/site/${locale}/events/${slug}`, {
       headers: { Accept: "application/json" },
       next: { revalidate: REVALIDATE_SECONDS },
     });
