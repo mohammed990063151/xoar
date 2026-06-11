@@ -1,3 +1,5 @@
+import { defaultLaravelOrigin } from "@/lib/laravel-origin";
+
 /** Laravel customer portal base (no trailing slash). */
 export function getPortalBaseUrl(): string {
   const portal = process.env.NEXT_PUBLIC_PORTAL_URL?.trim().replace(/\/$/, "");
@@ -9,7 +11,7 @@ export function getPortalBaseUrl(): string {
   const admin = process.env.NEXT_PUBLIC_ADMIN_URL?.trim().replace(/\/$/, "");
   if (admin) return admin;
 
-  return "http://127.0.0.1:8000";
+  return defaultLaravelOrigin();
 }
 
 /** Customer portal route on Laravel (register/login/bookings live in DB → admin dashboard). */

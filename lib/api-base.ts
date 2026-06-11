@@ -1,6 +1,8 @@
+import { defaultLaravelOrigin } from "@/lib/laravel-origin";
+
 /** Laravel API origin (no trailing slash). Used for rewrites and server-side fetch fallbacks. */
 export const API_PROXY_TARGET =
-  process.env.API_PROXY_TARGET?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
+  process.env.API_PROXY_TARGET?.replace(/\/$/, "") ?? defaultLaravelOrigin();
 
 function normalizeApiOrigin(value: string | undefined): string | undefined {
   const trimmed = value?.trim().replace(/\/$/, "");

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getApiBaseUrl } from "@/lib/api-base";
+import { portalPath } from "@/lib/portal-url";
 import { getCustomerToken } from "@/services/customerService";
 import { isLocale, localizedPath, type Locale } from "@/lib/i18n";
 
@@ -180,7 +181,7 @@ export default function GroupJoinPage(): React.ReactElement {
 
       <p className="mt-8 text-center text-xs text-slate-500">
         {ar ? "مسجّل كعميل؟" : "Have an account?"}{" "}
-        <Link href={`${process.env.NEXT_PUBLIC_PORTAL_URL ?? "http://127.0.0.1:8000"}/portal/group-bookings`} className="text-violet-400">
+        <Link href={portalPath("/group-bookings")} className="text-violet-400">
           {ar ? "مجموعاتي في البوابة" : "My groups in portal"}
         </Link>
       </p>

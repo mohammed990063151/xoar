@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { defaultLocale, isLocale } from "./lib/i18n";
+import { defaultLaravelOrigin } from "./lib/laravel-origin";
 import { portalPath } from "./lib/portal-url";
 
 function isAccountPath(pathname: string): boolean {
@@ -23,7 +24,7 @@ export function middleware(request: NextRequest): NextResponse {
   if (isAdminPath(pathname)) {
     const adminBase =
       process.env.NEXT_PUBLIC_ADMIN_URL?.trim().replace(/\/$/, "") ??
-      "http://127.0.0.1:8000";
+      defaultLaravelOrigin();
     const adminPath = pathname.match(/^\/(ar|en)\/admin(\/.*)?$/)?.[2] ?? "";
     return NextResponse.redirect(`${adminBase}/admin${adminPath || "/login"}`);
   }

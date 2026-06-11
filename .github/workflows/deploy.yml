@@ -26,18 +26,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Configure production URLs
+        run: |
+          echo "API_PROXY_TARGET=https://xoraplus.com" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_API_URL=https://xoraplus.com" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ADMIN_URL=https://xoraplus.com" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_PORTAL_URL=https://xoraplus.com" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SITE_URL=https://xoraevents.com" >> $GITHUB_ENV
+
       - name: Build Next.js
         run: npm run build
         env:
           NODE_ENV: production
-          # GitHub sets CI=true — app skips remote API during build (see lib/skip-api-during-build.ts).
           SKIP_API_DURING_BUILD: "1"
-          # Baked into next.config rewrites; runtime on cPanel uses server env too.
-          API_PROXY_TARGET: ${{ secrets.API_PROXY_TARGET }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_ADMIN_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_URL }}
-          NEXT_PUBLIC_PORTAL_URL: ${{ secrets.NEXT_PUBLIC_PORTAL_URL }}
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
 
       - name: Prune dev dependencies for production
         run: npm prune --omit=dev
@@ -82,15 +83,13 @@ jobs:
           echo "Remote BUILD_ID:"
           ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
             "cat ${DEPLOY_PATH}/.next/BUILD_ID"
-          echo "Ensure cPanel Node app runtime env includes API_PROXY_TARGET (same Laravel URL as NEXT_PUBLIC_API_URL)."
+          echo "Set cPanel Node runtime env: API_PROXY_TARGET=https://xoraplus.com NEXT_PUBLIC_API_URL=https://xoraplus.com"
 
       - name: Smoke test live API
         run: |
           API="${{ secrets.API_PROXY_TARGET }}"
           if [ -z "$API" ]; then
-            echo "::warning::API_PROXY_TARGET secret is not set — skipping smoke test."
-            echo "Add it in GitHub Settings → Secrets and in cPanel Node runtime env."
-            exit 0
+            API="https://xoraplus.com"
           fi
           echo "Testing ${API}/api/activities/ar?per_page=1"
           curl -fsS "${API}/api/activities/ar?per_page=1" | head -c 200
