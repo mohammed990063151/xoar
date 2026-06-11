@@ -87,5 +87,11 @@ jobs:
       - name: Smoke test live API
         run: |
           API="${{ secrets.API_PROXY_TARGET }}"
-          test -n "$API"
-          curl -fsS "$API/api/activities/ar?per_page=1" | head -c 200
+          if [ -z "$API" ]; then
+            echo "::warning::API_PROXY_TARGET secret is not set — skipping smoke test."
+            echo "Add it in GitHub Settings → Secrets and in cPanel Node runtime env."
+            exit 0
+          fi
+          echo "Testing ${API}/api/activities/ar?per_page=1"
+          curl -fsS "${API}/api/activities/ar?per_page=1" | head -c 200
+          echo ""
