@@ -291,22 +291,6 @@ export function ActivityDetailView({
               ) : null}
             </div>
           </div>
-
-          {related.length > 0 ? (
-            <section>
-              <h2 className="text-lg font-bold text-white">{labels.recommended}</h2>
-              <div className={cn("mt-4", gridCards3)}>
-                {related.slice(0, 2).map((item) => (
-                  <ActivityCard
-                    key={item.id}
-                    locale={locale}
-                    activity={toActivityCardData(item)}
-                    bookCta={labels.bookNow}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start space-y-4">
@@ -341,6 +325,22 @@ export function ActivityDetailView({
           )}
         </aside>
       </div>
+
+      {related.length > 0 ? (
+        <section className="relative mt-10 border-t border-white/10 pt-10 sm:mt-12 sm:pt-12">
+          <h2 className="text-lg font-bold text-white sm:text-xl">{labels.recommended}</h2>
+          <div className={cn("mt-4", gridCards3)}>
+            {related.slice(0, 2).map((item) => (
+              <ActivityCard
+                key={item.id}
+                locale={locale}
+                activity={toActivityCardData(item)}
+                bookCta={labels.bookNow}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
