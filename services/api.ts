@@ -9,8 +9,6 @@ import type {
   SiteSettings,
 } from "@/types/api";
 
-const API = getApiBaseUrl();
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -32,7 +30,7 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${API}${path}`, { ...options, headers });
+  const res = await fetch(`${getApiBaseUrl()}${path}`, { ...options, headers });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -99,7 +97,7 @@ export async function serverFetch<T>(
   const timer = setTimeout(() => controller.abort(), 8_000);
 
   try {
-    const res = await fetch(`${API}${path}`, {
+    const res = await fetch(`${getApiBaseUrl()}${path}`, {
       headers: { Accept: "application/json" },
       cache: options?.cache === "no-store" ? "no-store" : "default",
       signal: controller.signal,

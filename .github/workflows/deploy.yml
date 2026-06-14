@@ -29,7 +29,6 @@ jobs:
       - name: Configure production URLs
         run: |
           echo "API_PROXY_TARGET=https://xoraplus.com" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_API_URL=https://xoraplus.com" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_ADMIN_URL=https://xoraplus.com" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_PORTAL_URL=https://xoraplus.com" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_SITE_URL=https://xoraevents.com" >> $GITHUB_ENV

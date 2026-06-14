@@ -11,19 +11,19 @@ function normalizeApiOrigin(value: string | undefined): string | undefined {
 
 /**
  * Base URL for API requests.
- * - Server (SSR): `API_PROXY_TARGET` first — cPanel SSR must hit Laravel directly.
- * - Browser: `NEXT_PUBLIC_API_URL` when set, else same-origin `/api/...` rewrites.
+ * - Browser: always same-origin (`""`) so `/api/*` hits Next.js rewrites (no CORS).
+ * - Server (SSR): `API_PROXY_TARGET` → Laravel directly on cPanel/production.
  */
 export function getApiBaseUrl(): string {
-  if (typeof window === "undefined") {
-    const proxy = normalizeApiOrigin(process.env.API_PROXY_TARGET);
-    if (proxy) return proxy;
+  if (typeof window !== "undefined") {
+    return "";
   }
+
+  const proxy = normalizeApiOrigin(process.env.API_PROXY_TARGET);
+  if (proxy) return proxy;
 
   const configured = normalizeApiOrigin(process.env.NEXT_PUBLIC_API_URL);
   if (configured) return configured;
-
-  if (typeof window !== "undefined") return "";
 
   const port = process.env.PORT ?? "3000";
   if (process.env.VERCEL_URL) {
