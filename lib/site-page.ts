@@ -19,6 +19,7 @@ export interface AboutMissionVision {
 export interface AboutTeamMember {
   name: string;
   role: string;
+  description: string;
   image: string;
 }
 
@@ -195,10 +196,11 @@ function normalizeTeamMembers(raw: unknown, fallback: AboutTeamMember[]): AboutT
       const obj = item as Record<string, unknown>;
       const name = nonEmpty(obj.name) ?? "";
       const role = nonEmpty(obj.role) ?? "";
+      const description = nonEmpty(obj.description) ?? "";
       const imageRaw = nonEmpty(obj.image) ?? "";
       const image = imageRaw ? normalizeStorageImageUrl(imageRaw) : "";
       if (!name || !image) return null;
-      return { name, role, image };
+      return { name, role, description, image };
     })
     .filter((item): item is AboutTeamMember => item !== null);
 }

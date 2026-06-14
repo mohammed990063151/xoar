@@ -27,6 +27,7 @@ const nextConfig = {
   transpilePackages: ["three", "@react-three/fiber", "@react-three/drei"],
   images: {
     dangerouslyAllowLocalIP: true,
+    qualities: [75, 95],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
       {
