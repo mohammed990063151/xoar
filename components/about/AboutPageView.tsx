@@ -1,20 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AboutHero } from "@/components/about/AboutHero";
-import { AboutTeamSection } from "@/components/about/AboutTeamSection";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import type { AboutPageContent } from "@/lib/site-page";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
-import { isStorageImage } from "@/lib/image-url";
+import { isStorageImage, useUnoptimizedImage } from "@/lib/image-url";
 import { cn } from "@/lib/cn";
 import {
   pageBottom,
   pageEyebrow,
-  sectionBlock,
+  pageHeroCentered,
+  pageHeroInner,
+  pageHeroSection,
+  pageIntro,
+  pageTitle,
   sectionHeading,
+  sectionSpacingTight,
   siteContainer,
+  siteContainerNarrow,
 } from "@/lib/layout";
+import { AboutTeamSection } from "./AboutTeamSection";
 
 interface AboutPageViewProps {
   readonly locale: Locale;
@@ -48,35 +53,52 @@ const VALUE_ICONS = [
 
 const VALUE_STYLES = [
   {
-    ring: "ring-cyan-400/25",
-    icon: "from-cyan-500/35 to-blue-600/20 text-cyan-300",
-    glow: "group-hover:shadow-[0_20px_50px_rgba(6,182,212,0.18)]",
-    bar: "bg-gradient-to-r from-cyan-400 to-blue-500",
+    ring: "ring-cyan-400/20",
+    icon: "from-cyan-500/30 to-blue-600/15 text-cyan-300",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(6,182,212,0.14)]",
+    accent: "from-cyan-400/80 to-blue-500/80",
   },
   {
-    ring: "ring-violet-400/25",
-    icon: "from-violet-500/35 to-purple-600/20 text-violet-300",
-    glow: "group-hover:shadow-[0_20px_50px_rgba(139,92,246,0.18)]",
-    bar: "bg-gradient-to-r from-violet-400 to-purple-500",
+    ring: "ring-violet-400/20",
+    icon: "from-violet-500/30 to-purple-600/15 text-violet-300",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(139,92,246,0.14)]",
+    accent: "from-violet-400/80 to-purple-500/80",
   },
   {
-    ring: "ring-emerald-400/25",
-    icon: "from-emerald-500/35 to-teal-600/20 text-emerald-300",
-    glow: "group-hover:shadow-[0_20px_50px_rgba(16,185,129,0.18)]",
-    bar: "bg-gradient-to-r from-emerald-400 to-teal-500",
+    ring: "ring-emerald-400/20",
+    icon: "from-emerald-500/30 to-teal-600/15 text-emerald-300",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(16,185,129,0.14)]",
+    accent: "from-emerald-400/80 to-teal-500/80",
   },
   {
-    ring: "ring-amber-400/25",
-    icon: "from-amber-500/35 to-orange-600/20 text-amber-300",
-    glow: "group-hover:shadow-[0_20px_50px_rgba(245,158,11,0.18)]",
-    bar: "bg-gradient-to-r from-amber-400 to-orange-500",
+    ring: "ring-amber-400/20",
+    icon: "from-amber-500/30 to-orange-600/15 text-amber-300",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(245,158,11,0.14)]",
+    accent: "from-amber-400/80 to-orange-500/80",
   },
 ];
 
-function accentImageFromContent(content: AboutPageContent): string | undefined {
-  const teamPhoto = content.team.members.find((m) => m.image.trim())?.image;
-  if (teamPhoto) return teamPhoto;
-  return content.images[0];
+function AboutImage({
+  src,
+  alt,
+  className,
+  sizes,
+}: {
+  readonly src: string;
+  readonly alt: string;
+  readonly className?: string;
+  readonly sizes?: string;
+}): React.ReactElement {
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      className={cn("object-cover", className)}
+      sizes={sizes ?? "(max-width: 1024px) 100vw, 50vw"}
+      unoptimized={useUnoptimizedImage(src) || isStorageImage(src)}
+    />
+  );
 }
 
 export function AboutPageView({
@@ -87,130 +109,153 @@ export function AboutPageView({
   const contactPath = localizedPath(locale, "/contact");
   const ar = locale === "ar";
   const [heroImage, ...galleryRest] = content.images;
-  const galleryThumbs = galleryRest.length > 0 ? galleryRest : content.images.slice(1);
-  const accentImage = accentImageFromContent(content);
+  const galleryThumbs = galleryRest.length > 0 ? galleryRest.slice(0, 2) : [];
+  const hasStory = content.p1.trim() || content.p2.trim();
+  const hasImages = content.images.length > 0;
 
   return (
     <div className={pageBottom}>
-      <AboutHero
-        locale={locale}
-        eyebrow={content.eyebrow}
-        title={content.title}
-        intro={content.intro}
-        accentImage={accentImage}
-      />
-
-      <AboutTeamSection locale={locale} team={content.team} variant="featured" />
-
-      <section className={cn(sectionBlock, "relative")}>
+      <section className={pageHeroSection}>
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_100%_0%,rgba(59,130,246,0.08),transparent)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(168,85,247,0.22),transparent),radial-gradient(ellipse_60%_50%_at_10%_80%,rgba(59,130,246,0.12),transparent)]"
           aria-hidden
         />
-
-        <div className="relative grid gap-6 lg:grid-cols-12 lg:gap-8">
-          <ScrollReveal className="lg:col-span-7">
-            <div className="gradient-border h-full">
-              <div className="inner h-full p-6 sm:p-8 lg:p-10">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-400/90">
-                  {ar ? "قصتنا" : "Our story"}
-                </p>
-                <h2 className={`mt-3 ${sectionHeading}`}>
-                  {ar ? "من الفكرة إلى التجربة" : "From idea to experience"}
-                </h2>
-                <p className="mt-5 text-lg leading-relaxed text-slate-300">{content.p1}</p>
-                <p className="mt-4 text-base leading-relaxed text-slate-400">{content.p2}</p>
-              </div>
-            </div>
+        <div className={pageHeroInner}>
+          <ScrollReveal className={pageHeroCentered}>
+            {content.eyebrow ? <p className={pageEyebrow}>{content.eyebrow}</p> : null}
+            <h1 className={pageTitle}>{content.title}</h1>
+            {content.intro ? <p className={pageIntro}>{content.intro}</p> : null}
           </ScrollReveal>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1">
-            <ScrollReveal>
-              <article className="gradient-border group h-full overflow-hidden transition duration-300 hover:shadow-[0_20px_50px_rgba(16,185,129,0.15)]">
-                <div className="inner relative h-full overflow-hidden p-6 sm:p-7">
-                  <div
-                    className="pointer-events-none absolute -end-8 -top-8 h-32 w-32 rounded-full bg-emerald-500/15 blur-2xl"
-                    aria-hidden
-                  />
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-lg text-emerald-300 ring-1 ring-emerald-400/25">
-                    ◆
-                  </span>
-                  <h3 className="mt-4 text-xl font-bold text-white">{content.mission.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{content.mission.text}</p>
-                </div>
-              </article>
-            </ScrollReveal>
-
-            <ScrollReveal>
-              <article className="gradient-border group h-full overflow-hidden transition duration-300 hover:shadow-[0_20px_50px_rgba(139,92,246,0.15)]">
-                <div className="inner relative h-full overflow-hidden p-6 sm:p-7">
-                  <div
-                    className="pointer-events-none absolute -end-8 -top-8 h-32 w-32 rounded-full bg-violet-500/15 blur-2xl"
-                    aria-hidden
-                  />
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-lg text-violet-300 ring-1 ring-violet-400/25">
-                    ✦
-                  </span>
-                  <h3 className="mt-4 text-xl font-bold text-white">{content.vision.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{content.vision.text}</p>
-                </div>
-              </article>
-            </ScrollReveal>
-          </div>
         </div>
+      </section>
 
-        {content.images.length > 0 ? (
-          <ScrollReveal className="mt-10 lg:mt-14">
-            <div className="grid gap-3 sm:grid-cols-12 sm:gap-4">
-              {heroImage ? (
-                <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.45)] sm:col-span-8 sm:aspect-auto sm:min-h-[320px]">
-                  <Image
-                    src={heroImage}
-                    alt=""
-                    fill
-                    className="object-cover transition duration-700 hover:scale-105"
-                    sizes="(max-width: 1024px) 100vw, 720px"
-                    unoptimized={isStorageImage(heroImage)}
-                  />
-                  <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020617]/60 via-transparent to-transparent"
-                    aria-hidden
-                  />
+      {(hasStory || hasImages) ? (
+        <section className={cn(siteContainer, sectionSpacingTight)}>
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-16">
+            {hasStory ? (
+              <ScrollReveal>
+                <p className={pageEyebrow}>{ar ? "قصتنا" : "Our story"}</p>
+                <div className="mt-4 space-y-4">
+                  {content.p1.trim() ? (
+                    <p className="text-base leading-relaxed text-slate-200 sm:text-lg">{content.p1}</p>
+                  ) : null}
+                  {content.p2.trim() ? (
+                    <p className="text-base leading-relaxed text-slate-400 sm:text-lg">{content.p2}</p>
+                  ) : null}
                 </div>
-              ) : null}
-              {galleryThumbs.length > 0 ? (
-                <div className="grid grid-cols-3 gap-3 sm:col-span-4 sm:grid-cols-1 sm:gap-4">
-                  {galleryThumbs.slice(0, 3).map((src, i) => (
-                    <div
-                      key={src}
-                      className={cn(
-                        "relative overflow-hidden rounded-xl border border-white/10",
-                        i === 0 && "aspect-square sm:aspect-[4/3]",
-                        i === 1 && "aspect-square sm:aspect-[4/3]",
-                        i === 2 && "aspect-square sm:aspect-[4/3]",
-                      )}
-                    >
-                      <Image
-                        src={src}
-                        alt=""
-                        fill
-                        className="object-cover transition duration-700 hover:scale-110"
-                        sizes="240px"
-                        unoptimized={isStorageImage(src)}
+              </ScrollReveal>
+            ) : null}
+
+            {hasImages && heroImage ? (
+              <ScrollReveal className={cn(!hasStory && "lg:col-span-2")}>
+                <div
+                  className={cn(
+                    "grid gap-3 sm:gap-4",
+                    galleryThumbs.length > 0 ? "grid-cols-2" : "grid-cols-1",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "gradient-border overflow-hidden",
+                      galleryThumbs.length > 0 ? "col-span-2" : "",
+                    )}
+                  >
+                    <div className="inner relative aspect-[16/10] overflow-hidden sm:aspect-[16/9]">
+                      <AboutImage
+                        src={heroImage}
+                        alt={content.title}
+                        sizes="(max-width: 1024px) 100vw, 640px"
                       />
+                      <div
+                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020617]/40 via-transparent to-transparent"
+                        aria-hidden
+                      />
+                    </div>
+                  </div>
+                  {galleryThumbs.map((src, index) => (
+                    <div key={`${src}-${index}`} className="gradient-border overflow-hidden">
+                      <div className="inner relative aspect-[4/3] overflow-hidden">
+                        <AboutImage
+                          src={src}
+                          alt=""
+                          sizes="(max-width: 1024px) 50vw, 320px"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
-              ) : null}
-            </div>
+              </ScrollReveal>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      <section className={cn(siteContainer, sectionSpacingTight)}>
+        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:gap-8">
+          <ScrollReveal>
+            <article className="gradient-border group h-full transition duration-300 hover:shadow-[0_24px_60px_rgba(139,92,246,0.12)]">
+              <div className="inner relative h-full p-6 sm:p-8">
+                <div
+                  className="pointer-events-none absolute end-6 top-6 h-24 w-24 rounded-full bg-violet-500/10 blur-2xl transition duration-500 group-hover:bg-violet-500/20"
+                  aria-hidden
+                />
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/25 to-purple-600/10 text-violet-300 ring-1 ring-violet-400/25"
+                    aria-hidden
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </span>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400/90">
+                    {ar ? "رؤيتنا" : "Our vision"}
+                  </p>
+                </div>
+                <h3 className="mt-5 text-xl font-semibold text-white sm:text-2xl">{content.vision.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
+                  {content.vision.text}
+                </p>
+              </div>
+            </article>
           </ScrollReveal>
-        ) : null}
+
+          <ScrollReveal>
+            <article className="gradient-border group h-full transition duration-300 hover:shadow-[0_24px_60px_rgba(6,182,212,0.12)]">
+              <div className="inner relative h-full p-6 sm:p-8">
+                <div
+                  className="pointer-events-none absolute end-6 top-6 h-24 w-24 rounded-full bg-cyan-500/10 blur-2xl transition duration-500 group-hover:bg-cyan-500/20"
+                  aria-hidden
+                />
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-600/10 text-cyan-300 ring-1 ring-cyan-400/25"
+                    aria-hidden
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5">
+                      <path d="M12 2L4 7v6c0 5.5 3.8 9.4 8 10 4.2-.6 8-4.5 8-10V7l-8-5z" />
+                      <path d="M9 12l2 2 4-4" />
+                    </svg>
+                  </span>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400/90">
+                    {ar ? "رسالتنا" : "Our mission"}
+                  </p>
+                </div>
+                <h3 className="mt-5 text-xl font-semibold text-white sm:text-2xl">{content.mission.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
+                  {content.mission.text}
+                </p>
+              </div>
+            </article>
+          </ScrollReveal>
+        </div>
       </section>
 
       {content.values.length > 0 ? (
-        <section className="relative overflow-hidden border-y border-white/5 py-14 sm:py-16 lg:py-20">
+        <section className="relative overflow-hidden border-y border-white/5 bg-white/[0.02] py-12 sm:py-16 lg:py-20">
           <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_0%,rgba(168,85,247,0.14),transparent),radial-gradient(ellipse_60%_45%_at_10%_100%,rgba(6,182,212,0.1),transparent)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_0%,rgba(168,85,247,0.12),transparent),radial-gradient(ellipse_60%_45%_at_10%_100%,rgba(6,182,212,0.08),transparent)]"
             aria-hidden
           />
 
@@ -224,29 +269,10 @@ export function AboutPageView({
               </div>
             </ScrollReveal>
 
-            {content.values.length >= 2 ? (
-              <ScrollReveal className="mt-8 overflow-hidden sm:mt-10">
-                <div className="relative flex">
-                  <div
-                    className="marquee-track--forward flex shrink-0 gap-3 py-1"
-                    style={{ "--marquee-duration": "28s" } as React.CSSProperties}
-                  >
-                    {[...content.values, ...content.values].map((value, index) => (
-                      <span
-                        key={`${value.title}-marquee-${index}`}
-                        className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-sm font-medium text-slate-300"
-                      >
-                        {value.title}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </ScrollReveal>
-            ) : null}
-
             <ul className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:gap-6">
               {content.values.map((value, index) => {
                 const style = VALUE_STYLES[index % VALUE_STYLES.length];
+                const number = String(index + 1).padStart(2, "0");
                 return (
                   <ScrollReveal key={`${value.title}-${index}`}>
                     <li
@@ -255,19 +281,33 @@ export function AboutPageView({
                         style.glow,
                       )}
                     >
-                      <div className="inner relative flex h-full gap-4 overflow-hidden p-5 sm:p-6">
-                        <div className={cn("absolute inset-x-0 top-0 h-1", style.bar)} aria-hidden />
+                      <div className="inner relative flex h-full gap-5 p-5 sm:p-6">
+                        <div
+                          className={cn(
+                            "absolute inset-y-4 start-0 w-px bg-gradient-to-b opacity-60 transition duration-300 group-hover:opacity-100",
+                            style.accent,
+                          )}
+                          aria-hidden
+                        />
                         <span
                           className={cn(
-                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ring-1",
+                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ring-1 transition duration-300 group-hover:scale-105",
                             style.icon,
                             style.ring,
                           )}
                         >
                           {VALUE_ICONS[index % VALUE_ICONS.length]}
                         </span>
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">{value.title}</h3>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="text-lg font-semibold text-white">{value.title}</h3>
+                            <span
+                              className="shrink-0 text-[11px] font-semibold tabular-nums tracking-widest text-slate-600 transition duration-300 group-hover:text-slate-500"
+                              aria-hidden
+                            >
+                              {number}
+                            </span>
+                          </div>
                           {value.description ? (
                             <p className="mt-2 text-sm leading-relaxed text-slate-400">
                               {value.description}
@@ -284,27 +324,31 @@ export function AboutPageView({
         </section>
       ) : null}
 
-      <section className={`${siteContainer} pt-12 sm:pt-14 lg:pt-16`}>
+      <AboutTeamSection locale={locale} team={content.team} />
+
+      <section className={cn(siteContainerNarrow, "pt-12 sm:pt-14 lg:pt-16")}>
         <ScrollReveal>
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-blue-600/20 via-violet-600/15 to-cyan-600/10 p-8 text-center sm:p-12 lg:p-14">
-            <div
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(255,255,255,0.08),transparent)]"
-              aria-hidden
-            />
-            <p className="relative text-lg text-slate-200 sm:text-xl">
-              {ar
-                ? "جاهزون لتحويل فكرتك إلى تجربة لا تُنسى."
-                : "Ready to turn your idea into an unforgettable experience."}
-            </p>
-            <Link
-              href={contactPath}
-              className="relative mt-7 inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-8 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.4)] transition hover:scale-[1.03] hover:brightness-110"
-            >
-              {contactCta}
-              <span className="text-lg rtl:rotate-180" aria-hidden>
-                →
-              </span>
-            </Link>
+          <div className="gradient-border overflow-hidden">
+            <div className="inner relative px-6 py-10 text-center sm:px-10 sm:py-12">
+              <div
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(59,130,246,0.12),transparent)]"
+                aria-hidden
+              />
+              <p className="relative text-base leading-relaxed text-slate-300 sm:text-lg">
+                {ar
+                  ? "جاهزون لتحويل فكرتك إلى تجربة لا تُنسى."
+                  : "Ready to turn your idea into an unforgettable experience."}
+              </p>
+              <Link
+                href={contactPath}
+                className="relative mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-8 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.3)] transition hover:brightness-110 hover:shadow-[0_16px_48px_rgba(59,130,246,0.4)]"
+              >
+                {contactCta}
+                <span className="text-lg rtl:rotate-180" aria-hidden>
+                  →
+                </span>
+              </Link>
+            </div>
           </div>
         </ScrollReveal>
       </section>
