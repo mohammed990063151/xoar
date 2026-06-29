@@ -11,6 +11,8 @@ const apiProxyTarget =
   process.env.API_PROXY_TARGET?.replace(/\/$/, "") ?? defaultLaravelOrigin();
 
 const nextConfig = {
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   staticPageGenerationTimeout: 120,
   async rewrites() {
     return [
@@ -46,6 +48,14 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Strict-Transport-Security",
+            // Enable only if HTTPS is guaranteed on this domain/subdomains.
+            value: "max-age=31536000; includeSubDomains; preload",
+          },
           {
             key: "Permissions-Policy",
             value:

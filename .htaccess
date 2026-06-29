@@ -10,3 +10,36 @@
 # Prevent directory listing
 Options -Indexes
 
+# Never expose sensitive files (even if Apache serves this folder).
+<IfModule mod_authz_core.c>
+  <FilesMatch "(^\.|^\.env($|\.))">
+    Require all denied
+  </FilesMatch>
+  <FilesMatch "^(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|tsconfig\.json|next\.config\..*|postcss\.config\..*|eslint\..*)$">
+    Require all denied
+  </FilesMatch>
+  <DirectoryMatch "\.git">
+    Require all denied
+  </DirectoryMatch>
+</IfModule>
+
+# Apache 2.2 fallback
+<IfModule !mod_authz_core.c>
+  <FilesMatch "(^\.|^\.env($|\.))">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+  <DirectoryMatch "\.git">
+    Order allow,deny
+    Deny from all
+  </DirectoryMatch>
+</IfModule>
+
+# Baseline security headers at the edge (covers Passenger error pages too).
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "compute-pressure=(self \"https://www.youtube.com\" \"https://www.youtube-nocookie.com\")"
+</IfModule>
+

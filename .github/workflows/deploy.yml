@@ -80,8 +80,7 @@ jobs:
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
           } > .env.deploy
-          echo "Prepared .env.deploy:"
-          cat .env.deploy
+          echo "Prepared .env.deploy (redacted)."
 
       - name: Setup SSH
         run: |
