@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { isStorageImage, normalizeStorageImageUrl } from "@/lib/image-url";
+import { normalizeStorageImageUrl, useUnoptimizedImage } from "@/lib/image-url";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 
@@ -60,7 +60,7 @@ export function EventCard({
               src={imageUrl}
               alt={title}
               fill
-              unoptimized={isStorageImage(imageUrl)}
+              unoptimized={useUnoptimizedImage(imageUrl)}
               className={cn(
                 "transition duration-700 group-hover:scale-105",
                 isContain ? "object-contain" : "object-cover",

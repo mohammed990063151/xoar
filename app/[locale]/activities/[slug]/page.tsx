@@ -6,8 +6,6 @@ import type { PlatformFeature } from "@/services/featureService";
 import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
 export default async function ActivityDetailPage({
   params,
 }: {
@@ -20,9 +18,9 @@ export default async function ActivityDetailPage({
     serverFetch<{ data: Activity }>(`/api/activities/${loc}/${slug}`, {
       revalidate: 15,
     }),
-    serverFetch<{ data: Activity[] }>(`/api/activities/${loc}?per_page=6`),
+    serverFetch<{ data: Activity[] }>(`/api/activities/${loc}?per_page=3`),
     serverFetch<{ data: PlatformFeature[] }>(`/api/site/${loc}/features`, {
-      cache: "no-store",
+      revalidate: 300,
     }),
   ]);
 

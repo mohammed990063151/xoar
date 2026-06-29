@@ -14,6 +14,9 @@ const nextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   staticPageGenerationTimeout: 120,
+  experimental: {
+    optimizePackageImports: ["framer-motion", "gsap", "lenis"],
+  },
   async rewrites() {
     return [
       {
@@ -26,9 +29,10 @@ const nextConfig = {
       },
     ];
   },
-  transpilePackages: ["three", "@react-three/fiber", "@react-three/drei"],
   images: {
-    dangerouslyAllowLocalIP: true,
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60,
     qualities: [75, 95],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
@@ -53,7 +57,6 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Strict-Transport-Security",
-            // Enable only if HTTPS is guaranteed on this domain/subdomains.
             value: "max-age=31536000; includeSubDomains; preload",
           },
           {

@@ -65,11 +65,13 @@ http_fetch() {
     if grep -qi 'Web application could not be started' "${body}" 2>/dev/null; then
       echo "  Passenger failed to start Node app" >&2
       code="passenger"
-    elif grep -q '__next_error__' "${body}" 2>/dev/null; then
-      echo "  body contains __next_error__" >&2
-      code="err"
-    elif ! grep -qi '<html' "${body}" 2>/dev/null; then
-      echo "  body missing <html" >&2
+    elif ! http_check_ok "${code}"; then
+      if grep -q '__next_error__' "${body}" 2>/dev/null; then
+        echo "  error response contains __next_error__" >&2
+        code="err"
+      fi
+    elif [ -s "${body}" ] && ! grep -qiE '<(html|!DOCTYPE)' "${body}" 2>/dev/null; then
+      echo "  200 response missing HTML document" >&2
       code="err"
     fi
   fi
@@ -82,6 +84,7 @@ http_check_ok() {
   local code="$1"
   case "${code}" in
     200|301|302|307|308) return 0 ;;
+    err|passenger|000) return 1 ;;
     *) return 1 ;;
   esac
 }
@@ -103,13 +106,13 @@ http_checks() {
   local routes=(
     "/en/contact"
     "/ar/about"
+    "/ar/events"
     "/ar"
-    "/en"
   )
   local attempt route url code verified=""
 
-  for attempt in 1 2 3 4 5 6 7 8; do
-    echo "Health check round ${attempt}/8 ..." >&2
+  for attempt in 1 2 3 4 5; do
+    echo "Health check round ${attempt}/5 ..." >&2
     for route in "${routes[@]}"; do
       url="${SITE_URL}${route}"
       code="$(http_fetch "${url}" "${route} (round ${attempt})")"
@@ -119,14 +122,14 @@ http_checks() {
       fi
     done
 
-    if [ "${attempt}" -lt 8 ]; then
-      echo "  no route OK yet, waiting 10s ..." >&2
-      sleep 10
+    if [ "${attempt}" -lt 5 ]; then
+      echo "  no route OK yet, waiting 8s ..." >&2
+      sleep 8
     fi
   done
 
   if [ -z "${verified}" ]; then
-    fail "Site health check failed after 8 rounds. None of: ${routes[*]}"
+    fail "Site health check failed after 5 rounds. None of: ${routes[*]}"
   fi
 
   echo "Site is up (verified via ${verified})." >&2

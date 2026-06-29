@@ -3,8 +3,6 @@ import { getDictionary } from "@/lib/dictionary";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
 export default async function RequestEventPage({
   params,
 }: {

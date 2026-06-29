@@ -15,7 +15,7 @@ export function GoogleTagManager(): React.ReactElement | null {
   return (
     <Script
       id="google-tag-manager"
-      strategy="afterInteractive"
+      strategy="lazyOnload"
       dangerouslySetInnerHTML={{ __html: GTM_SNIPPET(GTM_ID) }}
     />
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import Lenis from "lenis";
 import { createContext, useContext, useEffect, useState } from "react";
 
 export interface LenisScrollState {
@@ -60,33 +59,41 @@ export function SmoothScrollProvider({
     const root = document.documentElement;
     root.classList.add("lenis", "lenis-smooth");
 
-    const lenis = new Lenis({
-      duration: 1.1,
-      smoothWheel: true,
-    });
-
-    const unsubscribe = lenis.on("scroll", (instance) => {
-      const next: LenisScrollState = {
-        scrollY: instance.scroll,
-        direction: instance.direction as -1 | 0 | 1,
-      };
-
-      setScrollState((prev) => (shouldPublishScroll(prev, next) ? next : prev));
-    });
-
+    let lenis: import("lenis").default | null = null;
+    let unsubscribe = (): void => {};
     let frameId = 0;
+    let cancelled = false;
 
-    function raf(time: number): void {
-      lenis.raf(time);
+    void import("lenis").then(({ default: Lenis }) => {
+      if (cancelled) return;
+
+      lenis = new Lenis({
+        duration: 1.1,
+        smoothWheel: true,
+      });
+
+      unsubscribe = lenis.on("scroll", (instance) => {
+        const next: LenisScrollState = {
+          scrollY: instance.scroll,
+          direction: instance.direction as -1 | 0 | 1,
+        };
+
+        setScrollState((prev) => (shouldPublishScroll(prev, next) ? next : prev));
+      });
+
+      function raf(time: number): void {
+        lenis?.raf(time);
+        frameId = requestAnimationFrame(raf);
+      }
+
       frameId = requestAnimationFrame(raf);
-    }
-
-    frameId = requestAnimationFrame(raf);
+    });
 
     return () => {
+      cancelled = true;
       unsubscribe();
       cancelAnimationFrame(frameId);
-      lenis.destroy();
+      lenis?.destroy();
       root.classList.remove("lenis", "lenis-smooth");
     };
   }, []);

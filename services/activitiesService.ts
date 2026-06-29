@@ -39,7 +39,7 @@ export const activitiesService = {
     });
     const res = await fetch(
       `${getApiBaseUrl()}/api/activities/${locale}?${qs}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+      { headers: { Accept: "application/json" }, next: { revalidate: 60 } },
     );
     return parseJson(res);
   },
@@ -47,7 +47,7 @@ export const activitiesService = {
   async filterOptions(locale: Locale): Promise<ActivityFilterOptions> {
     const res = await fetch(
       `${getApiBaseUrl()}/api/activities/${locale}/filters`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+      { headers: { Accept: "application/json" }, next: { revalidate: 300 } },
     );
     const json = await parseJson<{ data: ActivityFilterOptions }>(res);
     return json.data;

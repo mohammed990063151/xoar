@@ -18,7 +18,7 @@ export const featureService = {
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/site/${locale}/features`, {
         headers: { Accept: "application/json" },
-        cache: "no-store",
+        next: { revalidate: 300 },
       });
       if (!res.ok) {
         return { features: defaultPlatformFeatures(), fromApi: false };

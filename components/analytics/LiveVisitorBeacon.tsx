@@ -49,11 +49,22 @@ async function sendHeartbeat(): Promise<void> {
 
 export function LiveVisitorBeacon(): null {
   useEffect(() => {
-    sendHeartbeat();
+    let intervalId = 0;
+    let idleId = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-    const interval = window.setInterval(sendHeartbeat, HEARTBEAT_MS);
+    const start = (): void => {
+      sendHeartbeat();
+      intervalId = window.setInterval(sendHeartbeat, HEARTBEAT_MS);
+    };
 
-    const onVisible = () => {
+    if (typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(start, { timeout: 5000 });
+    } else {
+      timeoutId = setTimeout(start, 2500);
+    }
+
+    const onVisible = (): void => {
       if (document.visibilityState === "visible") {
         sendHeartbeat();
       }
@@ -62,7 +73,9 @@ export function LiveVisitorBeacon(): null {
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
-      window.clearInterval(interval);
+      if (idleId) window.cancelIdleCallback(idleId);
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      if (intervalId) window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);

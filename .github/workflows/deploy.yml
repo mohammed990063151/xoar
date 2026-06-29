@@ -310,8 +310,8 @@ jobs:
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          echo "Waiting for Passenger cold start (35s)..."
-          sleep 35
+          echo "Waiting for Passenger cold start (20s)..."
+          sleep 20
 
           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then

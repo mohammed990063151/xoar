@@ -8,8 +8,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getSiteContent } from "@/services/contentService";
 
-export const dynamic = "force-dynamic";
-
 export default async function EventDetailPage({
   params,
 }: {
@@ -18,8 +16,10 @@ export default async function EventDetailPage({
   const { locale: loc, id } = await params;
   if (!isLocale(loc)) notFound();
   const locale = loc as Locale;
-  const dict = await getSiteContent(locale);
-  const item = await getEventBySlug(locale, id);
+  const [dict, item] = await Promise.all([
+    getSiteContent(locale),
+    getEventBySlug(locale, id),
+  ]);
   if (!item) notFound();
 
   return (

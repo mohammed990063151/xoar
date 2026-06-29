@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Outfit, Tajawal } from "next/font/google";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
@@ -6,11 +7,22 @@ import { Header } from "@/components/layout/Header";
 import { LocaleAttributes } from "@/components/providers/LocaleAttributes";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { BookingModalProvider } from "@/components/providers/BookingModalProvider";
-import { InquiryFab } from "@/components/ui/InquiryFab";
-import { LiveVisitorBeacon } from "@/components/analytics/LiveVisitorBeacon";
 import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
+
+const InquiryFab = dynamic(
+  () => import("@/components/ui/InquiryFab").then((m) => ({ default: m.InquiryFab })),
+  { ssr: false, loading: () => null },
+);
+
+const LiveVisitorBeacon = dynamic(
+  () =>
+    import("@/components/analytics/LiveVisitorBeacon").then((m) => ({
+      default: m.LiveVisitorBeacon,
+    })),
+  { ssr: false, loading: () => null },
+);
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -28,8 +40,8 @@ const outfit = Outfit({
   display: "swap",
 });
 
-// CMS + API data — render at request time (avoids 60s+ static build against remote Laravel).
-export const dynamic = "force-dynamic";
+// CMS pages — ISR via layout revalidate; API responses cached per request + 60s data cache.
+export const revalidate = 60;
 export const dynamicParams = true;
 
 export async function generateMetadata({

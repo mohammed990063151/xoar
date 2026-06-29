@@ -17,6 +17,10 @@ export function usePlatformFeatures(
   const [loading, setLoading] = useState(!initialFeatures?.length);
 
   useEffect(() => {
+    if (initialFeatures?.length) {
+      return;
+    }
+
     let active = true;
     featureService
       .list(locale)
@@ -31,7 +35,7 @@ export function usePlatformFeatures(
     return () => {
       active = false;
     };
-  }, [locale]);
+  }, [locale, initialFeatures?.length]);
 
   return {
     features,

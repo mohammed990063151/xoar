@@ -4,8 +4,6 @@ import { isLocale } from "@/lib/i18n";
 import { getPartnersPageContent } from "@/lib/site-page";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
 export default async function PartnersPage({
   params,
 }: {

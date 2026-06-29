@@ -1,13 +1,27 @@
 import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/home/HeroSection";
-import { HomePromoBanner } from "@/components/home/HomePromoBanner";
-import { HomeAmbientMotion } from "@/components/home/HomeAmbientMotion";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
 import { isLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { getSiteContent } from "@/services/contentService";
 import { notFound } from "next/navigation";
+
+const HomeAmbientMotion = dynamic(
+  () =>
+    import("@/components/home/HomeAmbientMotion").then((m) => ({
+      default: m.HomeAmbientMotion,
+    })),
+  { loading: () => null },
+);
+
+const HomePromoBanner = dynamic(
+  () =>
+    import("@/components/home/HomePromoBanner").then((m) => ({
+      default: m.HomePromoBanner,
+    })),
+  { loading: () => null },
+);
 
 const HeroImageGallery = dynamic(
   () =>

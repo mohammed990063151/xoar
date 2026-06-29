@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from "next/cache";
+import { cache } from "react";
 import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
@@ -271,7 +271,12 @@ interface PageApiBundle {
   socialFeed?: unknown[];
 }
 
-async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBundle | null> {
+const PAGE_REVALIDATE_SECONDS = 60;
+
+const fetchPageBundle = cache(async function fetchPageBundle(
+  locale: Locale,
+  page: string,
+): Promise<PageApiBundle | null> {
   if (skipApiDuringBuild()) {
     return null;
   }
@@ -281,8 +286,7 @@ async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBun
   try {
     const res = await fetch(`${API_PROXY_TARGET}/api/site/${locale}/pages/${page}`, {
       headers: { Accept: "application/json" },
-      cache: "no-store",
-      next: { revalidate: 0 },
+      next: { revalidate: PAGE_REVALIDATE_SECONDS },
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -301,7 +305,7 @@ async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBun
   } finally {
     clearTimeout(timer);
   }
-}
+});
 
 async function fetchPageApi(locale: Locale, page: string): Promise<PageApiContent | null> {
   const bundle = await fetchPageBundle(locale, page);
@@ -358,7 +362,6 @@ function pickClosingBlock(
 }
 
 export async function getAboutPageContent(locale: Locale): Promise<AboutPageContent> {
-  noStore();
   const dict = getDictionary(locale);
   const fallback = fallbackAbout(dict);
   const api = await fetchPageApi(locale, "about");
@@ -453,7 +456,6 @@ function mergeServices(apiContent: PageApiContent, dict: Dictionary): ServicesPa
 }
 
 export async function getServicesPageContent(locale: Locale): Promise<ServicesPageContent> {
-  noStore();
   const dict = getDictionary(locale);
   const fallback = fallbackServices(dict);
   const api = await fetchPageApi(locale, "services");
@@ -497,7 +499,6 @@ function mergeActivitiesListing(
 export async function getActivitiesListingContent(
   locale: Locale,
 ): Promise<ActivitiesListingContent> {
-  noStore();
   const dict = getDictionary(locale);
   const fallback = fallbackActivitiesListing(dict);
   const api = await fetchPageApi(locale, "activities");
@@ -558,7 +559,6 @@ function mergePartners(
 }
 
 export async function getPartnersPageContent(locale: Locale): Promise<PartnersPageContent> {
-  noStore();
   const dict = getDictionary(locale);
   const fallback = fallbackPartners(dict);
   const bundle = await fetchPageBundle(locale, "partners");
@@ -643,7 +643,6 @@ function mergeCareers(
 }
 
 export async function getCareersPageContent(locale: Locale): Promise<CareersPageContent> {
-  noStore();
   const dict = getDictionary(locale);
   const fallback = fallbackCareers(dict);
   const bundle = await fetchPageBundle(locale, "careers");
@@ -881,7 +880,6 @@ function mergeBlog(
 }
 
 export async function getBlogPageContent(locale: Locale): Promise<BlogPageContent> {
-  noStore();
   const dict = getDictionary(locale);
   const fallback = fallbackBlog(dict);
   const bundle = await fetchPageBundle(locale, "blog");

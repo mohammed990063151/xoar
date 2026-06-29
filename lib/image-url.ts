@@ -18,11 +18,12 @@ export function isStorageImage(url: string): boolean {
   return url.startsWith("/storage/") || url.includes("/storage/");
 }
 
-/** Skip Next.js image optimizer (avoids slow/failing upstream proxy for external CDNs). */
+/** Skip optimizer only for external URLs the proxy cannot resize reliably. */
 export function useUnoptimizedImage(url: string): boolean {
   if (!url) return false;
-  if (isStorageImage(url)) return true;
-  return /^https?:\/\//i.test(url);
+  if (isStorageImage(url)) return false;
+  if (url.startsWith("/")) return false;
+  return /^https?:\/\//i.test(url) && !url.includes("xoraplus.com");
 }
 
 /** Unsplash IDs that return 404 — replaced at runtime to avoid optimizer retry storms. */
