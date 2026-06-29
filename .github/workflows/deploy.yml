@@ -191,14 +191,34 @@ jobs:
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          ssh $SSH_OPTS "$HOST" "bash -lc '
+          ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
             set +e
-            echo \"== node / passenger logs (best effort) ==\"
+            echo \"== server diagnostics (best effort) ==\"
+            echo \"whoami=$(whoami)\"; echo \"pwd=$(pwd)\"; echo \"home=$HOME\"
+            echo \"DEPLOY_PATH=${DEPLOY_PATH}\"
+            echo
+            echo \"-- ls: \$HOME/logs --\"
+            ls -la \"\$HOME/logs\" 2>/dev/null || true
+            echo \"-- ls: ${DEPLOY_PATH}/tmp --\"
+            ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
+            echo
+            echo \"-- nodevenv locations --\"
+            ls -la \"\$HOME/nodevenv\" 2>/dev/null || true
+            ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar\" 2>/dev/null || true
+            ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24\" 2>/dev/null || true
+            ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var\" 2>/dev/null || true
+            ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log\" 2>/dev/null || true
+            echo
+            echo \"== tail candidate logs ==\"
             CANDIDATES=(
               \"\$HOME/logs/error_log\"
               \"\$HOME/logs/passenger.log\"
               \"\$HOME/logs/stderr.log\"
               \"\$HOME/logs/stdout.log\"
+              \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/error.log\"
+              \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/passenger.log\"
+              \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stderr.log\"
+              \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stdout.log\"
               \"${DEPLOY_PATH}/tmp/passenger-error.log\"
               \"${DEPLOY_PATH}/tmp/stderr.log\"
               \"${DEPLOY_PATH}/tmp/stdout.log\"
@@ -206,11 +226,10 @@ jobs:
               \"${DEPLOY_PATH}/stderr.log\"
               \"${DEPLOY_PATH}/stdout.log\"
             )
-
             for f in \"\${CANDIDATES[@]}\"; do
               if [ -f \"\$f\" ]; then
                 echo \"---- tail: \$f ----\"
-                tail -n 120 \"\$f\" 2>/dev/null || true
+                tail -n 160 \"\$f\" 2>/dev/null || true
               fi
             done
           '"
@@ -246,14 +265,26 @@ jobs:
             echo "::warning::Smoke test failed; printing server logs (best effort)."
             SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
             HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
-            ssh $SSH_OPTS "$HOST" "bash -lc '
+            ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
               set +e
-              echo \"== node / passenger logs after failure (best effort) ==\"
+              echo \"== server diagnostics after failure (best effort) ==\"
+              echo \"-- ls: \$HOME/logs --\"
+              ls -la \"\$HOME/logs\" 2>/dev/null || true
+              echo \"-- ls: ${DEPLOY_PATH}/tmp --\"
+              ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
+              echo \"-- ls: nodevenv var/log --\"
+              ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log\" 2>/dev/null || true
+              echo
+              echo \"== tail candidate logs ==\"
               CANDIDATES=(
                 \"\$HOME/logs/error_log\"
                 \"\$HOME/logs/passenger.log\"
                 \"\$HOME/logs/stderr.log\"
                 \"\$HOME/logs/stdout.log\"
+                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/error.log\"
+                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/passenger.log\"
+                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stderr.log\"
+                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stdout.log\"
                 \"${DEPLOY_PATH}/tmp/passenger-error.log\"
                 \"${DEPLOY_PATH}/tmp/stderr.log\"
                 \"${DEPLOY_PATH}/tmp/stdout.log\"
@@ -261,11 +292,10 @@ jobs:
                 \"${DEPLOY_PATH}/stderr.log\"
                 \"${DEPLOY_PATH}/stdout.log\"
               )
-
               for f in \"\${CANDIDATES[@]}\"; do
                 if [ -f \"\$f\" ]; then
                   echo \"---- tail: \$f ----\"
-                  tail -n 200 \"\$f\" 2>/dev/null || true
+                  tail -n 240 \"\$f\" 2>/dev/null || true
                 fi
               done
             '"
