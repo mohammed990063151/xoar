@@ -164,7 +164,7 @@ jobs:
 
           echo "Syncing runtime files"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
-            package.json package-lock.json next.config.mjs server.js \
+            package.json package-lock.json next.config.mjs server.js .htaccess \
             "$HOST:${DEPLOY_PATH}/"
 
           echo "Syncing scripts/"

@@ -1,0 +1,12 @@
+<IfModule mod_passenger.c>
+  PassengerEnabled on
+  PassengerAppType node
+  PassengerStartupFile server.js
+
+  # If your domain points at this folder, Passenger uses it as the app root.
+  PassengerAppRoot /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
