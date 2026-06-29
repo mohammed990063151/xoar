@@ -86,14 +86,43 @@ jobs:
       - name: Setup SSH
         run: |
           set -euo pipefail
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "::error::Missing GitHub secret SSH_PRIVATE_KEY"
+          missing=0
+          for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME; do
+            value="${!name:-}"
+            if [ -z "${value}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "${missing}" -eq 1 ]; then
+            echo "::error::Add secrets at Settings → Secrets and variables → Actions"
             exit 1
           fi
+
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+          if ! grep -q "BEGIN.*PRIVATE KEY" ~/.ssh/id_ed25519; then
+            echo "::error::SSH_PRIVATE_KEY is not a valid private key (expected PEM/OpenSSH format)"
+            exit 1
+          fi
+
+          # ssh-keyscan may fail on some hosts; SSH uses StrictHostKeyChecking=no anyway.
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=20"
+          echo "Testing SSH to ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} ..."
+          if ! ssh ${SSH_OPTS} "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" "echo SSH_OK"; then
+            echo "::error::SSH connection failed. Check SSH_HOST, SSH_PORT, SSH_USERNAME, and SSH_PRIVATE_KEY."
+            exit 1
+          fi
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
 
       - name: Pre-deploy server checks
         run: |
