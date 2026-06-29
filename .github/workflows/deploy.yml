@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: deploy-production
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   DEPLOY_PATH: /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
@@ -62,7 +62,7 @@ jobs:
       - name: Validate build output
         run: |
           set -euo pipefail
-          chmod +x scripts/verify-deployment.sh
+          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh
           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
 
@@ -141,6 +141,19 @@ jobs:
           else
             echo "No .env yet — will be created during deploy from CI env."
           fi
+
+      - name: Backup live release on server
+        run: |
+          set -euo pipefail
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+          rsync -avz -e "ssh $SSH_OPTS" \
+            scripts/backup-deployment.sh scripts/rollback-deployment.sh \
+            "$HOST:${DEPLOY_PATH}/scripts/"
+
+          ssh $SSH_OPTS "$HOST" \
+            "chmod +x '${DEPLOY_PATH}/scripts/backup-deployment.sh' '${DEPLOY_PATH}/scripts/rollback-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/backup-deployment.sh'"
 
       - name: Deploy build artifacts to server
         run: |
@@ -257,60 +270,49 @@ jobs:
 
           ssh $SSH_OPTS "$HOST" "chmod +x '${DEPLOY_PATH}/scripts/verify-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' MODE=local '${DEPLOY_PATH}/scripts/verify-deployment.sh'"
 
-      - name: Smoke test live site and API
+      - name: Smoke test live site (rollback on failure)
         run: |
           set -euo pipefail
           chmod +x scripts/verify-deployment.sh
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          echo "Waiting for Passenger restart..."
-          sleep 20
+          echo "Waiting for Passenger cold start (30s)..."
+          sleep 30
 
-          if ! DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
+          if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then
-            echo "::warning::Smoke test failed; printing server logs (best effort)."
-            SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-            HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
-            ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
-              set +e
-              echo \"== server diagnostics after failure (best effort) ==\"
-              echo \"-- ls: \$HOME/logs --\"
-              ls -la \"\$HOME/logs\" 2>/dev/null || true
-              LATEST_LOG=\$(ls -1t \"\$HOME/logs/\"*xoraevents* 2>/dev/null | head -n 1 || true)
-              if [ -n \"\$LATEST_LOG\" ]; then
-                echo \"---- tail latest domain log: \$LATEST_LOG ----\"
-                (zcat -f \"\$LATEST_LOG\" 2>/dev/null || cat \"\$LATEST_LOG\" 2>/dev/null) | tail -n 160 || true
-              fi
-              echo \"-- ls: ${DEPLOY_PATH}/tmp --\"
-              ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
-              echo \"-- ls: nodevenv var/log --\"
-              ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log\" 2>/dev/null || true
-              echo
-              echo \"== tail candidate logs ==\"
-              CANDIDATES=(
-                \"\$HOME/logs/error_log\"
-                \"\$HOME/logs/passenger.log\"
-                \"\$HOME/logs/stderr.log\"
-                \"\$HOME/logs/stdout.log\"
-                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/error.log\"
-                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/passenger.log\"
-                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stderr.log\"
-                \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stdout.log\"
-                \"${DEPLOY_PATH}/tmp/passenger-error.log\"
-                \"${DEPLOY_PATH}/tmp/stderr.log\"
-                \"${DEPLOY_PATH}/tmp/stdout.log\"
-                \"${DEPLOY_PATH}/passenger.log\"
-                \"${DEPLOY_PATH}/stderr.log\"
-                \"${DEPLOY_PATH}/stdout.log\"
-              )
-              for f in \"\${CANDIDATES[@]}\"; do
-                if [ -f \"\$f\" ]; then
-                  echo \"---- tail: \$f ----\"
-                  tail -n 240 \"\$f\" 2>/dev/null || true
-                fi
-              done
-            '"
-            exit 1
+            echo "Deploy accepted — live site is healthy."
+            exit 0
           fi
+
+          echo "::warning::Smoke test failed — restoring previous live release (automatic rollback)."
+          ssh $SSH_OPTS "$HOST" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'"
+
+          echo "Waiting for Passenger after rollback (25s)..."
+          sleep 25
+
+          if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
+            scripts/verify-deployment.sh http; then
+            echo "::error::This deploy was REJECTED and rolled back. The previous version is live again."
+          else
+            echo "::error::Rollback ran but site is still unhealthy — check cPanel Node.js logs manually."
+          fi
+
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
+            set +e
+            echo \"== diagnostics after failed deploy ==\"
+            ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
+            LATEST_LOG=\$(ls -1t \"\$HOME/logs/\"*xoraevents* 2>/dev/null | head -n 1 || true)
+            if [ -n \"\$LATEST_LOG\" ]; then
+              echo \"---- tail: \$LATEST_LOG ----\"
+              (zcat -f \"\$LATEST_LOG\" 2>/dev/null || cat \"\$LATEST_LOG\" 2>/dev/null) | tail -n 120 || true
+            fi
+          '"
+
+          exit 1
 
       - name: Upload build log on failure
         if: failure()

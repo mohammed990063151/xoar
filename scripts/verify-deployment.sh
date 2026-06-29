@@ -53,58 +53,26 @@ http_fetch() {
 
   echo "HTTP check: ${label} (${url})" >&2
   body="$(mktemp)"
-  code="$(curl -sS -o "${body}" -w "%{http_code}" --max-time 30 -L \
+  code="$(curl -sS -o "${body}" -w "%{http_code}" --max-time 45 -L \
     -A "xoar-deploy-check/1.0" \
-    "${url}" || echo "000")"
+    "${url}" 2>/dev/null || echo "000")"
 
   echo "  status=${code}" >&2
-  head -c 300 "${body}" | tr '\n' ' ' >&2
+  head -c 280 "${body}" | tr '\n' ' ' >&2
   echo "" >&2
+
+  if [ "${code}" != "000" ] && [ -f "${body}" ]; then
+    if grep -q '__next_error__' "${body}" 2>/dev/null; then
+      echo "  body contains __next_error__" >&2
+      code="err"
+    elif ! grep -qi '<html' "${body}" 2>/dev/null; then
+      echo "  body missing <html" >&2
+      code="err"
+    fi
+  fi
 
   rm -f "${body}"
   echo "${code}"
-}
-
-http_check_required() {
-  local url="$1"
-  local label="$2"
-  local attempt code
-
-  for attempt in 1 2 3 4 5; do
-    code="$(http_fetch "${url}" "${label} (try ${attempt}/5)")"
-    if [ "${code}" = "000" ]; then
-      if [ "${attempt}" -lt 5 ]; then
-        echo "  waiting 8s before retry..." >&2
-        sleep 8
-        continue
-      fi
-      fail "${label} unreachable (curl failed after 5 attempts)"
-    fi
-
-    if http_check_ok "${code}"; then
-      return 0
-    fi
-
-    if [ "${attempt}" -lt 5 ]; then
-      echo "  got HTTP ${code}, waiting 8s before retry..." >&2
-      sleep 8
-    fi
-  done
-
-  case "${code}" in
-    500)
-      fail "${label} returned 500 after 5 attempts. Check cPanel Node.js logs and restart."
-      ;;
-    403)
-      fail "${label} returned 403. Fix Passenger/Node app mapping to ${DEPLOY_PATH}."
-      ;;
-    502|503|504)
-      fail "${label} returned ${code} after 5 attempts."
-      ;;
-    *)
-      fail "${label} returned unexpected HTTP ${code} after 5 attempts"
-      ;;
-  esac
 }
 
 http_check_ok() {
@@ -121,16 +89,44 @@ http_check_optional() {
   local code
   code="$(http_fetch "${url}" "${label}")"
 
-  if [ "${code}" = "000" ] || ! http_check_ok "${code}"; then
+  if [ "${code}" = "000" ] || [ "${code}" = "err" ] || ! http_check_ok "${code}"; then
     warn "${label} check did not pass (HTTP ${code}) — deploy not blocked."
     return 0
   fi
 }
 
+# Try several routes each attempt — /ar (SSR) can be slow; lighter pages prove the app is up.
 http_checks() {
-  # /ar is the real entrypoint; retry handles cold start after Passenger restart.
-  http_check_required "${SITE_URL}/ar" "Site /ar"
-  http_check_optional "${SITE_URL}/ar/about" "Site /ar/about"
+  local routes=(
+    "/en/contact"
+    "/ar/about"
+    "/ar"
+    "/en"
+  )
+  local attempt route url code verified=""
+
+  for attempt in 1 2 3 4 5 6 7 8; do
+    echo "Health check round ${attempt}/8 ..." >&2
+    for route in "${routes[@]}"; do
+      url="${SITE_URL}${route}"
+      code="$(http_fetch "${url}" "${route} (round ${attempt})")"
+      if http_check_ok "${code}"; then
+        verified="${route}"
+        break 2
+      fi
+    done
+
+    if [ "${attempt}" -lt 8 ]; then
+      echo "  no route OK yet, waiting 10s ..." >&2
+      sleep 10
+    fi
+  done
+
+  if [ -z "${verified}" ]; then
+    fail "Site health check failed after 8 rounds. None of: ${routes[*]}"
+  fi
+
+  echo "Site is up (verified via ${verified})." >&2
   http_check_optional "${SITE_URL}/" "Site home"
   http_check_optional "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
 }
