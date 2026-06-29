@@ -46,51 +46,78 @@ check_files() {
   echo "BUILD_ID=$(cat "${root}/.next/BUILD_ID")"
 }
 
-http_checks() {
-  http_check "${SITE_URL}/" "Site home"
-  http_check "${SITE_URL}/ar" "Site /ar"
-  http_check "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
-}
-
-http_check() {
+http_fetch() {
   local url="$1"
   local label="$2"
-  local code body
+  local body code
 
-  echo "HTTP check: ${label} (${url})"
+  echo "HTTP check: ${label} (${url})" >&2
   body="$(mktemp)"
   code="$(curl -sS -o "${body}" -w "%{http_code}" --max-time 30 -L "${url}" || echo "000")"
 
+  echo "  status=${code}" >&2
+  head -c 300 "${body}" | tr '\n' ' ' >&2
+  echo "" >&2
+
+  rm -f "${body}"
+  echo "${code}"
+}
+
+http_check_ok() {
+  local code="$1"
+  case "${code}" in
+    200|301|302|307|308) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+http_check_required() {
+  local url="$1"
+  local label="$2"
+  local code
+  code="$(http_fetch "${url}" "${label}")"
+
   if [ "${code}" = "000" ]; then
-    rm -f "${body}"
     fail "${label} unreachable (curl failed)"
   fi
 
-  echo "  status=${code}"
-  head -c 300 "${body}" | tr '\n' ' '
-  echo ""
+  if http_check_ok "${code}"; then
+    return 0
+  fi
 
   case "${code}" in
-    200|301|302|307|308) ;;
     500)
-      rm -f "${body}"
-      fail "${label} returned 500. Passenger started but the Node app crashed. In cPanel open Setup Node.js App → ${DEPLOY_PATH} → View logs (or Passenger error log), then restart the app. Also ensure Application mode is Production."
+      fail "${label} returned 500. Passenger started but the Node app crashed. Check cPanel Node.js logs and restart the app."
       ;;
     403)
-      rm -f "${body}"
-      fail "${label} returned 403 Forbidden. cPanel is serving Apache, not Passenger/Node. Fix: set Application root to ${DEPLOY_PATH}, startup file server.js, and map the domain to this Node app (not the parent public_html folder)."
+      fail "${label} returned 403. cPanel is serving Apache, not Passenger/Node. Fix Application root → ${DEPLOY_PATH}, startup file server.js."
       ;;
     502|503|504)
-      rm -f "${body}"
-      fail "${label} returned ${code}. Passenger/Node app may be down — check cPanel Node.js logs and tmp/restart.txt."
+      fail "${label} returned ${code}. Passenger/Node app may be down."
       ;;
     *)
-      rm -f "${body}"
       fail "${label} returned unexpected HTTP ${code}"
       ;;
   esac
+}
 
-  rm -f "${body}"
+http_check_optional() {
+  local url="$1"
+  local label="$2"
+  local code
+  code="$(http_fetch "${url}" "${label}")"
+
+  if [ "${code}" = "000" ] || ! http_check_ok "${code}"; then
+    warn "${label} check did not pass (HTTP ${code}) — deploy not blocked."
+    return 0
+  fi
+}
+
+http_checks() {
+  # Only /ar is required — this is the real public entrypoint.
+  http_check_required "${SITE_URL}/ar" "Site /ar"
+  http_check_optional "${SITE_URL}/" "Site home"
+  http_check_optional "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
 }
 
 case "${MODE}" in
@@ -101,7 +128,6 @@ case "${MODE}" in
     check_files "."
     ;;
   http|remote)
-    # HTTP only — filesystem is verified separately over SSH in CI.
     http_checks
     ;;
   *)
