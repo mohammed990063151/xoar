@@ -25,6 +25,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
 
     steps:
       - name: Checkout code
@@ -65,6 +68,20 @@ jobs:
 
       - name: Prune dev dependencies for production
         run: npm prune --omit=dev
+
+      - name: Prepare server .env for deploy
+        run: |
+          set -euo pipefail
+          {
+            echo "API_PROXY_TARGET=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_API_URL=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
+            echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
+          } > .env.deploy
+          echo "Prepared .env.deploy:"
+          cat .env.deploy
 
       - name: Setup SSH
         run: |
@@ -122,15 +139,9 @@ jobs:
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
 
-          echo "Writing server .env (runtime proxy + public URLs)"
-          ssh $SSH_OPTS "$HOST" "cat > '${DEPLOY_PATH}/.env' <<EOF
-API_PROXY_TARGET=${API_PROXY_TARGET}
-NEXT_PUBLIC_API_URL=${API_PROXY_TARGET}
-NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}
-NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}
-NEXT_PUBLIC_SITE_URL=${SITE_URL}
-NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}
-EOF"
+          echo "Syncing server .env"
+          rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
+            .env.deploy "$HOST:${DEPLOY_PATH}/.env"
 
           echo "Syncing node_modules/ (real files, not cPanel symlinks)"
           rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
