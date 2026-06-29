@@ -1,28 +1,15 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { Outfit, Tajawal } from "next/font/google";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { DeferredClientWidgets } from "@/components/layout/DeferredClientWidgets";
 import { LocaleAttributes } from "@/components/providers/LocaleAttributes";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { BookingModalProvider } from "@/components/providers/BookingModalProvider";
 import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
-
-const InquiryFab = dynamic(
-  () => import("@/components/ui/InquiryFab").then((m) => ({ default: m.InquiryFab })),
-  { ssr: false, loading: () => null },
-);
-
-const LiveVisitorBeacon = dynamic(
-  () =>
-    import("@/components/analytics/LiveVisitorBeacon").then((m) => ({
-      default: m.LiveVisitorBeacon,
-    })),
-  { ssr: false, loading: () => null },
-);
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -96,14 +83,11 @@ export default async function LocaleLayout({
               nav={dict.nav}
               settings={dict.settings}
             />
-            <InquiryFab
+            <DeferredClientWidgets
               locale={locale}
-              label={dict.inquiryFab.label}
-              aria={dict.inquiryFab.aria}
-              whatsappAria={dict.inquiryFab.whatsappAria}
+              inquiryFab={dict.inquiryFab}
               whatsapp={dict.settings?.whatsapp}
             />
-            <LiveVisitorBeacon />
           </div>
         </BookingModalProvider>
       </SmoothScrollProvider>
