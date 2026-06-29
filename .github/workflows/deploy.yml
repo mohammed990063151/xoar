@@ -183,8 +183,8 @@ jobs:
           echo "Waiting for Passenger restart..."
           sleep 8
 
-          DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" MODE=http \
-            scripts/verify-deployment.sh
+          DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
+            scripts/verify-deployment.sh http
 
       - name: Upload build log on failure
         if: failure()

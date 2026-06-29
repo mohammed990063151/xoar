@@ -5,7 +5,7 @@ set -euo pipefail
 DEPLOY_PATH="${DEPLOY_PATH:-/home/cjfyc2evye0k/public_html/xoraevents.com/xoar}"
 SITE_URL="${SITE_URL:-https://xoraevents.com}"
 API_URL="${API_URL:-https://xoraplus.com}"
-MODE="${1:-local}" # local | ci | http
+MODE="${MODE:-${1:-local}}" # local | ci | http
 
 fail() {
   echo "::error::$1" >&2
