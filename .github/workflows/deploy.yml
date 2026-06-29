@@ -15,6 +15,7 @@ env:
   SITE_URL: https://xoraevents.com
   API_PROXY_TARGET: https://xoraplus.com
   NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_GTM_ID: GTM-TX7NM96K
 
 defaults:
   run:
@@ -46,6 +47,7 @@ jobs:
             echo "NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
+            echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
           } >> "$GITHUB_ENV"
 
       - name: Build Next.js (webpack)
@@ -92,7 +94,7 @@ jobs:
               exit 1
             fi
           else
-            echo "::warning::No .env on server at ${DEPLOY_PATH}/.env — create it from .env.example (without NODE_ENV)."
+            echo "No .env yet — will be created during deploy from CI env."
           fi
 
       - name: Deploy build artifacts to server
@@ -101,7 +103,7 @@ jobs:
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          ssh $SSH_OPTS "$HOST" "mkdir -p '${DEPLOY_PATH}/.next' '${DEPLOY_PATH}/public' '${DEPLOY_PATH}/tmp'"
+          ssh $SSH_OPTS "$HOST" "mkdir -p '${DEPLOY_PATH}/.next' '${DEPLOY_PATH}/public' '${DEPLOY_PATH}/tmp' '${DEPLOY_PATH}/scripts'"
 
           echo "Syncing .next/"
           rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
@@ -113,8 +115,22 @@ jobs:
 
           echo "Syncing runtime files"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
-            package.json package-lock.json next.config.mjs server.js scripts/verify-deployment.sh \
+            package.json package-lock.json next.config.mjs server.js \
             "$HOST:${DEPLOY_PATH}/"
+
+          echo "Syncing scripts/"
+          rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
+            scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
+
+          echo "Writing server .env (runtime proxy + public URLs)"
+          ssh $SSH_OPTS "$HOST" "cat > '${DEPLOY_PATH}/.env' <<EOF
+API_PROXY_TARGET=${API_PROXY_TARGET}
+NEXT_PUBLIC_API_URL=${API_PROXY_TARGET}
+NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}
+NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}
+NEXT_PUBLIC_SITE_URL=${SITE_URL}
+NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}
+EOF"
 
           echo "Syncing node_modules/ (real files, not cPanel symlinks)"
           rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
