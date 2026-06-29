@@ -1,30 +1,27 @@
 /**
  * Phusion Passenger entry (cPanel Node.js).
  * Set "Application startup file" to server.js in cPanel.
+ * Application mode must be Production.
  */
 const http = require("http");
 const next = require("next");
 const { parse } = require("url");
 
 const port = Number(process.env.PORT || 3000);
-const dev = process.env.NODE_ENV !== "production";
 
-const app = next({ dev });
+// Always production on the server — never run Next dev mode behind Passenger.
+const app = next({ dev: false });
 const handle = app.getRequestHandler();
 
-// Passenger expects the app to bind to process.env.PORT.
 app
   .prepare()
   .then(() => {
     http
       .createServer((req, res) => {
-        const parsedUrl = parse(req.url, true);
-        handle(req, res, parsedUrl);
+        handle(req, res, parse(req.url, true));
       })
-      .listen(port, "0.0.0.0", (err) => {
-        if (err) throw err;
-        // Keep a stable log line for debugging in shared hosting.
-        console.log(`next-server-ready port=${port} env=${process.env.NODE_ENV || ""}`);
+      .listen(port, () => {
+        console.log(`next-server-ready port=${port}`);
       });
   })
   .catch((err) => {

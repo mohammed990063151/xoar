@@ -199,6 +199,11 @@ jobs:
             echo
             echo \"-- ls: \$HOME/logs --\"
             ls -la \"\$HOME/logs\" 2>/dev/null || true
+            LATEST_LOG=\$(ls -1t \"\$HOME/logs/\"*xoraevents* 2>/dev/null | head -n 1 || true)
+            if [ -n \"\$LATEST_LOG\" ]; then
+              echo \"---- tail latest domain log: \$LATEST_LOG ----\"
+              (zcat -f \"\$LATEST_LOG\" 2>/dev/null || cat \"\$LATEST_LOG\" 2>/dev/null) | tail -n 120 || true
+            fi
             echo \"-- ls: ${DEPLOY_PATH}/tmp --\"
             ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
             echo
@@ -270,6 +275,11 @@ jobs:
               echo \"== server diagnostics after failure (best effort) ==\"
               echo \"-- ls: \$HOME/logs --\"
               ls -la \"\$HOME/logs\" 2>/dev/null || true
+              LATEST_LOG=\$(ls -1t \"\$HOME/logs/\"*xoraevents* 2>/dev/null | head -n 1 || true)
+              if [ -n \"\$LATEST_LOG\" ]; then
+                echo \"---- tail latest domain log: \$LATEST_LOG ----\"
+                (zcat -f \"\$LATEST_LOG\" 2>/dev/null || cat \"\$LATEST_LOG\" 2>/dev/null) | tail -n 160 || true
+              fi
               echo \"-- ls: ${DEPLOY_PATH}/tmp --\"
               ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
               echo \"-- ls: nodevenv var/log --\"

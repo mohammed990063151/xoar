@@ -2,44 +2,41 @@
   PassengerEnabled on
   PassengerAppType node
   PassengerStartupFile server.js
-
-  # If your domain points at this folder, Passenger uses it as the app root.
   PassengerAppRoot /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
 </IfModule>
 
-# Prevent directory listing
 Options -Indexes
 
-# Never expose sensitive files (even if Apache serves this folder).
+# cPanel-safe: use <Files> only (DirectoryMatch in .htaccess causes 500).
 <IfModule mod_authz_core.c>
-  <FilesMatch "(^\.|^\.env($|\.))">
+  <Files ".env">
     Require all denied
-  </FilesMatch>
-  <FilesMatch "^(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|tsconfig\.json|next\.config\..*|postcss\.config\..*|eslint\..*)$">
+  </Files>
+  <Files ".env.local">
     Require all denied
-  </FilesMatch>
-  <DirectoryMatch "\.git">
+  </Files>
+  <Files ".env.deploy">
     Require all denied
-  </DirectoryMatch>
+  </Files>
+  <Files "package-lock.json">
+    Require all denied
+  </Files>
 </IfModule>
 
-# Apache 2.2 fallback
 <IfModule !mod_authz_core.c>
-  <FilesMatch "(^\.|^\.env($|\.))">
+  <Files ".env">
     Order allow,deny
     Deny from all
-  </FilesMatch>
-  <DirectoryMatch "\.git">
+  </Files>
+  <Files ".env.local">
     Order allow,deny
     Deny from all
-  </DirectoryMatch>
+  </Files>
 </IfModule>
 
-# Baseline security headers at the edge (covers Passenger error pages too).
-<IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set X-Frame-Options "SAMEORIGIN"
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set Permissions-Policy "compute-pressure=(self \"https://www.youtube.com\" \"https://www.youtube-nocookie.com\")"
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule (^|/)\.git(/|$) - [F,L]
+  RewriteRule (^|/)\.next(/|$) - [F,L]
+  RewriteRule (^|/)node_modules(/|$) - [F,L]
 </IfModule>
-
