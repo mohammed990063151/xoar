@@ -6,12 +6,24 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
 env:
   DEPLOY_PATH: /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
+  SITE_URL: https://xoraevents.com
+  API_PROXY_TARGET: https://xoraplus.com
+  NEXT_TELEMETRY_DISABLED: "1"
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -28,68 +40,128 @@ jobs:
 
       - name: Configure production URLs
         run: |
-          echo "API_PROXY_TARGET=https://xoraplus.com" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_ADMIN_URL=https://xoraplus.com" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_PORTAL_URL=https://xoraplus.com" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_SITE_URL=https://xoraevents.com" >> $GITHUB_ENV
+          {
+            echo "API_PROXY_TARGET=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_API_URL=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
+            echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
+          } >> "$GITHUB_ENV"
 
-      - name: Build Next.js
+      - name: Build Next.js (webpack)
         run: npm run build
         env:
           NODE_ENV: production
           SKIP_API_DURING_BUILD: "1"
+
+      - name: Validate build output
+        run: |
+          set -euo pipefail
+          chmod +x scripts/verify-deployment.sh
+          DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
+          echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
 
       - name: Prune dev dependencies for production
         run: npm prune --omit=dev
 
       - name: Setup SSH
         run: |
+          set -euo pipefail
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::Missing GitHub secret SSH_PRIVATE_KEY"
+            exit 1
+          fi
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy build artifacts to server
+      - name: Pre-deploy server checks
         run: |
+          set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          ssh $SSH_OPTS "$HOST" "mkdir -p ${DEPLOY_PATH}/.next ${DEPLOY_PATH}/public"
+          ssh $SSH_OPTS "$HOST" "test -d '${DEPLOY_PATH}'" \
+            || { echo "::error::Deploy path missing on server: ${DEPLOY_PATH}"; exit 1; }
 
-          rsync -avz --delete -e "ssh $SSH_OPTS" \
+          if ssh $SSH_OPTS "$HOST" "test -f '${DEPLOY_PATH}/.env'"; then
+            echo "Server .env found."
+            if ssh $SSH_OPTS "$HOST" "grep -qE '^NODE_ENV=' '${DEPLOY_PATH}/.env'"; then
+              echo "::error::Remove NODE_ENV from server .env — it causes build/runtime failures on cPanel."
+              exit 1
+            fi
+          else
+            echo "::warning::No .env on server at ${DEPLOY_PATH}/.env — create it from .env.example (without NODE_ENV)."
+          fi
+
+      - name: Deploy build artifacts to server
+        run: |
+          set -euo pipefail
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+          ssh $SSH_OPTS "$HOST" "mkdir -p '${DEPLOY_PATH}/.next' '${DEPLOY_PATH}/public' '${DEPLOY_PATH}/tmp'"
+
+          echo "Syncing .next/"
+          rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
             .next/ "$HOST:${DEPLOY_PATH}/.next/"
 
-          rsync -avz --delete -e "ssh $SSH_OPTS" \
+          echo "Syncing public/"
+          rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
             public/ "$HOST:${DEPLOY_PATH}/public/"
 
-          rsync -avz -e "ssh $SSH_OPTS" \
-            package.json package-lock.json next.config.mjs server.js \
+          echo "Syncing runtime files"
+          rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
+            package.json package-lock.json next.config.mjs server.js scripts/verify-deployment.sh \
             "$HOST:${DEPLOY_PATH}/"
 
-          # cPanel SSH shell often has no npm in PATH — ship node_modules from CI instead.
-          rsync -avz --delete -e "ssh $SSH_OPTS" \
+          echo "Syncing node_modules/ (real files, not cPanel symlinks)"
+          rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
             node_modules/ "$HOST:${DEPLOY_PATH}/node_modules/"
 
       - name: Restart Passenger app
         run: |
+          set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-          ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-            "mkdir -p ${DEPLOY_PATH}/tmp && touch ${DEPLOY_PATH}/tmp/restart.txt"
+          ssh $SSH_OPTS "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" \
+            "touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt'"
 
-      - name: Verify deployment
+      - name: Verify remote files
         run: |
+          set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-          echo "Remote BUILD_ID:"
-          ssh $SSH_OPTS ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-            "cat ${DEPLOY_PATH}/.next/BUILD_ID"
-          echo "cPanel: startup file=server.js, Node 20+, env API_PROXY_TARGET=https://xoraplus.com"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+          LOCAL_BUILD_ID="$(cat .next/BUILD_ID)"
 
-      - name: Smoke test live API
-        run: |
-          API="${{ secrets.API_PROXY_TARGET }}"
-          if [ -z "$API" ]; then
-            API="https://xoraplus.com"
+          REMOTE_BUILD_ID="$(ssh $SSH_OPTS "$HOST" "cat '${DEPLOY_PATH}/.next/BUILD_ID'")"
+          echo "Local  BUILD_ID=${LOCAL_BUILD_ID}"
+          echo "Remote BUILD_ID=${REMOTE_BUILD_ID}"
+
+          if [ "${LOCAL_BUILD_ID}" != "${REMOTE_BUILD_ID}" ]; then
+            echo "::error::BUILD_ID mismatch after deploy — rsync may have failed partially."
+            exit 1
           fi
-          echo "Testing ${API}/api/activities/ar?per_page=1"
-          curl -fsS "${API}/api/activities/ar?per_page=1" | head -c 200
-          echo ""
+
+          ssh $SSH_OPTS "$HOST" "chmod +x '${DEPLOY_PATH}/scripts/verify-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' MODE=local '${DEPLOY_PATH}/scripts/verify-deployment.sh'"
+
+      - name: Smoke test live site and API
+        run: |
+          set -euo pipefail
+          chmod +x scripts/verify-deployment.sh
+
+          echo "Waiting for Passenger restart..."
+          sleep 8
+
+          DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" MODE=remote \
+            scripts/verify-deployment.sh
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-failure-logs
+          path: |
+            .next/trace
+            npm-debug.log*
+          if-no-files-found: ignore
