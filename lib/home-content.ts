@@ -5,6 +5,11 @@ import type { Locale } from "@/lib/i18n";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
+import {
+  normalizeMediaUrl,
+  optimizePosterUrl,
+  sanitizeHeroVideoUrl,
+} from "@/lib/media-url";
 import type { ActivityCardData } from "@/components/ui/ActivityCard";
 import { normalizeActivityFromApi, toActivityCardData } from "@/lib/activity";
 import type { Activity } from "@/types/api";
@@ -118,11 +123,14 @@ function nonEmpty(value: unknown): string | undefined {
 function mediaUrl(value: unknown): string | undefined {
   const raw = nonEmpty(value);
   if (!raw) return undefined;
-  return normalizeStorageImageUrl(raw);
+  return normalizeMediaUrl(raw);
 }
 
-function pickHero(raw?: HomeApiPayload["hero"]): Partial<HomeHero> {
+function pickHero(raw?: HomeApiPayload["hero"] & Record<string, unknown>): Partial<HomeHero> {
   if (!raw) return {};
+
+  const videoRaw = raw.videoUrl ?? raw.video_url;
+  const posterRaw = raw.videoPoster ?? raw.video_poster;
 
   return {
     title: nonEmpty(raw.title),
@@ -131,8 +139,8 @@ function pickHero(raw?: HomeApiPayload["hero"]): Partial<HomeHero> {
     subtitle: nonEmpty(raw.subtitle),
     primaryCta: nonEmpty(raw.primaryCta),
     secondaryCta: nonEmpty(raw.secondaryCta),
-    videoUrl: mediaUrl(raw.videoUrl),
-    videoPoster: mediaUrl(raw.videoPoster),
+    videoUrl: sanitizeHeroVideoUrl(mediaUrl(videoRaw)),
+    videoPoster: optimizePosterUrl(mediaUrl(posterRaw)),
     gallery: mapGalleryImages(raw.gallery),
   };
 }
@@ -276,6 +284,8 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
   const dict = getDictionary(locale);
 
   const hero = { ...dict.hero, ...pickHero(api.hero) };
+  hero.videoUrl = sanitizeHeroVideoUrl(hero.videoUrl);
+  hero.videoPoster = optimizePosterUrl(hero.videoPoster) ?? hero.videoPoster;
 
   return {
     hero,
@@ -342,7 +352,11 @@ async function fetchHomeContent(locale: Locale): Promise<HomeContent> {
   const dict = getDictionary(locale);
 
   const fallback: HomeContent = {
-    hero: dict.hero,
+    hero: {
+      ...dict.hero,
+      videoUrl: undefined,
+      videoPoster: optimizePosterUrl(dict.hero.videoPoster),
+    },
     promoSlides: [],
     heroGallery: heroGalleryCopy(dict),
     galleryImages: [],

@@ -83,8 +83,7 @@
     "primaryCta": "استكشف الأنشطة الترفيهية",
     "eventRequestCta": "طلب فعالية",
     "secondaryCta": "مشاهدة أعمالنا",
-    "videoUrl": "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4",
-    "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80"
+    "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=960&q=70&auto=format"
   },
   "heroGallery": {
     "eyebrow": "لمحات من أعمالنا",

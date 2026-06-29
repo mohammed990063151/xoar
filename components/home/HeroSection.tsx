@@ -7,14 +7,12 @@ import { EventRequestLink } from "@/components/ui/EventRequestLink";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { HomeHero } from "@/lib/home-content";
+import { optimizePosterUrl } from "@/lib/media-url";
 import { siteContainer } from "@/lib/layout";
 import { cn } from "@/lib/cn";
 
-const HERO_VIDEO_SRC =
-  "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4";
-
-const HERO_VIDEO_POSTER =
-  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=75";
+const HERO_POSTER_FALLBACK =
+  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=960&q=70&auto=format";
 
 const container = {
   hidden: { opacity: 0 },
@@ -33,11 +31,14 @@ const item = {
   },
 };
 
-function useHeroVideoAutoplay(reduceMotion: boolean | null): boolean {
-  const [autoplay, setAutoplay] = useState(false);
+function useHeroVideoPlayback(
+  videoSrc: string | undefined,
+  reduceMotion: boolean | null,
+): boolean {
+  const [playVideo, setPlayVideo] = useState(false);
 
   useEffect(() => {
-    if (reduceMotion) {
+    if (!videoSrc || reduceMotion) {
       return;
     }
 
@@ -46,10 +47,22 @@ function useHeroVideoAutoplay(reduceMotion: boolean | null): boolean {
       navigator as Navigator & { connection?: { saveData?: boolean } }
     ).connection?.saveData;
 
-    setAutoplay(!mobile && !saveData);
-  }, [reduceMotion]);
+    if (mobile || saveData) {
+      return;
+    }
 
-  return autoplay;
+    const start = (): void => setPlayVideo(true);
+
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(start, { timeout: 2500 });
+      return () => window.cancelIdleCallback(id);
+    }
+
+    const timer = window.setTimeout(start, 1500);
+    return () => window.clearTimeout(timer);
+  }, [videoSrc, reduceMotion]);
+
+  return playVideo;
 }
 
 interface HeroSectionProps {
@@ -62,9 +75,10 @@ export function HeroSection({
   hero,
 }: HeroSectionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
-  const autoplayVideo = useHeroVideoAutoplay(reduceMotion);
-  const videoSrc = hero.videoUrl?.trim() || HERO_VIDEO_SRC;
-  const posterSrc = hero.videoPoster?.trim() || HERO_VIDEO_POSTER;
+  const videoSrc = hero.videoUrl?.trim() || undefined;
+  const playVideo = useHeroVideoPlayback(videoSrc, reduceMotion);
+  const posterSrc =
+    optimizePosterUrl(hero.videoPoster?.trim()) ?? HERO_POSTER_FALLBACK;
 
   const orbs = reduceMotion
     ? []
@@ -91,7 +105,7 @@ export function HeroSection({
           ))
         : null}
       <div className="absolute inset-0">
-        {autoplayVideo ? (
+        {playVideo && videoSrc ? (
           <video
             key={videoSrc}
             className="h-full w-full scale-105 object-cover object-center"
@@ -99,7 +113,7 @@ export function HeroSection({
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="none"
             autoPlay
             aria-hidden
           >
