@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 import { ActivityBadgeRibbon } from "@/components/ui/ActivityBadgeRibbon";
 import type { RecommendationHighlightVariant } from "@/components/ui/RecommendationHighlightBadge";
 import { ACTIVITY_FALLBACK_IMAGE } from "@/lib/activity";
-import { formatSarPrice } from "@/lib/format-price";
+import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import { ActivityCardMediaSlider } from "@/components/ui/ActivityCardMediaSlider";
 import type { ActivityCardMediaSlide } from "@/components/ui/ActivityCardMediaSlider";
 import { ActivityCardMediaOverlays } from "@/components/features/ActivityCardMediaOverlays";
@@ -26,6 +26,13 @@ export interface ActivityCardData {
   readonly location?: string;
   readonly eventDate?: string;
   readonly price?: string;
+  readonly comparePrice?: string;
+  readonly originalPrice?: string;
+  readonly activeCoupon?: {
+    readonly code?: string;
+    readonly label?: string | null;
+    readonly badge?: string;
+  } | null;
   readonly shortLabel?: string;
   readonly badge?: string;
   readonly badgeLabel?: string;
@@ -39,6 +46,7 @@ export interface ActivityCardData {
     variant?: RecommendationHighlightVariant;
   } | null;
   readonly endsAt?: string;
+  readonly showCountdown?: boolean;
   readonly mediaSlides?: readonly ActivityCardMediaSlide[];
   readonly promoVideoUrl?: string;
 }
@@ -110,7 +118,6 @@ export function ActivityCard({
             url: slideUrl(activity.image) ? activity.image.trim() : ACTIVITY_FALLBACK_IMAGE,
           },
         ];
-  const priceDisplay = formatSarPrice(activity.price, locale);
   const wished = has(activity.slug);
   const ar = locale === "ar";
   const highlightLabelResolved = highlightLabel ?? activity.cardHighlight?.label;
@@ -131,6 +138,7 @@ export function ActivityCard({
       : "";
   const periodLabel = offerPeriod || periodHint;
   const hasPriceStats = cardRating !== null || monthlyBookings > 0 || Boolean(periodLabel);
+  const hasCoupon = Boolean(activity.activeCoupon);
   const hasPrice = Boolean(activity.price?.trim());
   const urgencyMessage =
     proofOn && activity.socialProofCard?.urgency?.show
@@ -199,9 +207,19 @@ export function ActivityCard({
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-gradient-to-t from-[#05050c] to-[#05050c]/85 px-3 py-2 backdrop-blur-sm">
               <div className="flex items-end gap-2">
                 {hasPrice ? (
-                  <div className="shrink-0">
-                    <p className="text-base font-bold tracking-tight text-white">{priceDisplay}</p>
-                    <p className="text-[9px] text-slate-500">{ar ? "للشخص" : "per person"}</p>
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <ActivityPriceDisplay
+                      locale={locale}
+                      price={activity.price}
+                      comparePrice={hasCoupon ? activity.comparePrice : undefined}
+                      showCompare={hasCoupon}
+                      size="md"
+                    />
+                    {activity.activeCoupon?.badge ? (
+                      <span className="w-fit rounded-full border border-emerald-400/35 bg-emerald-500/15 px-2 py-0.5 text-[9px] font-semibold text-emerald-200">
+                        {activity.activeCoupon.badge}
+                      </span>
+                    ) : null}
                   </div>
                 ) : null}
                 {hasPriceStats ? (
@@ -266,7 +284,7 @@ export function ActivityCard({
             </p>
           ) : null}
 
-          {showCountdown && activity.endsAt ? (
+          {showCountdown && activity.showCountdown && activity.endsAt ? (
             <BookingCountdown
               endsAt={activity.endsAt}
               enabled

@@ -6,7 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 import { useUnoptimizedImage } from "@/lib/image-url";
 import type { Locale } from "@/lib/i18n";
-import { isYoutubeUrl, youtubeEmbedUrl } from "@/lib/video-embed";
+import { isYoutubeUrl } from "@/lib/video-embed";
+import { YoutubeEmbed } from "@/components/ui/YoutubeEmbed";
 
 export interface AccordionImageGalleryProps {
   readonly images: readonly string[];
@@ -96,15 +97,7 @@ export function AccordionImageGallery({
       >
         <div className="relative aspect-[16/10] w-full min-h-[220px] sm:min-h-[320px]">
           {isYoutubeUrl(safeVideo) ? (
-            <iframe
-              src={youtubeEmbedUrl(safeVideo)}
-              title={title}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
+            <YoutubeEmbed videoUrl={safeVideo} title={title} className="h-full w-full" />
           ) : (
             <video
               src={safeVideo}
@@ -172,9 +165,85 @@ export function AccordionImageGallery({
         setHoveredIndex(null);
       }}
     >
+      {/* Mobile: single-slide carousel (accordion is too cramped on narrow screens) */}
       <div
         className={cn(
-          "flex h-[min(72vw,420px)] min-h-[240px] gap-2 overflow-hidden rounded-2xl p-2 sm:h-[400px] sm:gap-2.5 sm:p-2.5",
+          "relative overflow-hidden rounded-2xl sm:hidden",
+          isCream ? "bg-[#fdf5f0] shadow-lg" : "border border-white/10 bg-slate-950/90",
+        )}
+      >
+        <div className="relative aspect-[4/3] min-h-[200px] w-full">
+          {safeVideo && activeIndex === imageCount ? (
+            <div className="absolute inset-0 bg-black">
+              {isYoutubeUrl(safeVideo) ? (
+                <YoutubeEmbed videoUrl={safeVideo} title={title} className="h-full w-full" />
+              ) : (
+                <video
+                  src={safeVideo}
+                  className="h-full w-full object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  title={title}
+                />
+              )}
+            </div>
+          ) : (
+            <Image
+              src={images[activeIndex] ?? images[0]}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority={activeIndex === 0}
+              unoptimized={useUnoptimizedImage(images[activeIndex] ?? images[0])}
+            />
+          )}
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
+            aria-hidden
+          />
+          {count > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setActive(activeIndex - 1)}
+                className="absolute start-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/95 text-sm font-semibold text-black shadow"
+                aria-label={locale === "ar" ? "السابقة" : "Previous"}
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={() => setActive(activeIndex + 1)}
+                className="absolute end-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/95 text-sm font-semibold text-black shadow"
+                aria-label={locale === "ar" ? "التالية" : "Next"}
+              >
+                ›
+              </button>
+              <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-1.5">
+                {Array.from({ length: count }, (_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActive(i)}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all",
+                      i === activeIndex ? "w-5 bg-white" : "w-1.5 bg-white/40",
+                    )}
+                    aria-label={`${labels.image} ${i + 1}`}
+                    aria-current={i === activeIndex ? "true" : undefined}
+                  />
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          "hidden h-[min(72vw,420px)] min-h-[240px] gap-2 overflow-hidden rounded-2xl p-2 sm:flex sm:h-[400px] sm:gap-2.5 sm:p-2.5",
           isCream ? "bg-[#fdf5f0]" : "border border-white/10 bg-slate-950/90",
         )}
         role="list"
@@ -273,15 +342,7 @@ export function AccordionImageGallery({
             {imageCount === focusedIndex ? (
               <div className="absolute inset-0 bg-black">
                 {isYoutubeUrl(safeVideo) ? (
-                  <iframe
-                    src={youtubeEmbedUrl(safeVideo)}
-                    title={title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                  />
+                  <YoutubeEmbed videoUrl={safeVideo} title={title} className="h-full w-full" />
                 ) : (
                   <video
                     src={safeVideo}

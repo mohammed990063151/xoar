@@ -4,6 +4,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import Link from "next/link";
+
 import { motion, AnimatePresence } from "framer-motion";
 
 import { BookingDatePicker } from "@/components/activities/booking/BookingDatePicker";
@@ -44,7 +46,15 @@ import type { Locale } from "@/lib/i18n";
 
 import { getApiBaseUrl } from "@/lib/api-base";
 
+import { localizedPath } from "@/lib/i18n";
+
+import { customerService, getCustomerToken } from "@/services/customerService";
+
+import type { Customer } from "@/types/customer";
+
 import { paymentService } from "@/services/paymentService";
+import { couponService, type CouponValidationResult } from "@/services/couponService";
+import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 
 import type { PaymentConfig, PaymentMethodOption } from "@/types/payment";
 
@@ -174,7 +184,11 @@ export function ActivityBookingPanel({
 
   const ar = locale === "ar";
 
-  const unitPrice = parsePriceAmount(activity.price);
+  const originalUnitPrice = parsePriceAmount(
+    activity.originalPrice ?? activity.original_price ?? activity.price,
+  );
+  const displayUnitPrice = parsePriceAmount(activity.displayPrice ?? activity.price);
+  const unitPrice = originalUnitPrice > 0 ? originalUnitPrice : displayUnitPrice;
 
   const bookableDays = useMemo(() => resolveBookableDays(activity, 60), [activity]);
 
@@ -219,6 +233,24 @@ export function ActivityBookingPanel({
 
   const [pdfUrl, setPdfUrl] = useState("");
 
+  const [couponInput, setCouponInput] = useState("");
+
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponValidationResult | null>(null);
+
+  const [couponError, setCouponError] = useState("");
+
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  const [customer, setCustomer] = useState<Customer | null>(null);
+
+  const [authChecking, setAuthChecking] = useState(true);
+
+  const loginReturnPath = localizedPath(locale, `/activities/${activity.slug}#book`);
+
+  const loginHref = `${localizedPath(locale, "/account/login")}?returnTo=${encodeURIComponent(loginReturnPath)}`;
+
+  const registerHref = `${localizedPath(locale, "/account/login")}?mode=register&returnTo=${encodeURIComponent(loginReturnPath)}`;
+
 
 
   const isGift = bookingMode === "gift";
@@ -233,11 +265,27 @@ export function ActivityBookingPanel({
 
 
 
-  const total = calculateBookingTotal(unitPrice, adults, children);
+  const subtotal = calculateBookingTotal(unitPrice, adults, children);
 
-  const totalLabel = unitPrice > 0 ? formatMoney(total, locale) : activity.price ?? "—";
+  const discountAmount =
+    appliedCoupon?.valid && typeof appliedCoupon.discount === "number"
+      ? appliedCoupon.discount
+      : 0;
 
-  const unitLabel = unitPrice > 0 ? formatMoney(unitPrice, locale) : activity.price ?? "—";
+  const total =
+    appliedCoupon?.valid && typeof appliedCoupon.total === "number"
+      ? appliedCoupon.total
+      : subtotal;
+
+  const totalLabel =
+    unitPrice > 0
+      ? formatMoney(total, locale)
+      : activity.displayPrice ?? activity.price ?? "—";
+
+  const unitLabel =
+    displayUnitPrice > 0
+      ? formatMoney(displayUnitPrice, locale)
+      : activity.displayPrice ?? activity.price ?? "—";
 
 
 
@@ -262,6 +310,86 @@ export function ActivityBookingPanel({
     });
 
   }, [locale]);
+
+
+
+  useEffect(() => {
+    let active = true;
+    void customerService.me().then((profile) => {
+      if (active) {
+        setCustomer(profile);
+        setAuthChecking(false);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const refreshAuth = () => {
+      void customerService.me().then(setCustomer);
+    };
+    window.addEventListener("focus", refreshAuth);
+    return () => window.removeEventListener("focus", refreshAuth);
+  }, []);
+
+
+
+  useEffect(() => {
+    const code = activity.activeCoupon?.code;
+    if (!code) return;
+
+    setCouponInput(code);
+    setCouponLoading(true);
+    couponService
+      .validate(locale, activity.slug, code, adults, children)
+      .then((result) => {
+        if (result.valid) {
+          setAppliedCoupon(result);
+          setCouponError("");
+        }
+      })
+      .catch(() => {
+        setAppliedCoupon(null);
+      })
+      .finally(() => setCouponLoading(false));
+  }, [activity.slug, activity.activeCoupon?.code, locale, adults, children]);
+
+
+
+  async function applyCouponCode(): Promise<void> {
+    setCouponError("");
+    setCouponLoading(true);
+    try {
+      const result = await couponService.validate(
+        locale,
+        activity.slug,
+        couponInput,
+        adults,
+        children,
+      );
+      if (!result.valid) {
+        setAppliedCoupon(null);
+        setCouponError(result.message ?? (ar ? "كود غير صالح" : "Invalid code"));
+        return;
+      }
+      setAppliedCoupon(result);
+    } catch {
+      setAppliedCoupon(null);
+      setCouponError(ar ? "تعذّر التحقق من الكوبون" : "Could not validate coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+
+
+  function clearCoupon(): void {
+    setCouponInput("");
+    setAppliedCoupon(null);
+    setCouponError("");
+  }
 
 
 
@@ -341,7 +469,10 @@ export function ActivityBookingPanel({
 
     setError("");
 
-
+    if (!getCustomerToken() || !customer) {
+      window.location.assign(loginHref);
+      return;
+    }
 
     if (isGift && !giftDetails?.name.trim()) {
 
@@ -396,6 +527,8 @@ export function ActivityBookingPanel({
         children,
 
         total_amount: totalLabel,
+
+        coupon_code: appliedCoupon?.valid ? appliedCoupon.code : undefined,
 
         payment_method: paymentMethod,
 
@@ -572,28 +705,34 @@ export function ActivityBookingPanel({
     <div
 
       id="book"
-
-      className="scroll-mt-28 rounded-3xl border border-white/10 bg-gradient-to-b from-slate-900/95 to-slate-950 p-5 shadow-2xl shadow-black/40 sm:p-6"
-
+      className="scroll-mt-24 rounded-3xl border border-violet-500/20 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950 p-4 shadow-2xl shadow-black/40 ring-1 ring-white/5 sm:p-6"
     >
-
-      <div className="flex items-baseline justify-between gap-2 border-b border-white/10 pb-4">
-
-        <div>
-
+      <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <p className="line-clamp-2 text-sm font-semibold text-white sm:text-base">{activity.title}</p>
           <p className="text-xs font-medium uppercase tracking-wider text-cyan-400/90">
-
             {ar ? "احجز تجربتك" : "Book your experience"}
-
           </p>
-
-          <p className="mt-1 text-3xl font-bold text-white">{unitLabel}</p>
-
-          <p className="text-xs text-slate-500">{labels.perPerson}</p>
+          <ActivityPriceDisplay
+            locale={locale}
+            price={
+              activity.activeCoupon
+                ? (activity.displayPrice ?? activity.price)
+                : (activity.originalPrice ?? activity.original_price ?? activity.price)
+            }
+            comparePrice={
+              activity.activeCoupon
+                ? (activity.originalPrice ?? activity.original_price ?? activity.comparePrice)
+                : undefined
+            }
+            showCompare={Boolean(activity.activeCoupon)}
+            perPerson
+            size="md"
+          />
 
         </div>
 
-        <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
+        <span className="inline-flex w-fit shrink-0 self-start rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
 
           {labels.securePayment}
 
@@ -601,9 +740,46 @@ export function ActivityBookingPanel({
 
       </div>
 
-
+      {authChecking ? (
+        <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2.5 text-center text-xs text-slate-500">
+          {ar ? "جاري التحقق من حسابك…" : "Checking your account…"}
+        </div>
+      ) : null}
 
       <form className="mt-5 space-y-5" onSubmit={(e) => void handleSubmit(e)}>
+
+        {!authChecking && customer ? (
+        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {ar ? "مسجّل الدخول كـ" : "Signed in as"}{" "}
+          <strong className="text-white">{customer.name}</strong>
+          <span className="mx-1.5 text-emerald-300/60" aria-hidden>
+            ·
+          </span>
+          <span className="text-emerald-200/80">{customer.email}</span>
+        </div>
+        ) : !authChecking ? (
+        <div className="rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm text-violet-100">
+          <p>
+            {ar
+              ? "يمكنك اختيار التاريخ والمشاركين الآن. لإتمام الدفع يجب تسجيل الدخول أو إنشاء حساب."
+              : "You can pick dates and guests now. Sign in or create an account to complete payment."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link
+              href={loginHref}
+              className="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white"
+            >
+              {ar ? "تسجيل الدخول" : "Sign in"}
+            </Link>
+            <Link
+              href={registerHref}
+              className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10"
+            >
+              {ar ? "إنشاء حساب" : "Create account"}
+            </Link>
+          </div>
+        </div>
+        ) : null}
 
         {giftBookingEnabled ? (
 
@@ -876,6 +1052,49 @@ export function ActivityBookingPanel({
 
 
 
+              <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+                <h3 className="mb-3 text-sm font-semibold text-white">
+                  {ar ? "كود خصم" : "Coupon code"}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder={ar ? "أدخل الكود" : "Enter code"}
+                    className="min-w-[140px] flex-1 rounded-xl border border-white/10 bg-slate-950 px-3 py-2.5 text-sm text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void applyCouponCode()}
+                    disabled={couponLoading || !couponInput.trim()}
+                    className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    {couponLoading ? "…" : ar ? "تطبيق" : "Apply"}
+                  </button>
+                  {appliedCoupon?.valid ? (
+                    <button
+                      type="button"
+                      onClick={clearCoupon}
+                      className="rounded-xl border border-white/15 px-4 py-2.5 text-sm text-slate-300"
+                    >
+                      {ar ? "إزالة" : "Remove"}
+                    </button>
+                  ) : null}
+                </div>
+                {couponError ? (
+                  <p className="mt-2 text-xs text-red-300">{couponError}</p>
+                ) : null}
+                {appliedCoupon?.valid ? (
+                  <p className="mt-2 text-xs text-emerald-300">
+                    {ar ? "تم تطبيق الكود" : "Coupon applied"}: {appliedCoupon.code}
+                    {appliedCoupon.label ? ` — ${appliedCoupon.label}` : ""}
+                  </p>
+                ) : null}
+              </section>
+
+
+
               <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 px-4 py-3">
 
                 <div className="flex items-center justify-between text-sm">
@@ -885,6 +1104,12 @@ export function ActivityBookingPanel({
                   <span className="text-2xl font-bold text-white">{totalLabel}</span>
 
                 </div>
+
+                {discountAmount > 0 ? (
+                  <p className="mt-1 text-xs text-emerald-300">
+                    {ar ? "خصم" : "Discount"}: −{formatMoney(discountAmount, locale)}
+                  </p>
+                ) : null}
 
                 <p className="mt-1 text-xs text-slate-500">
 
@@ -924,7 +1149,11 @@ export function ActivityBookingPanel({
 
                     name="name"
 
-                    required
+                    required={Boolean(customer)}
+
+                    defaultValue={customer?.name ?? ""}
+
+                    key={`booking-name-${customer?.id ?? "guest"}`}
 
                     placeholder={
 
@@ -954,7 +1183,11 @@ export function ActivityBookingPanel({
 
                     type="email"
 
-                    required
+                    required={Boolean(customer)}
+
+                    defaultValue={customer?.email ?? ""}
+
+                    key={`booking-email-${customer?.id ?? "guest"}`}
 
                     placeholder={ar ? "البريد الإلكتروني" : "Email"}
 
@@ -968,7 +1201,11 @@ export function ActivityBookingPanel({
 
                     type="tel"
 
-                    required
+                    required={Boolean(customer)}
+
+                    defaultValue={customer?.phone ?? ""}
+
+                    key={`booking-phone-${customer?.id ?? "guest"}`}
 
                     placeholder={ar ? "رقم الجوال" : "Phone"}
 
@@ -1073,18 +1310,16 @@ export function ActivityBookingPanel({
               >
 
                 {loading
-
                   ? ar
-
                     ? "جاري المعالجة..."
-
                     : "Processing..."
-
-                  : giftReady
-
-                    ? labels.proceedGift
-
-                    : labels.proceed}
+                  : !customer
+                    ? ar
+                      ? "سجّل الدخول لإتمام الدفع"
+                      : "Sign in to complete payment"
+                    : giftReady
+                      ? labels.proceedGift
+                      : labels.proceed}
 
               </button>
 

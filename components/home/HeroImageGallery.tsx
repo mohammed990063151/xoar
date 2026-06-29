@@ -85,9 +85,9 @@ export function HeroImageGallery({
           <p className="mt-3 text-base leading-relaxed text-slate-400">{copy.subtitle}</p>
         </SlideInEdge>
 
-        <SlideInEdge from="bottom" delay={0.1} className="relative mx-auto mt-12 max-w-5xl sm:mt-14">
+        <SlideInEdge from="bottom" delay={0.1} className="relative mx-auto mt-8 max-w-5xl sm:mt-14">
           <div className="gradient-border shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-            <div className="inner overflow-hidden p-2 sm:p-3">
+            <div className="inner overflow-hidden p-1.5 sm:p-3">
               <AccordionImageGallery
                 images={normalized}
                 locale={locale}

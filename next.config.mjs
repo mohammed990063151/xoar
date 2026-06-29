@@ -35,10 +35,25 @@ const nextConfig = {
         hostname: "upload.wikimedia.org",
         pathname: "/wikipedia/**",
       },
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**" },
       { protocol: "http", hostname: "127.0.0.1", pathname: "/storage/**" },
       { protocol: "http", hostname: "localhost", pathname: "/storage/**" },
       { protocol: "https", hostname: "xoraplus.com", pathname: "/storage/**" },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value:
+              'compute-pressure=(self "https://www.youtube.com" "https://www.youtube-nocookie.com")',
+          },
+        ],
+      },
+    ];
   },
 };
 

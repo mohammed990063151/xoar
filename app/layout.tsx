@@ -1,4 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import {
+  GoogleTagManager,
+  GoogleTagManagerNoscript,
+} from "@/components/analytics/GoogleTagManager";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,7 +27,11 @@ export default function RootLayout({
 }>): React.ReactElement {
   return (
     <html lang="ar" suppressHydrationWarning>
-      <body className="min-h-screen min-w-0 overflow-x-clip antialiased">{children}</body>
+      <body className="min-h-screen min-w-0 overflow-x-clip antialiased">
+        <GoogleTagManager />
+        <GoogleTagManagerNoscript />
+        {children}
+      </body>
     </html>
   );
 }

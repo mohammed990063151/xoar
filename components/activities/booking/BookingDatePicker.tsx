@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
-import { formatDisplayDate, toIsoDate, upcomingBookableDays } from "@/lib/booking";
+import { toIsoDate, upcomingBookableDays } from "@/lib/booking";
 import type { Locale } from "@/lib/i18n";
 
 interface BookingDatePickerProps {
@@ -61,12 +61,6 @@ export function BookingDatePicker({
     ? ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const quickDates = useMemo(() => {
-    const days = upcomingBookableDays(14);
-    if (!bookable || bookable.size === 0) return days;
-    return days.filter((d) => bookable.has(toIsoDate(d)));
-  }, [bookable]);
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
@@ -124,33 +118,6 @@ export function BookingDatePicker({
             </button>
           );
         })}
-      </div>
-
-      <div>
-        <p className="mb-2 text-xs text-slate-500">
-          {ar ? "تواريخ سريعة" : "Quick dates"}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {quickDates.map((day) => {
-            const iso = toIsoDate(day);
-            const active = toIsoDate(selected) === iso;
-            return (
-              <button
-                key={iso}
-                type="button"
-                onClick={() => onSelect(day)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs transition",
-                  active
-                    ? "border-cyan-400/50 bg-cyan-500/20 text-cyan-100"
-                    : "border-white/10 bg-white/5 text-slate-400 hover:border-white/20",
-                )}
-              >
-                {formatDisplayDate(day, locale)}
-              </button>
-            );
-          })}
-        </div>
       </div>
     </div>
   );

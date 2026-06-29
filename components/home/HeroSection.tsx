@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { EventRequestLink } from "@/components/ui/EventRequestLink";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { HomeHero } from "@/lib/home-content";
@@ -53,7 +54,7 @@ export function HeroSection({
       ];
 
   return (
-    <section className="relative min-h-[min(88dvh,680px)] overflow-hidden rounded-b-2xl border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem] lg:min-h-[85vh]">
+    <section className="relative min-h-[min(100svh,640px)] overflow-hidden rounded-b-2xl border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem] lg:min-h-[85vh]">
       {!reduceMotion
         ? orbs.map((orb) => (
             <motion.div
@@ -115,17 +116,17 @@ export function HeroSection({
       <div
         className={cn(
           siteContainer,
-          "relative z-[1] flex min-h-[min(88dvh,680px)] flex-col justify-end pb-24 pt-[4.75rem] sm:min-h-[82vh] sm:pb-16 sm:pt-28 lg:min-h-[85vh] lg:pb-20",
+          "relative z-[1] flex min-h-[min(100svh,640px)] flex-col justify-end pb-[max(5.5rem,env(safe-area-inset-bottom))] pt-[4.5rem] sm:min-h-[82vh] sm:pb-16 sm:pt-28 lg:min-h-[85vh] lg:pb-20",
         )}
       >
         <motion.div
-          className="w-full max-w-3xl space-y-4 sm:space-y-6"
+          className="mx-auto w-full max-w-3xl space-y-3 text-center sm:mx-0 sm:space-y-6 sm:text-start"
           variants={container}
           initial="hidden"
           animate="show"
         >
           <motion.p
-            className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] font-medium leading-snug text-cyan-100/90 backdrop-blur-md sm:px-4 sm:text-xs"
+            className="mx-auto inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] font-medium leading-snug text-cyan-100/90 backdrop-blur-md sm:mx-0 sm:justify-start sm:px-4 sm:text-xs"
             variants={item}
           >
             <span className="relative flex h-2 w-2 shrink-0">
@@ -143,13 +144,13 @@ export function HeroSection({
             <span className="text-white">{hero.titleEnd}</span>
           </motion.h1>
           <motion.p
-            className="max-w-2xl text-sm leading-relaxed text-slate-200/95 sm:text-base md:text-lg"
+            className="mx-auto max-w-2xl text-sm leading-relaxed text-slate-200/95 sm:mx-0 sm:text-base md:text-lg"
             variants={item}
           >
             {hero.subtitle}
           </motion.p>
           <motion.div
-            className="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:pt-0"
+            className="flex flex-col items-stretch gap-2.5 pt-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:pt-0"
             variants={item}
           >
             <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
@@ -169,10 +170,15 @@ export function HeroSection({
                 </span>
               </Link>
             </motion.span>
-            <motion.span whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+            <EventRequestLink
+              locale={locale}
+              label={hero.eventRequestCta ?? (locale === "ar" ? "طلب فعالية" : "Request an event")}
+              variant="hero"
+            />
+            <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
               <Link
                 href={localizedPath(locale, "/events")}
-                className="group inline-flex w-full items-center justify-center gap-2 py-1 text-sm font-medium text-slate-200 transition hover:text-white sm:w-auto sm:justify-start"
+                className="group inline-flex w-full items-center justify-center gap-2 py-1.5 text-sm font-medium text-slate-200 transition hover:text-white sm:w-auto sm:justify-start"
               >
                 {hero.secondaryCta}
                 <span className="transition group-hover:translate-x-0.5 rtl:-scale-x-100" aria-hidden>

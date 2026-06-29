@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ActivityCardGrid } from "@/components/activities/ActivityCardGrid";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { EventRequestLink } from "@/components/ui/EventRequestLink";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { homeSection, homeSectionTitle, siteContainer } from "@/lib/layout";
@@ -11,6 +12,7 @@ import type { Activity } from "@/types/api";
 export interface EntertainmentSectionCopy {
   readonly title: string;
   readonly subtitle: string;
+  readonly eventRequestCta?: string;
 }
 
 interface EntertainmentActivitiesSectionProps {
@@ -43,21 +45,28 @@ export function EntertainmentActivitiesSection({
               <h2 className={`mt-2 ${homeSectionTitle}`}>{section.title}</h2>
               <p className="mt-3 text-base leading-relaxed text-slate-400">{section.subtitle}</p>
             </div>
-            <Link
-              href={activitiesPath}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-5 py-2.5 text-sm font-medium text-violet-100 transition hover:border-violet-400/50 hover:bg-violet-500/20"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600/40" aria-hidden>
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M20 20l-3-3" strokeLinecap="round" />
-                </svg>
-              </span>
-              {ar ? "استكشف الأنشطة الترفيهية" : "Explore entertainment"}
-              <span className="text-lg rtl:rotate-180" aria-hidden>
-                →
-              </span>
-            </Link>
+            <div className="flex w-full flex-col gap-2 sm:w-auto">
+              <Link
+                href={activitiesPath}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-5 py-2.5 text-sm font-medium text-violet-100 transition hover:border-violet-400/50 hover:bg-violet-500/20 sm:w-auto"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600/40" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3-3" strokeLinecap="round" />
+                  </svg>
+                </span>
+                {ar ? "استكشف الأنشطة الترفيهية" : "Explore entertainment"}
+                <span className="text-lg rtl:rotate-180" aria-hidden>
+                  →
+                </span>
+              </Link>
+              <EventRequestLink
+                locale={locale}
+                label={section.eventRequestCta ?? (ar ? "طلب فعالية" : "Request an event")}
+                className="w-full justify-center sm:w-auto"
+              />
+            </div>
           </div>
         </ScrollReveal>
 

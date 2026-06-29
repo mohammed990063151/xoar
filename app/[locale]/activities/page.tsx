@@ -1,4 +1,5 @@
 import { ActivitiesDiscover } from "@/components/activities/ActivitiesDiscover";
+import { normalizeActivityFromApi } from "@/lib/activity";
 import { isLocale } from "@/lib/i18n";
 import { getActivitiesListingContent } from "@/lib/site-page";
 import { serverFetch } from "@/services/api";
@@ -20,7 +21,7 @@ export default async function ActivitiesPage({
     getActivitiesListingContent(loc),
     serverFetch<{ data: Activity[] }>(`/api/activities/${loc}?per_page=24`),
   ]);
-  const activities = res?.data ?? [];
+  const activities = (res?.data ?? []).map(normalizeActivityFromApi);
 
   return (
     <Suspense fallback={<div className="min-h-[50vh]" />}>

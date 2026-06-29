@@ -7,6 +7,7 @@ import { LocaleAttributes } from "@/components/providers/LocaleAttributes";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { BookingModalProvider } from "@/components/providers/BookingModalProvider";
 import { InquiryFab } from "@/components/ui/InquiryFab";
+import { LiveVisitorBeacon } from "@/components/analytics/LiveVisitorBeacon";
 import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
@@ -15,12 +16,16 @@ const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
   variable: "--font-tajawal",
   weight: ["400", "500", "700"],
+  preload: false,
+  display: "swap",
 });
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
   weight: ["400", "500", "600", "700"],
+  preload: false,
+  display: "swap",
 });
 
 // CMS + API data — render at request time (avoids 60s+ static build against remote Laravel).
@@ -69,7 +74,7 @@ export default async function LocaleLayout({
       <SmoothScrollProvider>
         <BookingModalProvider locale={locale} labels={dict.inquiryForm}>
           <div
-            className={`${tajawal.variable} ${outfit.variable} ${fontClass} flex min-h-screen min-w-0 flex-col overflow-x-clip`}
+            className={`${locale === "ar" ? tajawal.variable : outfit.variable} ${fontClass} flex min-h-screen min-w-0 flex-col overflow-x-clip`}
           >
             <Header locale={locale} nav={dict.nav} />
             <main className="flex-1 min-w-0 overflow-x-clip pb-[5.5rem] sm:pb-[4.5rem]">{children}</main>
@@ -86,6 +91,7 @@ export default async function LocaleLayout({
               whatsappAria={dict.inquiryFab.whatsappAria}
               whatsapp={dict.settings?.whatsapp}
             />
+            <LiveVisitorBeacon />
           </div>
         </BookingModalProvider>
       </SmoothScrollProvider>

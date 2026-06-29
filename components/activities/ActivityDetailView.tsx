@@ -25,6 +25,7 @@ import {
 } from "@/lib/activity";
 import { activityCategoryIcon } from "@/lib/activity-category-icon";
 import { bookingLabels } from "@/lib/booking-labels";
+import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import { formatSarPrice } from "@/lib/format-price";
 import type { Activity, FaqItem } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
@@ -151,47 +152,166 @@ export function ActivityDetailView({
                 activeIndex={activeImage}
                 onActiveChange={setActiveImage}
                 variant="dark"
+                showCaption={false}
                 autoplay={sliderImages.length + (promoVideo ? 1 : 0) > 1}
                 videoUrl={promoVideo}
               />
             </div>
           </div>
 
-          <div className={cn(scrollRow, "sm:flex-wrap")}>
+          <header className="space-y-2">
+            <h1 className="text-[clamp(1.35rem,5.2vw,2.125rem)] font-bold leading-tight tracking-tight text-white text-balance">
+              {activity.title}
+            </h1>
+            <p className="text-sm text-slate-400">
+              {labels.organizer}:{" "}
+              <span className="text-slate-200">{organizer}</span>
+              {categoryLabel ? (
+                <>
+                  <span className="mx-1.5 text-slate-600" aria-hidden>
+                    ·
+                  </span>
+                  <span className="text-violet-300">{categoryLabel}</span>
+                </>
+              ) : null}
+            </p>
+          </header>
+
+          <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 sm:gap-2.5">
             {activity.location ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">
-                <span className="text-base" aria-hidden>
+              <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-rose-500/20 bg-rose-500/5 px-3.5 py-3 min-[400px]:col-span-2">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-lg"
+                  aria-hidden
+                >
                   📍
                 </span>
-                {activity.location}
-              </span>
-            ) : null}
-            {categoryLabel ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-200">
-                <span className="text-base" aria-hidden>
-                  {categoryIcon}
-                </span>
-                {categoryLabel}
-              </span>
-            ) : null}
-            {hasCoords ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200">
-                {locale === "ar" ? "موقع محدد على الخريطة" : "Pinned on map"}
-              </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-200/70">
+                    {locale === "ar" ? "الموقع" : "Location"}
+                  </p>
+                  <p className="truncate text-sm font-medium text-white" title={activity.location}>
+                    {activity.location}
+                  </p>
+                </div>
+              </div>
             ) : null}
             {activity.duration ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">
-                <span aria-hidden>⏱</span> {activity.duration}
-              </span>
+              <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3.5 py-3">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-lg"
+                  aria-hidden
+                >
+                  ⏱
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    {locale === "ar" ? "المدة" : "Duration"}
+                  </p>
+                  <p className="text-sm font-medium text-slate-200">{activity.duration}</p>
+                </div>
+              </div>
             ) : null}
-            {activity.price ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-200">
-                {formatSarPrice(activity.price, locale)} / {labels.perPerson}
-              </span>
+            {categoryLabel ? (
+              <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-violet-500/25 bg-violet-500/10 px-3.5 py-3">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/20 text-lg"
+                  aria-hidden
+                >
+                  {categoryIcon}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-300/80">
+                    {locale === "ar" ? "التصنيف" : "Category"}
+                  </p>
+                  <p className="text-sm font-medium text-violet-100">{categoryLabel}</p>
+                </div>
+              </div>
+            ) : null}
+            {hasCoords ? (
+              <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-3">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-lg"
+                  aria-hidden
+                >
+                  🗺
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-300/80">
+                    {locale === "ar" ? "الخريطة" : "Map"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTab("location");
+                      window.requestAnimationFrame(() => {
+                        document
+                          .getElementById("activity-tabs")
+                          ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                      });
+                    }}
+                    className="text-start text-sm font-medium text-emerald-100 underline-offset-2 hover:underline"
+                  >
+                    {locale === "ar" ? "عرض على الخريطة" : "View on map"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {activity.price || activity.activeCoupon ? (
+              <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-3 min-[400px]:col-span-2 sm:col-span-1">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 text-xs font-bold text-cyan-100"
+                  aria-hidden
+                >
+                  {locale === "ar" ? "ر.س" : "SAR"}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-300/80">
+                    {locale === "ar" ? "السعر" : "Price"}
+                  </p>
+                  <ActivityPriceDisplay
+                    locale={locale}
+                    price={
+                      activity.activeCoupon
+                        ? (activity.displayPrice ?? activity.price)
+                        : (activity.originalPrice ?? activity.original_price ?? activity.price)
+                    }
+                    comparePrice={
+                      activity.activeCoupon
+                        ? (activity.originalPrice ?? activity.original_price ?? activity.comparePrice)
+                        : undefined
+                    }
+                    showCompare={Boolean(activity.activeCoupon)}
+                    perPerson
+                    size="sm"
+                    className="!gap-1.5"
+                  />
+                </div>
+              </div>
             ) : null}
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-5 sm:p-6">
+          <a
+            href="#book"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-400/40 bg-gradient-to-l from-cyan-600/90 to-violet-600/90 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-cyan-950/40 transition hover:brightness-110 lg:hidden"
+          >
+            {labels.bookNow}
+            {activity.price ? (
+              <span className="rounded-full bg-black/25 px-2 py-0.5 text-xs font-semibold">
+                {formatSarPrice(
+                  activity.activeCoupon
+                    ? (activity.displayPrice ?? activity.price)
+                    : (activity.originalPrice ?? activity.original_price ?? activity.price),
+                  locale,
+                )}
+              </span>
+            ) : null}
+          </a>
+
+          <div
+            id="activity-tabs"
+            className="scroll-mt-24 rounded-3xl border border-white/10 bg-slate-950/60 p-5 sm:p-6"
+          >
             <div className={cn(scrollRow, "border-b border-white/10 pb-px")}>
               {tabs.map((t) => (
                 <button
@@ -293,15 +413,15 @@ export function ActivityDetailView({
           </div>
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start space-y-4">
+        <aside className="scroll-mt-24 space-y-4 lg:sticky lg:top-24 lg:self-start">
           <ActivitySocialProof
             locale={locale}
             data={activity.socialProof}
             enabled={isEnabled("social_proof")}
           />
           <BookingCountdown
-            endsAt={endsAt}
-            enabled={isEnabled("countdown") && Boolean(endsAt)}
+            endsAt={activity.countdown?.show ? activity.countdown.endsAt : null}
+            enabled={isEnabled("countdown") && Boolean(activity.countdown?.show)}
             locale={locale}
           />
           <AddToCalendarButton

@@ -268,6 +268,7 @@ type PageApiContent = Record<string, unknown>;
 interface PageApiBundle {
   content: PageApiContent;
   items: unknown[];
+  socialFeed?: unknown[];
 }
 
 async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBundle | null> {
@@ -286,13 +287,14 @@ async function fetchPageBundle(locale: Locale, page: string): Promise<PageApiBun
     });
     if (!res.ok) return null;
     const json = (await res.json()) as {
-      data?: { content?: PageApiContent; items?: unknown[] };
+      data?: { content?: PageApiContent; items?: unknown[]; socialFeed?: unknown[] };
     };
     if (!json.data?.content) return null;
 
     return {
       content: json.data.content,
       items: Array.isArray(json.data.items) ? json.data.items : [],
+      socialFeed: Array.isArray(json.data.socialFeed) ? json.data.socialFeed : [],
     };
   } catch {
     return null;
@@ -648,4 +650,250 @@ export async function getCareersPageContent(locale: Locale): Promise<CareersPage
   if (!bundle) return fallback;
 
   return mergeCareers(bundle.content, bundle.items, dict);
+}
+
+export type BlogSectionKey = "news" | "articles";
+
+export interface BlogSectionCopy {
+  title: string;
+  subtitle: string;
+}
+
+export interface BlogPostItem {
+  id: number | string;
+  slug: string;
+  section: BlogSectionKey;
+  sectionLabel: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  image: string;
+  publishedAt: string;
+  sortOrder: number;
+}
+
+export interface BlogPageContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  sections: Record<BlogSectionKey, BlogSectionCopy>;
+  socialFeed: BlogSocialFeedCopy;
+  readMore: string;
+  noPosts: string;
+  backToBlog: string;
+  posts: BlogPostItem[];
+  socialPosts: SocialFeedPostItem[];
+}
+
+export type SocialPlatform =
+  | "instagram"
+  | "x"
+  | "facebook"
+  | "tiktok"
+  | "youtube"
+  | "snapchat"
+  | "linkedin";
+
+export interface BlogSocialFeedCopy {
+  title: string;
+  subtitle: string;
+}
+
+export interface SocialFeedPostItem {
+  id: number | string;
+  platform: SocialPlatform;
+  platformLabel: string;
+  authorName: string;
+  authorHandle: string;
+  authorAvatar: string;
+  subtitle: string;
+  caption: string;
+  coverImage: string;
+  postUrl: string;
+  profileUrl: string;
+  publishedAt: string;
+  sortOrder: number;
+}
+
+function pickBlogSocialFeed(
+  raw: PageApiContent | undefined,
+  fallback: BlogSocialFeedCopy,
+): BlogSocialFeedCopy {
+  const block = raw?.socialFeed;
+  if (!block || typeof block !== "object" || Array.isArray(block)) {
+    return fallback;
+  }
+
+  const obj = block as Record<string, unknown>;
+  return {
+    title: nonEmpty(obj.title) ?? fallback.title,
+    subtitle: nonEmpty(obj.subtitle) ?? fallback.subtitle,
+  };
+}
+
+function normalizeSocialFeedPosts(raw: unknown): SocialFeedPostItem[] {
+  if (!Array.isArray(raw)) return [];
+
+  const platforms: SocialPlatform[] = [
+    "instagram",
+    "x",
+    "facebook",
+    "tiktok",
+    "youtube",
+    "snapchat",
+    "linkedin",
+  ];
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const obj = item as Record<string, unknown>;
+      const platformRaw = nonEmpty(obj.platform) ?? "instagram";
+      const platform = platforms.includes(platformRaw as SocialPlatform)
+        ? (platformRaw as SocialPlatform)
+        : "instagram";
+      const authorName = nonEmpty(obj.authorName) ?? "";
+      if (!authorName) return null;
+
+      const avatarRaw = nonEmpty(obj.authorAvatar) ?? "";
+      const coverRaw = nonEmpty(obj.coverImage) ?? "";
+
+      return {
+        id: (obj.id as number | string) ?? authorName,
+        platform,
+        platformLabel: nonEmpty(obj.platformLabel) ?? platform,
+        authorName,
+        authorHandle: nonEmpty(obj.authorHandle) ?? "",
+        authorAvatar: avatarRaw ? normalizeStorageImageUrl(avatarRaw) : "",
+        subtitle: nonEmpty(obj.subtitle) ?? "",
+        caption: nonEmpty(obj.caption) ?? "",
+        coverImage: coverRaw ? normalizeStorageImageUrl(coverRaw) : "",
+        postUrl: nonEmpty(obj.postUrl) ?? "",
+        profileUrl: nonEmpty(obj.profileUrl) ?? "",
+        publishedAt: nonEmpty(obj.publishedAt) ?? "",
+        sortOrder: typeof obj.sortOrder === "number" ? obj.sortOrder : 0,
+      };
+    })
+    .filter((item): item is SocialFeedPostItem => item !== null)
+    .sort((a, b) => a.sortOrder - b.sortOrder || String(a.id).localeCompare(String(b.id)));
+}
+
+function pickBlogSection(
+  raw: PageApiContent | undefined,
+  key: BlogSectionKey,
+  fallback: BlogSectionCopy,
+): BlogSectionCopy {
+  const sections = raw?.sections;
+  if (!sections || typeof sections !== "object" || Array.isArray(sections)) {
+    return fallback;
+  }
+
+  const block = (sections as Record<string, unknown>)[key];
+  if (!block || typeof block !== "object" || Array.isArray(block)) {
+    return fallback;
+  }
+
+  const obj = block as Record<string, unknown>;
+  return {
+    title: nonEmpty(obj.title) ?? fallback.title,
+    subtitle: nonEmpty(obj.subtitle) ?? fallback.subtitle,
+  };
+}
+
+function normalizeBlogPosts(raw: unknown): BlogPostItem[] {
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const obj = item as Record<string, unknown>;
+      const title = nonEmpty(obj.title) ?? "";
+      const slug = nonEmpty(obj.slug) ?? "";
+      const sectionRaw = nonEmpty(obj.section) ?? "news";
+      const section: BlogSectionKey = sectionRaw === "articles" ? "articles" : "news";
+      if (!title || !slug) return null;
+
+      const imageRaw = nonEmpty(obj.image) ?? "";
+      return {
+        id: (obj.id as number | string) ?? slug,
+        slug,
+        section,
+        sectionLabel: nonEmpty(obj.sectionLabel) ?? section,
+        title,
+        excerpt: nonEmpty(obj.excerpt) ?? "",
+        body: nonEmpty(obj.body) ?? "",
+        image: imageRaw ? normalizeStorageImageUrl(imageRaw) : "",
+        publishedAt: nonEmpty(obj.publishedAt) ?? "",
+        sortOrder: typeof obj.sortOrder === "number" ? obj.sortOrder : 0,
+      };
+    })
+    .filter((item): item is BlogPostItem => item !== null)
+    .sort((a, b) => {
+      if (a.section !== b.section) return a.section.localeCompare(b.section);
+      if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+      return String(a.id).localeCompare(String(b.id));
+    });
+}
+
+function fallbackBlog(dict: Dictionary): BlogPageContent {
+  const page = dict.pages.blog as BlogPageContent & {
+    sections: Record<BlogSectionKey, BlogSectionCopy>;
+    socialFeed?: BlogSocialFeedCopy;
+  };
+
+  return {
+    eyebrow: page.eyebrow ?? "",
+    title: page.title,
+    intro: page.intro,
+    sections: page.sections,
+    socialFeed: page.socialFeed ?? { title: "Latest on social", subtitle: "" },
+    readMore: page.readMore ?? "",
+    noPosts: page.noPosts ?? "",
+    backToBlog: page.backToBlog ?? "",
+    posts: [],
+    socialPosts: [],
+  };
+}
+
+function mergeBlog(
+  apiContent: PageApiContent,
+  items: unknown[],
+  socialFeed: unknown[],
+  dict: Dictionary,
+): BlogPageContent {
+  const fallback = fallbackBlog(dict);
+
+  return {
+    eyebrow: nonEmpty(apiContent.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(apiContent.title) ?? fallback.title,
+    intro: nonEmpty(apiContent.intro) ?? fallback.intro,
+    sections: {
+      news: pickBlogSection(apiContent, "news", fallback.sections.news),
+      articles: pickBlogSection(apiContent, "articles", fallback.sections.articles),
+    },
+    socialFeed: pickBlogSocialFeed(apiContent, fallback.socialFeed),
+    readMore: fallback.readMore,
+    noPosts: fallback.noPosts,
+    backToBlog: fallback.backToBlog,
+    posts: normalizeBlogPosts(items),
+    socialPosts: normalizeSocialFeedPosts(socialFeed),
+  };
+}
+
+export async function getBlogPageContent(locale: Locale): Promise<BlogPageContent> {
+  noStore();
+  const dict = getDictionary(locale);
+  const fallback = fallbackBlog(dict);
+  const bundle = await fetchPageBundle(locale, "blog");
+  if (!bundle) return fallback;
+
+  return mergeBlog(bundle.content, bundle.items, bundle.socialFeed ?? [], dict);
+}
+
+export async function getBlogPostBySlug(
+  locale: Locale,
+  slug: string,
+): Promise<BlogPostItem | null> {
+  const content = await getBlogPageContent(locale);
+  return content.posts.find((post) => post.slug === slug) ?? null;
 }

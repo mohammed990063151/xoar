@@ -1,6 +1,7 @@
 import { Achievements } from "@/components/home/Achievements";
 import { HeroImageGallery } from "@/components/home/HeroImageGallery";
 import { HeroSection } from "@/components/home/HeroSection";
+import { HomePromoBanner } from "@/components/home/HomePromoBanner";
 import { HomeAmbientMotion } from "@/components/home/HomeAmbientMotion";
 import { HomeContactSection } from "@/components/home/HomeContactSection";
 import { PartnersMarquee } from "@/components/home/PartnersMarquee";
@@ -47,6 +48,7 @@ export default async function HomePage({
     <div className="relative overflow-x-hidden">
       <HomeAmbientMotion locale={locale} />
       <HeroSection locale={locale} hero={home.hero} />
+      <HomePromoBanner locale={locale} slides={home.promoSlides} />
       <HeroImageGallery
         locale={locale}
         images={home.galleryImages}

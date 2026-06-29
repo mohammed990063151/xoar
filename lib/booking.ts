@@ -23,6 +23,19 @@ export function calculateBookingTotal(
   return unitPrice * adults + unitPrice * 0.5 * children;
 }
 
+export function applyCouponDiscount(
+  subtotal: number,
+  discountType: "percent" | "fixed",
+  discountValue: number,
+): number {
+  if (subtotal <= 0) return 0;
+  if (discountType === "fixed") {
+    return Math.max(0, subtotal - Math.min(subtotal, discountValue));
+  }
+  const percent = Math.max(0, Math.min(100, discountValue));
+  return Math.max(0, subtotal - subtotal * (percent / 100));
+}
+
 export function upcomingBookableDays(count = 42): Date[] {
   const days: Date[] = [];
   const start = new Date();

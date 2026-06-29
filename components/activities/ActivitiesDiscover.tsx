@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivitiesFilters, type ActivitiesFilterState } from "@/components/activities/ActivitiesFilters";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { ActivityCardGrid } from "@/components/activities/ActivityCardGrid";
+import { normalizeActivityFromApi } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
 import type { ActivitiesListingContent } from "@/lib/site-page";
 import { activitiesService } from "@/services/activitiesService";
@@ -91,7 +92,7 @@ export function ActivitiesDiscover({
         category: geoFilters.category || undefined,
         per_page: 24,
       })
-      .then((json) => setActivities(json.data ?? []))
+      .then((json) => setActivities((json.data ?? []).map(normalizeActivityFromApi)))
       .catch(() => setActivities(initialActivities))
       .finally(() => setLoading(false));
   }, [locale, search, geoFilters, initialActivities]);

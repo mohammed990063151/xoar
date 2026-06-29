@@ -38,6 +38,11 @@ export interface Activity {
   latitude?: number | null;
   longitude?: number | null;
   price?: string;
+  displayPrice?: string;
+  originalPrice?: string;
+  original_price?: string;
+  compare_price?: string;
+  comparePrice?: string;
   event_date?: string;
   eventDate?: string;
   organizer?: string;
@@ -85,6 +90,18 @@ export interface Activity {
     hint?: string | null;
     variant?: string;
   } | null;
+  activeCoupon?: {
+    code?: string;
+    label?: string | null;
+    badge?: string;
+    discountType?: string;
+    discountValue?: number;
+  } | null;
+  countdown?: {
+    show?: boolean;
+    endsAt?: string | null;
+    leadHours?: number;
+  } | null;
   showWishlist?: boolean;
   provider_id?: number;
   provider?: { id: number; name: string };
@@ -117,6 +134,7 @@ export interface InquiryPayload {
   adults?: number;
   children?: number;
   total_amount?: string;
+  coupon_code?: string;
   payment_method?: string;
   locale?: string;
   source?: string;

@@ -1,19 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { customerService } from "@/services/customerService";
 import type { Locale } from "@/lib/i18n";
 import { portalPath } from "@/lib/portal-url";
 
 interface AccountLoginFormProps {
   readonly locale: Locale;
+  readonly returnTo?: string;
+  readonly initialMode?: "login" | "register";
 }
 
-export function AccountLoginForm({ locale }: AccountLoginFormProps): React.ReactElement {
+function safeReturnPath(value?: string): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return null;
+  }
+  return value;
+}
+
+export function AccountLoginForm({
+  locale,
+  returnTo,
+  initialMode = "login",
+}: AccountLoginFormProps): React.ReactElement {
   const ar = locale === "ar";
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -37,7 +54,8 @@ export function AccountLoginForm({ locale }: AccountLoginFormProps): React.React
           locale,
         });
       }
-      window.location.assign(portalPath("/bookings"));
+      const next = safeReturnPath(returnTo) ?? portalPath("/bookings");
+      window.location.assign(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : ar ? "تعذّر تسجيل الدخول" : "Auth failed");
     } finally {
@@ -50,9 +68,13 @@ export function AccountLoginForm({ locale }: AccountLoginFormProps): React.React
       <div className="gradient-border">
         <form className="inner space-y-4 p-6 sm:p-8" onSubmit={(e) => void handleSubmit(e)}>
           <p className="text-center text-sm text-slate-400">
-            {ar
-              ? "سجّل دخولك لمتابعة حجوزاتك وتذاكرك الرقمية"
-              : "Sign in to manage bookings and digital passes"}
+            {returnTo
+              ? ar
+                ? "سجّل دخولك أو أنشئ حساباً للعودة وإكمال الحجز"
+                : "Sign in or register to return and complete your booking"
+              : ar
+                ? "سجّل دخولك لمتابعة حجوزاتك وتذاكرك الرقمية"
+                : "Sign in to manage bookings and digital passes"}
           </p>
 
           {mode === "register" ? (

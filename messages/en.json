@@ -7,6 +7,7 @@
     "events": "Our work",
     "activities": "Entertainment",
     "partners": "Partners",
+    "blog": "Xora Blog",
     "careers": "Careers",
     "account": "Sign in",
     "contact": "Contact",
@@ -80,6 +81,7 @@
     "titleEnd": "you remember",
     "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
     "primaryCta": "Explore entertainment activities",
+    "eventRequestCta": "Request an event",
     "secondaryCta": "Watch our work",
     "videoUrl": "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4",
     "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80"
@@ -107,7 +109,8 @@
   },
   "entertainmentActivitiesSection": {
     "title": "Entertainment activities",
-    "subtitle": "Discover exclusive experiences and book in seconds"
+    "subtitle": "Discover exclusive experiences and book in seconds",
+    "eventRequestCta": "Request an event"
   },
   "ownedActivitiesSection": {
     "title": "Activities by Xora",
@@ -370,6 +373,49 @@
       "applyCta": "Apply now",
       "openRoles": "Open positions",
       "noJobs": "No open roles right now — follow us or send your CV."
+    },
+    "blog": {
+      "eyebrow": "Xora Blog",
+      "title": "Xora Blog",
+      "intro": "Latest news and practical articles about events and entertainment experiences in the Kingdom.",
+      "sections": {
+        "news": {
+          "title": "Xora News",
+          "subtitle": "Updates and announcements from our team"
+        },
+        "articles": {
+          "title": "Articles & tips",
+          "subtitle": "Guides to help you pick your next experience"
+        }
+      },
+      "readMore": "Read more",
+      "noPosts": "No posts in this section yet.",
+      "backToBlog": "Back to blog",
+      "socialFeed": {
+        "title": "Latest on social",
+        "subtitle": "Follow Xora across our channels"
+      }
+    },
+    "requestEvent": {
+      "eyebrow": "Your next event",
+      "title": "Request an event",
+      "intro": "Tell us about your occasion — parties, birthdays, corporate events — and the Xora team will reach out within one business day.",
+      "eventType": "Event type",
+      "requestTitle": "Request title",
+      "description": "Details",
+      "preferredDate": "Preferred date",
+      "guestsCount": "Number of guests",
+      "location": "Location",
+      "customerMessage": "Additional message",
+      "customerMessagePlaceholder": "Share your vision for the event…",
+      "name": "Full name",
+      "email": "Email address",
+      "phone": "Phone number",
+      "submit": "Submit request",
+      "sending": "Sending…",
+      "successTitle": "Request submitted",
+      "success": "Thank you — our team will review your request and contact you soon.",
+      "sendAnother": "Submit another request"
     },
     "contact": {
       "title": "Contact",

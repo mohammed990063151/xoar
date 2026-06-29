@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import { useUnoptimizedImage } from "@/lib/image-url";
 import type { Locale } from "@/lib/i18n";
+import { isYoutubeUrl } from "@/lib/video-embed";
+import { YoutubeEmbed } from "@/components/ui/YoutubeEmbed";
 
 export type ActivityCardMediaSlide =
   | { readonly type: "image"; readonly url: string }
@@ -21,18 +23,6 @@ interface ActivityCardMediaSliderProps {
 
 function isValidSlideUrl(url: string): boolean {
   return typeof url === "string" && url.trim() !== "";
-}
-
-function isYoutube(url: string): boolean {
-  return url.includes("youtube.com") || url.includes("youtu.be");
-}
-
-function youtubeEmbed(url: string): string {
-  if (url.includes("youtu.be/")) {
-    const id = url.split("youtu.be/")[1]?.split(/[?&]/)[0];
-    return id ? `https://www.youtube.com/embed/${id}` : url;
-  }
-  return url.replace("watch?v=", "embed/").replace("&", "?");
 }
 
 export function ActivityCardMediaSlider({
@@ -121,16 +111,8 @@ export function ActivityCardMediaSlider({
         >
           {current?.type === "video" && isValidSlideUrl(current.url) ? (
             <div className="absolute inset-0 bg-black">
-              {isYoutube(current.url) ? (
-                <iframe
-                  src={youtubeEmbed(current.url)}
-                  title={title}
-                  className="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                />
+              {isYoutubeUrl(current.url) ? (
+                <YoutubeEmbed videoUrl={current.url} title={title} className="h-full w-full" />
               ) : (
                 <video
                   src={current.url}

@@ -28,7 +28,13 @@ export type EventGalleryItem = {
 
 export type SiteSettings = {
   companyName?: string;
+  tagline?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  country?: string;
   phone?: string;
+  supportPhone?: string;
   email?: string;
   whatsapp?: string;
   social?: Record<string, string>;
@@ -62,6 +68,8 @@ function mergePages(
     activities: { ...dictPages.activities, ...apiPages.activities },
     partners: { ...dictPages.partners, ...apiPages.partners },
     careers: { ...dictPages.careers, ...apiPages.careers },
+    blog: { ...dictPages.blog, ...apiPages.blog },
+    requestEvent: { ...dictPages.requestEvent, ...apiPages.requestEvent },
     contact: { ...dictPages.contact, ...apiPages.contact },
   };
 }

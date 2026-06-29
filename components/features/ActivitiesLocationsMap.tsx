@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngExpression, Map as LeafletMap } from "leaflet";
 import Link from "next/link";
 import { activityImageUrl } from "@/lib/activity";
@@ -111,11 +111,30 @@ export function ActivitiesLocationsMap({
       .catch(() => setApiPins([]));
   }, [locale, enabled, activities]);
 
-  const buildMap = useCallback(() => {
-    if (!containerRef.current || pins.length === 0) return;
+  useEffect(() => {
+    if (!enabled || pins.length === 0) {
+      setMapReady(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+
+    const safeInvalidate = (map: LeafletMap) => {
+      if (cancelled || mapRef.current !== map) return;
+
+      const container = map.getContainer();
+      if (!container?.isConnected) return;
+
+      try {
+        map.invalidateSize();
+      } catch {
+        // Map was torn down while timers were pending.
+      }
+    };
 
     void import("leaflet").then((L) => {
-      if (!containerRef.current) return;
+      if (cancelled || !containerRef.current) return;
 
       if (mapRef.current) {
         mapRef.current.remove();
@@ -196,36 +215,35 @@ export function ActivitiesLocationsMap({
       }
 
       requestAnimationFrame(() => {
-        map.invalidateSize();
-        setMapReady(true);
+        safeInvalidate(map);
+        if (!cancelled) setMapReady(true);
       });
 
-      setTimeout(() => map.invalidateSize(), 200);
-      setTimeout(() => map.invalidateSize(), 600);
+      timeouts.push(setTimeout(() => safeInvalidate(map), 200));
+      timeouts.push(setTimeout(() => safeInvalidate(map), 600));
     });
-  }, [pins, locale]);
-
-  useEffect(() => {
-    if (!enabled || pins.length === 0) {
-      setMapReady(false);
-      return;
-    }
-
-    buildMap();
 
     return () => {
+      cancelled = true;
+      timeouts.forEach(clearTimeout);
       setMapReady(false);
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, [enabled, pins, buildMap]);
+  }, [enabled, pins, locale]);
 
   useEffect(() => {
     if (!containerRef.current || !mapRef.current) return;
+    const map = mapRef.current;
     const ro = new ResizeObserver(() => {
-      mapRef.current?.invalidateSize();
+      if (mapRef.current !== map) return;
+      try {
+        map.invalidateSize();
+      } catch {
+        // ignore
+      }
     });
     ro.observe(containerRef.current);
     return () => ro.disconnect();

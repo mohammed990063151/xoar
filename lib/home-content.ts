@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
-import { API_PROXY_TARGET } from "@/lib/api-base";
+import { getApiBaseUrl } from "@/lib/api-base";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
 import type { ActivityCardData } from "@/components/ui/ActivityCard";
@@ -59,13 +59,28 @@ export interface HomePartner {
   website?: string;
 }
 
+export type HomePromoLinkType = "activity" | "event" | "service" | "url";
+
+export interface HomePromoSlide {
+  id: number;
+  title: string;
+  subtitle: string;
+  image: string;
+  linkType: HomePromoLinkType;
+  linkTarget: string;
+  durationSeconds: number;
+  href: string;
+}
+
 export interface EntertainmentActivitiesSectionCopy {
   title: string;
   subtitle: string;
+  eventRequestCta?: string;
 }
 
 export interface HomeContent {
   hero: HomeHero;
+  promoSlides: HomePromoSlide[];
   heroGallery: HeroGalleryCopy;
   galleryImages: string[];
   worksSection: WorksSectionCopy;
@@ -83,6 +98,7 @@ export interface HomeContent {
 
 type HomeApiPayload = {
   hero?: Partial<HomeHero> & Record<string, unknown>;
+  promoSlides?: HomePromoSlide[];
   worksSection?: Partial<WorksSectionCopy>;
   ownedActivitiesSection?: Partial<OwnedActivitiesSectionCopy>;
   achievements?: Partial<Dictionary["achievements"]>;
@@ -157,6 +173,7 @@ function entertainmentActivitiesSectionCopy(
   locale: Locale,
 ): EntertainmentActivitiesSectionCopy {
   const ar = locale === "ar";
+  const fallback = getDictionary(locale).entertainmentActivitiesSection;
   return {
     title:
       nonEmpty(api.entertainmentActivitiesSection?.title) ??
@@ -166,6 +183,11 @@ function entertainmentActivitiesSectionCopy(
       (ar
         ? "اكتشف تجارب حصرية واحجز مكانك خلال ثوانٍ"
         : "Discover exclusive experiences and book in seconds"),
+    eventRequestCta:
+      nonEmpty(
+        (api.entertainmentActivitiesSection as { eventRequestCta?: string } | undefined)
+          ?.eventRequestCta,
+      ) ?? fallback.eventRequestCta,
   };
 }
 
@@ -212,6 +234,31 @@ function mapActivities(raw?: Activity[]): Activity[] {
   return raw.map((item) => normalizeActivityFromApi(item));
 }
 
+function mapPromoSlides(raw?: HomePromoSlide[]): HomePromoSlide[] {
+  if (!raw?.length) return [];
+
+  return raw
+    .map((slide) => {
+      const image = mediaUrl(slide.image) ?? "";
+      const title = nonEmpty(slide.title) ?? "";
+      if (!image || !title) return null;
+
+      const duration = typeof slide.durationSeconds === "number" ? slide.durationSeconds : 6;
+
+      return {
+        id: typeof slide.id === "number" ? slide.id : 0,
+        title,
+        subtitle: nonEmpty(slide.subtitle) ?? "",
+        image,
+        linkType: (slide.linkType as HomePromoLinkType) ?? "url",
+        linkTarget: nonEmpty(slide.linkTarget) ?? "",
+        durationSeconds: Math.min(30, Math.max(3, duration)),
+        href: nonEmpty(slide.href) ?? "",
+      };
+    })
+    .filter((slide): slide is HomePromoSlide => slide !== null && Boolean(slide.href));
+}
+
 function mapWorks(raw?: HomeWork[]): HomeWork[] {
   if (!raw?.length) return [];
 
@@ -232,6 +279,7 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
 
   return {
     hero,
+    promoSlides: mapPromoSlides(api.promoSlides),
     heroGallery: heroGalleryCopy(dict),
     galleryImages: hero.gallery ?? [],
     worksSection: worksSectionCopy(api, dict),
@@ -259,9 +307,9 @@ async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
     return null;
   }
 
-  const base = API_PROXY_TARGET;
+  const base = getApiBaseUrl();
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8_000);
+  const timer = setTimeout(() => controller.abort(), 25_000);
   try {
     const res = await fetch(`${base}/api/site/${locale}/home`, {
       headers: { Accept: "application/json" },
@@ -270,13 +318,18 @@ async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
       signal: controller.signal,
     });
     if (!res.ok) {
-      console.error(`[home] API ${res.status} for ${locale}`);
+      if (process.env.NODE_ENV === "development") {
+        console.warn(`[home] API ${res.status} for ${locale}`);
+      }
       return null;
     }
     const json = (await res.json()) as { data?: HomeApiPayload };
     return json.data ?? null;
   } catch (error) {
-    console.error("[home] API fetch failed:", error);
+    const aborted = error instanceof Error && error.name === "AbortError";
+    if (process.env.NODE_ENV === "development" && !aborted) {
+      console.warn("[home] API fetch failed:", error);
+    }
     return null;
   } finally {
     clearTimeout(timer);
@@ -289,6 +342,7 @@ export async function getHomeContent(locale: Locale): Promise<HomeContent> {
 
   const fallback: HomeContent = {
     hero: dict.hero,
+    promoSlides: [],
     heroGallery: heroGalleryCopy(dict),
     galleryImages: [],
     worksSection: {

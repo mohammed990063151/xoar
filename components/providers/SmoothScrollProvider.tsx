@@ -9,6 +9,9 @@ export interface LenisScrollState {
   readonly direction: -1 | 0 | 1;
 }
 
+const TOP_THRESHOLD = 72;
+const SCROLLED_THRESHOLD = 12;
+
 const LenisScrollContext = createContext<LenisScrollState>({
   scrollY: 0,
   direction: 0,
@@ -16,6 +19,20 @@ const LenisScrollContext = createContext<LenisScrollState>({
 
 export function useLenisScroll(): LenisScrollState {
   return useContext(LenisScrollContext);
+}
+
+function shouldPublishScroll(prev: LenisScrollState, next: LenisScrollState): boolean {
+  if (prev.direction !== next.direction) return true;
+
+  const prevScrolled = prev.scrollY > SCROLLED_THRESHOLD;
+  const nextScrolled = next.scrollY > SCROLLED_THRESHOLD;
+  if (prevScrolled !== nextScrolled) return true;
+
+  const prevAtTop = prev.scrollY < TOP_THRESHOLD;
+  const nextAtTop = next.scrollY < TOP_THRESHOLD;
+  if (prevAtTop !== nextAtTop) return true;
+
+  return false;
 }
 
 interface SmoothScrollProviderProps {
@@ -31,6 +48,10 @@ export function SmoothScrollProvider({
   });
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
     const root = document.documentElement;
     root.classList.add("lenis", "lenis-smooth");
 
@@ -40,10 +61,12 @@ export function SmoothScrollProvider({
     });
 
     const unsubscribe = lenis.on("scroll", (instance) => {
-      setScrollState({
+      const next: LenisScrollState = {
         scrollY: instance.scroll,
-        direction: instance.direction,
-      });
+        direction: instance.direction as -1 | 0 | 1,
+      };
+
+      setScrollState((prev) => (shouldPublishScroll(prev, next) ? next : prev));
     });
 
     let frameId = 0;

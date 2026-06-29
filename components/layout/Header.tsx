@@ -25,11 +25,14 @@ const navKeys = [
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
   { href: "/partners", key: "partners" as const },
+  { href: "/blog", key: "blog" as const },
   { href: "/careers", key: "careers" as const },
   { href: "/contact", key: "contact" as const },
 ] satisfies ReadonlyArray<{ href: string; key: keyof Dictionary["nav"] }>;
 
 const accountActive = (pathname: string): boolean => pathname.includes("/account");
+
+const prefetchRoutes = process.env.NODE_ENV === "production";
 
 function NavTextLink({
   href,
@@ -43,6 +46,7 @@ function NavTextLink({
   return (
     <Link
       href={href}
+      prefetch={prefetchRoutes}
       className={cn(
         "relative pb-1 text-sm font-medium transition-colors",
         active ? "text-white" : "text-slate-400 hover:text-white",
@@ -133,7 +137,7 @@ export function Header({
           <Link
             href={switchHref}
             className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300 transition hover:border-purple-400/40 hover:text-white sm:px-3 sm:text-xs"
-            prefetch
+            prefetch={prefetchRoutes}
           >
             {locale === "ar" ? "EN" : "عربي"}
           </Link>
@@ -176,41 +180,41 @@ export function Header({
             onClick={() => setOpen(false)}
           />
           <nav
-            className={cn(
-              siteContainer,
-              "relative z-50 flex max-h-[min(70dvh,520px)] flex-col gap-1 overflow-y-auto border-t border-white/10 py-3 pb-5 lg:hidden",
-            )}
+            className="relative z-50 flex w-full max-h-[min(70dvh,520px)] flex-col items-center overflow-y-auto border-t border-white/10 px-5 py-4 pb-5 sm:px-6 lg:hidden"
             aria-label="Mobile"
           >
-            <HeaderAccountLink
-              locale={locale}
-              label={nav.account}
-              active={accountActive(pathname)}
-              compact
-            />
-            <div className="my-1 h-px bg-white/10" role="separator" aria-hidden />
-            {navKeys.map(({ href, key }) => {
-              const active = isActive(href);
-              const isContact = href === "/contact";
+            <div className="flex w-full max-w-sm flex-col gap-1">
+              <HeaderAccountLink
+                locale={locale}
+                label={nav.account}
+                active={accountActive(pathname)}
+                compact
+              />
+              <div className="my-1 h-px w-full bg-white/10" role="separator" aria-hidden />
+              {navKeys.map(({ href, key }) => {
+                const active = isActive(href);
+                const isContact = href === "/contact";
 
-              return (
-                <Link
-                  key={href}
-                  href={resolveHref(locale, href)}
-                  className={cn(
-                    "block w-full rounded-xl px-4 py-3.5 text-base font-medium transition",
-                    active
-                      ? "bg-purple-500/15 text-white ring-1 ring-purple-400/40"
-                      : isContact
-                        ? "border border-purple-500/35 bg-purple-500/10 text-purple-100 hover:bg-purple-500/15"
-                        : "text-slate-100 hover:bg-white/5",
-                  )}
-                  onClick={() => setOpen(false)}
-                >
-                  {nav[key]}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={href}
+                    href={resolveHref(locale, href)}
+                    prefetch={prefetchRoutes}
+                    className={cn(
+                      "flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-center text-base font-medium transition",
+                      active
+                        ? "bg-purple-500/15 text-white ring-1 ring-purple-400/40"
+                        : isContact
+                          ? "border border-purple-500/35 bg-purple-500/10 text-purple-100 hover:bg-purple-500/15"
+                          : "text-slate-100 hover:bg-white/5",
+                    )}
+                    onClick={() => setOpen(false)}
+                  >
+                    {nav[key]}
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
         </>
       ) : null}
