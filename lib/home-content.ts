@@ -355,7 +355,7 @@ async function fetchHomeContent(locale: Locale): Promise<HomeContent> {
     hero: {
       ...dict.hero,
       videoUrl: undefined,
-      videoPoster: optimizePosterUrl(dict.hero.videoPoster),
+      videoPoster: optimizePosterUrl(dict.hero.videoPoster) ?? dict.hero.videoPoster,
     },
     promoSlides: [],
     heroGallery: heroGalleryCopy(dict),

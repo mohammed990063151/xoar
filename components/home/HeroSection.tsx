@@ -53,13 +53,13 @@ function useHeroVideoPlayback(
 
     const start = (): void => setPlayVideo(true);
 
-    if ("requestIdleCallback" in window) {
+    if (typeof window.requestIdleCallback === "function") {
       const id = window.requestIdleCallback(start, { timeout: 2500 });
       return () => window.cancelIdleCallback(id);
     }
 
-    const timer = window.setTimeout(start, 1500);
-    return () => window.clearTimeout(timer);
+    const timer = setTimeout(start, 1500);
+    return () => clearTimeout(timer);
   }, [videoSrc, reduceMotion]);
 
   return playVideo;
