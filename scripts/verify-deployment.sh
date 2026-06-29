@@ -72,6 +72,10 @@ http_check() {
 
   case "${code}" in
     200|301|302|307|308) ;;
+    500)
+      rm -f "${body}"
+      fail "${label} returned 500. Passenger started but the Node app crashed. In cPanel open Setup Node.js App → ${DEPLOY_PATH} → View logs (or Passenger error log), then restart the app. Also ensure Application mode is Production."
+      ;;
     403)
       rm -f "${body}"
       fail "${label} returned 403 Forbidden. cPanel is serving Apache, not Passenger/Node. Fix: set Application root to ${DEPLOY_PATH}, startup file server.js, and map the domain to this Node app (not the parent public_html folder)."
