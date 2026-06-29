@@ -62,7 +62,10 @@ http_fetch() {
   echo "" >&2
 
   if [ "${code}" != "000" ] && [ -f "${body}" ]; then
-    if grep -q '__next_error__' "${body}" 2>/dev/null; then
+    if grep -qi 'Web application could not be started' "${body}" 2>/dev/null; then
+      echo "  Passenger failed to start Node app" >&2
+      code="passenger"
+    elif grep -q '__next_error__' "${body}" 2>/dev/null; then
       echo "  body contains __next_error__" >&2
       code="err"
     elif ! grep -qi '<html' "${body}" 2>/dev/null; then
@@ -89,7 +92,7 @@ http_check_optional() {
   local code
   code="$(http_fetch "${url}" "${label}")"
 
-  if [ "${code}" = "000" ] || [ "${code}" = "err" ] || ! http_check_ok "${code}"; then
+  if [ "${code}" = "000" ] || [ "${code}" = "err" ] || [ "${code}" = "passenger" ] || ! http_check_ok "${code}"; then
     warn "${label} check did not pass (HTTP ${code}) — deploy not blocked."
     return 0
   fi

@@ -20,7 +20,7 @@ app
       .createServer((req, res) => {
         handle(req, res, parse(req.url, true));
       })
-      .listen(port, () => {
+      .listen(port, "0.0.0.0", () => {
         console.log(`next-server-ready port=${port}`);
       });
   })

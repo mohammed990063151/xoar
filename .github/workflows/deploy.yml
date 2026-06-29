@@ -62,7 +62,7 @@ jobs:
       - name: Validate build output
         run: |
           set -euo pipefail
-          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh
+          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh
           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
 
@@ -150,6 +150,7 @@ jobs:
 
           rsync -avz -e "ssh $SSH_OPTS" \
             scripts/backup-deployment.sh scripts/rollback-deployment.sh \
+            scripts/fix-deploy-permissions.sh scripts/server-next-check.sh \
             "$HOST:${DEPLOY_PATH}/scripts/"
 
           ssh $SSH_OPTS "$HOST" \
@@ -183,13 +184,44 @@ jobs:
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
 
-          echo "Syncing server .env"
+          echo "Ensure server .env (keep existing — never overwrite)"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
-            .env.deploy "$HOST:${DEPLOY_PATH}/.env"
+            .env.deploy "$HOST:${DEPLOY_PATH}/.env.deploy"
+          ssh $SSH_OPTS "$HOST" "if [ ! -f '${DEPLOY_PATH}/.env' ]; then mv '${DEPLOY_PATH}/.env.deploy' '${DEPLOY_PATH}/.env'; else rm -f '${DEPLOY_PATH}/.env.deploy'; fi"
 
           echo "Syncing node_modules/ (real files, not cPanel symlinks)"
           rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
             node_modules/ "$HOST:${DEPLOY_PATH}/node_modules/"
+
+          ssh $SSH_OPTS "$HOST" \
+            "chmod +x '${DEPLOY_PATH}/scripts/'*.sh && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/fix-deploy-permissions.sh'"
+
+      - name: Server-side Next.js prepare check (before Passenger restart)
+        run: |
+          set -euo pipefail
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+          if ssh $SSH_OPTS "$HOST" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-next-check.sh'"; then
+            echo "New build passes next.prepare() — safe to restart Passenger."
+            exit 0
+          fi
+
+          echo "::warning::New build failed next.prepare() — rolling back WITHOUT restarting Passenger."
+          ssh $SSH_OPTS "$HOST" \
+            "SKIP_PASSENGER_RESTART=1 DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'"
+
+          sleep 10
+
+          if ssh $SSH_OPTS "$HOST" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-next-check.sh'"; then
+            echo "::error::Deploy REJECTED — files rolled back. Live Passenger was NOT restarted."
+          else
+            echo "::error::Rollback completed but next.prepare() still fails."
+            echo "::error::Check cPanel: Application mode = Production, startup file = server.js, Node 20+."
+          fi
+          exit 1
 
       - name: Restart Passenger app
         run: |
@@ -271,14 +303,15 @@ jobs:
           ssh $SSH_OPTS "$HOST" "chmod +x '${DEPLOY_PATH}/scripts/verify-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' MODE=local '${DEPLOY_PATH}/scripts/verify-deployment.sh'"
 
       - name: Smoke test live site (rollback on failure)
+        if: success()
         run: |
           set -euo pipefail
           chmod +x scripts/verify-deployment.sh
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          echo "Waiting for Passenger cold start (30s)..."
-          sleep 30
+          echo "Waiting for Passenger cold start (35s)..."
+          sleep 35
 
           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then
@@ -290,8 +323,8 @@ jobs:
           ssh $SSH_OPTS "$HOST" \
             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'"
 
-          echo "Waiting for Passenger after rollback (25s)..."
-          sleep 25
+          echo "Waiting for Passenger after rollback (45s)..."
+          sleep 45
 
           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then
