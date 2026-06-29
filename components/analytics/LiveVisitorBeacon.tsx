@@ -65,7 +65,8 @@ export function LiveVisitorBeacon(): null {
       lastPathRef.current = section;
       void sendHeartbeat(section);
       intervalId = window.setInterval(() => {
-        void sendHeartbeat();
+        const section = normalizePresencePath(window.location.pathname);
+        void sendHeartbeat(section);
       }, HEARTBEAT_MS);
     };
 
@@ -77,7 +78,7 @@ export function LiveVisitorBeacon(): null {
 
     const onVisible = (): void => {
       if (document.visibilityState === "visible") {
-        void sendHeartbeat();
+        void sendHeartbeat(normalizePresencePath(window.location.pathname));
       }
     };
 
