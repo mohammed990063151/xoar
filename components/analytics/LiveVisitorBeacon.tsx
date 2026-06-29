@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { getApiBaseUrl } from "@/lib/api-base";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { getPresenceApiBaseUrl } from "@/lib/api-base";
+import { normalizePresencePath } from "@/lib/presence-path";
 
 const STORAGE_KEY = "xora_visitor_id";
 const HEARTBEAT_MS = 45_000;
@@ -23,23 +25,25 @@ function visitorId(): string {
   return id;
 }
 
-async function sendHeartbeat(): Promise<void> {
+async function sendHeartbeat(path?: string): Promise<void> {
   const id = visitorId();
   if (!id) {
     return;
   }
 
+  const payload: { visitor_id: string; path?: string } = { visitor_id: id };
+  if (path) {
+    payload.path = path;
+  }
+
   try {
-    await fetch(`${getApiBaseUrl()}/api/presence/heartbeat`, {
+    await fetch(`${getPresenceApiBaseUrl()}/api/presence/heartbeat`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        visitor_id: id,
-        path: window.location.pathname,
-      }),
+      body: JSON.stringify(payload),
       keepalive: true,
     });
   } catch {
@@ -48,14 +52,21 @@ async function sendHeartbeat(): Promise<void> {
 }
 
 export function LiveVisitorBeacon(): null {
+  const pathname = usePathname();
+  const lastPathRef = useRef<string | null>(null);
+
   useEffect(() => {
     let intervalId = 0;
     let idleId = 0;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const start = (): void => {
-      sendHeartbeat();
-      intervalId = window.setInterval(sendHeartbeat, HEARTBEAT_MS);
+      const section = normalizePresencePath(window.location.pathname);
+      lastPathRef.current = section;
+      void sendHeartbeat(section);
+      intervalId = window.setInterval(() => {
+        void sendHeartbeat();
+      }, HEARTBEAT_MS);
     };
 
     if (typeof window.requestIdleCallback === "function") {
@@ -66,7 +77,7 @@ export function LiveVisitorBeacon(): null {
 
     const onVisible = (): void => {
       if (document.visibilityState === "visible") {
-        sendHeartbeat();
+        void sendHeartbeat();
       }
     };
 
@@ -79,6 +90,15 @@ export function LiveVisitorBeacon(): null {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
+
+  useEffect(() => {
+    const section = normalizePresencePath(pathname);
+    if (lastPathRef.current === section) {
+      return;
+    }
+    lastPathRef.current = section;
+    void sendHeartbeat(section);
+  }, [pathname]);
 
   return null;
 }
