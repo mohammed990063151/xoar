@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 
 interface HomeAmbientMotionProps {
@@ -9,9 +10,15 @@ interface HomeAmbientMotionProps {
 
 export function HomeAmbientMotion({ locale }: HomeAmbientMotionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
+  const [enabled, setEnabled] = useState(false);
   const rtl = locale === "ar";
 
-  if (reduceMotion) {
+  useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 768px)").matches;
+    setEnabled(!mobile);
+  }, []);
+
+  if (reduceMotion || !enabled) {
     return <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden />;
   }
 

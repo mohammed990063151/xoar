@@ -263,7 +263,7 @@ jobs:
           chmod +x scripts/verify-deployment.sh
 
           echo "Waiting for Passenger restart..."
-          sleep 8
+          sleep 20
 
           if ! DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then

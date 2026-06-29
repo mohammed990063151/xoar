@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { EventRequestLink } from "@/components/ui/EventRequestLink";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
@@ -13,25 +14,43 @@ const HERO_VIDEO_SRC =
   "https://videos.pexels.com/video-files/19679435/19679435-hd_1920_1080_25fps.mp4";
 
 const HERO_VIDEO_POSTER =
-  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80";
+  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=75";
 
 const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.11, delayChildren: 0.12 },
+    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
   },
 };
 
 const item = {
-  hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
+  hidden: { opacity: 0, y: 16 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
+
+function useHeroVideoAutoplay(reduceMotion: boolean | null): boolean {
+  const [autoplay, setAutoplay] = useState(false);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      return;
+    }
+
+    const mobile = window.matchMedia("(max-width: 768px)").matches;
+    const saveData = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection?.saveData;
+
+    setAutoplay(!mobile && !saveData);
+  }, [reduceMotion]);
+
+  return autoplay;
+}
 
 interface HeroSectionProps {
   readonly locale: Locale;
@@ -43,6 +62,7 @@ export function HeroSection({
   hero,
 }: HeroSectionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
+  const autoplayVideo = useHeroVideoAutoplay(reduceMotion);
   const videoSrc = hero.videoUrl?.trim() || HERO_VIDEO_SRC;
   const posterSrc = hero.videoPoster?.trim() || HERO_VIDEO_POSTER;
 
@@ -71,19 +91,31 @@ export function HeroSection({
           ))
         : null}
       <div className="absolute inset-0">
-        <video
-          key={videoSrc}
-          className="h-full w-full scale-105 object-cover object-center"
-          poster={posterSrc}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          autoPlay={!reduceMotion}
-          aria-hidden
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        {autoplayVideo ? (
+          <video
+            key={videoSrc}
+            className="h-full w-full scale-105 object-cover object-center"
+            poster={posterSrc}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            autoPlay
+            aria-hidden
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={posterSrc}
+            alt=""
+            className="h-full w-full scale-105 object-cover object-center"
+            fetchPriority="high"
+            decoding="async"
+            aria-hidden
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/65 to-[#020617]/35" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/25 via-transparent to-purple-950/35" />
       </div>

@@ -1,24 +1,61 @@
-import { Achievements } from "@/components/home/Achievements";
-import { HeroImageGallery } from "@/components/home/HeroImageGallery";
+import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/home/HeroSection";
 import { HomePromoBanner } from "@/components/home/HomePromoBanner";
 import { HomeAmbientMotion } from "@/components/home/HomeAmbientMotion";
-import { HomeContactSection } from "@/components/home/HomeContactSection";
-import { PartnersMarquee } from "@/components/home/PartnersMarquee";
-import { EntertainmentActivitiesSection } from "@/components/home/EntertainmentActivitiesSection";
-import { WorksShowcase } from "@/components/home/WorksShowcase";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
-import { normalizeActivityFromApi } from "@/lib/activity";
 import { isLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 import { getSiteContent } from "@/services/contentService";
-import { serverFetch } from "@/services/api";
-import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
 
-/** Always read CMS from Laravel — never cache a static snapshot from build time. */
-export const dynamic = "force-dynamic";
+const HeroImageGallery = dynamic(
+  () =>
+    import("@/components/home/HeroImageGallery").then((m) => ({
+      default: m.HeroImageGallery,
+    })),
+  { loading: () => null },
+);
+
+const EntertainmentActivitiesSection = dynamic(
+  () =>
+    import("@/components/home/EntertainmentActivitiesSection").then((m) => ({
+      default: m.EntertainmentActivitiesSection,
+    })),
+  { loading: () => null },
+);
+
+const WorksShowcase = dynamic(
+  () =>
+    import("@/components/home/WorksShowcase").then((m) => ({
+      default: m.WorksShowcase,
+    })),
+  { loading: () => null },
+);
+
+const PartnersMarquee = dynamic(
+  () =>
+    import("@/components/home/PartnersMarquee").then((m) => ({
+      default: m.PartnersMarquee,
+    })),
+  { loading: () => null },
+);
+
+const HomeContactSection = dynamic(
+  () =>
+    import("@/components/home/HomeContactSection").then((m) => ({
+      default: m.HomeContactSection,
+    })),
+  { loading: () => null },
+);
+
+const Achievements = dynamic(
+  () =>
+    import("@/components/home/Achievements").then((m) => ({
+      default: m.Achievements,
+    })),
+  { loading: () => null },
+);
 
 export default async function HomePage({
   params,
@@ -34,16 +71,6 @@ export default async function HomePage({
     getSiteContent(locale),
   ]);
 
-  let entertainmentActivities = home.entertainmentActivities;
-
-  if (entertainmentActivities.length === 0) {
-    const activitiesRes = await serverFetch<{ data: Activity[] }>(
-      `/api/activities/${locale}?per_page=6`,
-      { cache: "no-store" },
-    );
-    entertainmentActivities = (activitiesRes?.data ?? []).map(normalizeActivityFromApi);
-  }
-
   return (
     <div className="relative overflow-x-hidden">
       <HomeAmbientMotion locale={locale} />
@@ -57,7 +84,7 @@ export default async function HomePage({
       <EntertainmentActivitiesSection
         locale={locale}
         section={home.entertainmentActivitiesSection}
-        activities={entertainmentActivities}
+        activities={home.entertainmentActivities}
       />
       <WorksShowcase
         locale={locale}

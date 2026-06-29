@@ -53,7 +53,9 @@ http_fetch() {
 
   echo "HTTP check: ${label} (${url})" >&2
   body="$(mktemp)"
-  code="$(curl -sS -o "${body}" -w "%{http_code}" --max-time 30 -L "${url}" || echo "000")"
+  code="$(curl -sS -o "${body}" -w "%{http_code}" --max-time 30 -L \
+    -A "xoar-deploy-check/1.0" \
+    "${url}" || echo "000")"
 
   echo "  status=${code}" >&2
   head -c 300 "${body}" | tr '\n' ' ' >&2
@@ -63,41 +65,53 @@ http_fetch() {
   echo "${code}"
 }
 
+http_check_required() {
+  local url="$1"
+  local label="$2"
+  local attempt code
+
+  for attempt in 1 2 3 4 5; do
+    code="$(http_fetch "${url}" "${label} (try ${attempt}/5)")"
+    if [ "${code}" = "000" ]; then
+      if [ "${attempt}" -lt 5 ]; then
+        echo "  waiting 8s before retry..." >&2
+        sleep 8
+        continue
+      fi
+      fail "${label} unreachable (curl failed after 5 attempts)"
+    fi
+
+    if http_check_ok "${code}"; then
+      return 0
+    fi
+
+    if [ "${attempt}" -lt 5 ]; then
+      echo "  got HTTP ${code}, waiting 8s before retry..." >&2
+      sleep 8
+    fi
+  done
+
+  case "${code}" in
+    500)
+      fail "${label} returned 500 after 5 attempts. Check cPanel Node.js logs and restart."
+      ;;
+    403)
+      fail "${label} returned 403. Fix Passenger/Node app mapping to ${DEPLOY_PATH}."
+      ;;
+    502|503|504)
+      fail "${label} returned ${code} after 5 attempts."
+      ;;
+    *)
+      fail "${label} returned unexpected HTTP ${code} after 5 attempts"
+      ;;
+  esac
+}
+
 http_check_ok() {
   local code="$1"
   case "${code}" in
     200|301|302|307|308) return 0 ;;
     *) return 1 ;;
-  esac
-}
-
-http_check_required() {
-  local url="$1"
-  local label="$2"
-  local code
-  code="$(http_fetch "${url}" "${label}")"
-
-  if [ "${code}" = "000" ]; then
-    fail "${label} unreachable (curl failed)"
-  fi
-
-  if http_check_ok "${code}"; then
-    return 0
-  fi
-
-  case "${code}" in
-    500)
-      fail "${label} returned 500. Passenger started but the Node app crashed. Check cPanel Node.js logs and restart the app."
-      ;;
-    403)
-      fail "${label} returned 403. cPanel is serving Apache, not Passenger/Node. Fix Application root → ${DEPLOY_PATH}, startup file server.js."
-      ;;
-    502|503|504)
-      fail "${label} returned ${code}. Passenger/Node app may be down."
-      ;;
-    *)
-      fail "${label} returned unexpected HTTP ${code}"
-      ;;
   esac
 }
 
@@ -114,8 +128,9 @@ http_check_optional() {
 }
 
 http_checks() {
-  # Only /ar is required — this is the real public entrypoint.
+  # /ar is the real entrypoint; retry handles cold start after Passenger restart.
   http_check_required "${SITE_URL}/ar" "Site /ar"
+  http_check_optional "${SITE_URL}/ar/about" "Site /ar/about"
   http_check_optional "${SITE_URL}/" "Site home"
   http_check_optional "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
 }

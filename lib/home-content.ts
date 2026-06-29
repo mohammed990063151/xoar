@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from "next/cache";
+import { cache } from "react";
 import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
@@ -302,6 +302,9 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
   };
 }
 
+const HOME_API_TIMEOUT_MS = 8_000;
+const HOME_REVALIDATE_SECONDS = 60;
+
 async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
   if (skipApiDuringBuild()) {
     return null;
@@ -309,12 +312,11 @@ async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
 
   const base = getApiBaseUrl();
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25_000);
+  const timer = setTimeout(() => controller.abort(), HOME_API_TIMEOUT_MS);
   try {
     const res = await fetch(`${base}/api/site/${locale}/home`, {
       headers: { Accept: "application/json" },
-      cache: "no-store",
-      next: { revalidate: 0 },
+      next: { revalidate: HOME_REVALIDATE_SECONDS },
       signal: controller.signal,
     });
     if (!res.ok) {
@@ -336,8 +338,7 @@ async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
   }
 }
 
-export async function getHomeContent(locale: Locale): Promise<HomeContent> {
-  noStore();
+async function fetchHomeContent(locale: Locale): Promise<HomeContent> {
   const dict = getDictionary(locale);
 
   const fallback: HomeContent = {
@@ -365,3 +366,5 @@ export async function getHomeContent(locale: Locale): Promise<HomeContent> {
 
   return mergeHome(locale, api);
 }
+
+export const getHomeContent = cache(fetchHomeContent);

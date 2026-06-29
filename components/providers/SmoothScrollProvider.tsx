@@ -48,7 +48,12 @@ export function SmoothScrollProvider({
   });
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const preferNativeScroll =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(max-width: 768px)").matches;
+
+    if (preferNativeScroll) {
       return;
     }
 

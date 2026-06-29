@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Dictionary } from "@/lib/dictionary";
 import { getDictionary } from "@/lib/dictionary";
 import { getApiBaseUrl } from "@/lib/api-base";
@@ -107,7 +108,7 @@ function mergeSiteContent(
   };
 }
 
-export async function getSiteContent(locale: Locale): Promise<SiteContent> {
+async function fetchSiteContent(locale: Locale): Promise<SiteContent> {
   const dict = getDictionary(locale);
 
   if (skipApiDuringBuild()) {
@@ -131,6 +132,9 @@ export async function getSiteContent(locale: Locale): Promise<SiteContent> {
 
   return { ...dict, eventsGallery: fallbackEvents(locale) };
 }
+
+/** Deduped per request (layout + page + metadata share one fetch). */
+export const getSiteContent = cache(fetchSiteContent);
 
 export async function getEventBySlug(
   locale: Locale,

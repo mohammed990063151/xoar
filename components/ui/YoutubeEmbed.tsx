@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/cn";
 import {
   YOUTUBE_IFRAME_ALLOW,
   youtubeEmbedUrl,
+  youtubeThumbnailFallbacks,
   youtubeThumbnailUrl,
 } from "@/lib/video-embed";
 
@@ -25,8 +26,15 @@ export function YoutubeEmbed({
   const [active, setActive] = useState(!facade);
   const embedSrc = youtubeEmbedUrl(videoUrl);
   const thumb = youtubeThumbnailUrl(videoUrl);
+  const fallbacks = youtubeThumbnailFallbacks(videoUrl);
+  const [thumbIndex, setThumbIndex] = useState(0);
+  const thumbSrc = fallbacks[thumbIndex] ?? thumb;
 
-  if (!active && thumb) {
+  const onThumbError = useCallback(() => {
+    setThumbIndex((i) => (i + 1 < fallbacks.length ? i + 1 : i));
+  }, [fallbacks.length]);
+
+  if (!active && thumbSrc) {
     return (
       <button
         type="button"
@@ -39,10 +47,11 @@ export function YoutubeEmbed({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={thumb}
+          src={thumbSrc}
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-90 transition group-hover:opacity-100"
           loading="lazy"
+          onError={onThumbError}
         />
         <span
           className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition group-hover:scale-105 group-hover:bg-red-500"
