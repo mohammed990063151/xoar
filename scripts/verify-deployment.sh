@@ -5,7 +5,7 @@ set -euo pipefail
 DEPLOY_PATH="${DEPLOY_PATH:-/home/cjfyc2evye0k/public_html/xoraevents.com/xoar}"
 SITE_URL="${SITE_URL:-https://xoraevents.com}"
 API_URL="${API_URL:-https://xoraplus.com}"
-MODE="${1:-local}" # local = check filesystem only; remote = SSH + HTTP
+MODE="${1:-local}" # local | ci | http
 
 fail() {
   echo "::error::$1" >&2
@@ -44,6 +44,12 @@ check_files() {
   fi
 
   echo "BUILD_ID=$(cat "${root}/.next/BUILD_ID")"
+}
+
+http_checks() {
+  http_check "${SITE_URL}/" "Site home"
+  http_check "${SITE_URL}/ar" "Site /ar"
+  http_check "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
 }
 
 http_check() {
@@ -90,14 +96,12 @@ case "${MODE}" in
   ci)
     check_files "."
     ;;
-  remote)
-    check_files "${DEPLOY_PATH}"
-    http_check "${SITE_URL}/" "Site home"
-    http_check "${SITE_URL}/ar" "Site /ar"
-    http_check "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
+  http|remote)
+    # HTTP only — filesystem is verified separately over SSH in CI.
+    http_checks
     ;;
   *)
-    fail "Unknown mode: ${MODE} (use: local | ci | remote)"
+    fail "Unknown mode: ${MODE} (use: local | ci | http | remote)"
     ;;
 esac
 

@@ -126,6 +126,9 @@ jobs:
           rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
             .next/ "$HOST:${DEPLOY_PATH}/.next/"
 
+          echo "Verifying .next on server immediately after rsync"
+          ssh $SSH_OPTS "$HOST" "test -f '${DEPLOY_PATH}/.next/BUILD_ID' && ls -la '${DEPLOY_PATH}/.next/BUILD_ID'"
+
           echo "Syncing public/"
           rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
             public/ "$HOST:${DEPLOY_PATH}/public/"
@@ -180,7 +183,7 @@ jobs:
           echo "Waiting for Passenger restart..."
           sleep 8
 
-          DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" MODE=remote \
+          DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" MODE=http \
             scripts/verify-deployment.sh
 
       - name: Upload build log on failure
