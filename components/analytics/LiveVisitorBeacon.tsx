@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { getPresenceApiBaseUrl } from "@/lib/api-base";
+import { getApiBaseUrl } from "@/lib/api-base";
 import { normalizePresencePath } from "@/lib/presence-path";
 
 const STORAGE_KEY = "xora_visitor_id";
@@ -37,7 +37,7 @@ async function sendHeartbeat(path?: string): Promise<void> {
   }
 
   try {
-    await fetch(`${getPresenceApiBaseUrl()}/api/presence/heartbeat`, {
+    await fetch(`${getApiBaseUrl()}/api/presence/heartbeat`, {
       method: "POST",
       headers: {
         Accept: "application/json",

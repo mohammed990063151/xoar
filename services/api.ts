@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import type {
   Activity,
@@ -30,7 +30,7 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${getApiBaseUrl()}${path}`, { ...options, headers });
+  const res = await laravelFetch(path, { ...options, headers });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -97,7 +97,7 @@ export async function serverFetch<T>(
   const timer = setTimeout(() => controller.abort(), 8_000);
 
   try {
-    const res = await fetch(`${getApiBaseUrl()}${path}`, {
+    const res = await laravelFetch(path, {
       headers: { Accept: "application/json" },
       cache: options?.cache === "no-store" ? "no-store" : "default",
       signal: controller.signal,

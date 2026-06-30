@@ -51,6 +51,9 @@ jobs:
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
+            if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
+              echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
+            fi
           } >> "$GITHUB_ENV"
 
       - name: Build Next.js (webpack)
@@ -79,6 +82,9 @@ jobs:
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
+            if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
+              echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
+            fi
           } > .env.deploy
           echo "Prepared .env.deploy (redacted)."
 

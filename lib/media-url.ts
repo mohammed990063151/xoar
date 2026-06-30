@@ -27,6 +27,10 @@ export function isSelfHostedMedia(url: string): boolean {
 }
 
 export function isBlockedDemoMedia(url: string): boolean {
+  // Uploaded hero files may keep the demo filename — only block external demo URLs.
+  if (isSelfHostedMedia(url)) {
+    return false;
+  }
   return BLOCKED_DEMO_PATTERNS.some((pattern) => pattern.test(url));
 }
 

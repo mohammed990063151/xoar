@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Dictionary } from "@/lib/dictionary";
 import { getDictionary } from "@/lib/dictionary";
 import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import { eventGallery } from "@/lib/event-gallery";
 import type { Locale } from "@/lib/i18n";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
@@ -12,7 +13,7 @@ async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
   try {
-    return await fetch(url, { ...init, signal: controller.signal });
+    return await laravelFetch(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }

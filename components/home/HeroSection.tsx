@@ -34,35 +34,31 @@ const item = {
 function useHeroVideoPlayback(
   videoSrc: string | undefined,
   reduceMotion: boolean | null,
-): boolean {
-  const [playVideo, setPlayVideo] = useState(false);
+): { playVideo: boolean; videoPreload: "none" | "metadata" | "auto" } {
+  const [playVideo, setPlayVideo] = useState(Boolean(videoSrc && !reduceMotion));
+  const [videoPreload, setVideoPreload] = useState<"none" | "metadata" | "auto">("metadata");
 
   useEffect(() => {
     if (!videoSrc || reduceMotion) {
+      setPlayVideo(false);
       return;
     }
 
-    const mobile = window.matchMedia("(max-width: 768px)").matches;
     const saveData = (
       navigator as Navigator & { connection?: { saveData?: boolean } }
     ).connection?.saveData;
 
-    if (mobile || saveData) {
+    if (saveData) {
+      setPlayVideo(false);
       return;
     }
 
-    const start = (): void => setPlayVideo(true);
-
-    if (typeof window.requestIdleCallback === "function") {
-      const id = window.requestIdleCallback(start, { timeout: 2500 });
-      return () => window.cancelIdleCallback(id);
-    }
-
-    const timer = setTimeout(start, 1500);
-    return () => clearTimeout(timer);
+    const mobile = window.matchMedia("(max-width: 768px)").matches;
+    setVideoPreload(mobile ? "metadata" : "auto");
+    setPlayVideo(true);
   }, [videoSrc, reduceMotion]);
 
-  return playVideo;
+  return { playVideo, videoPreload };
 }
 
 interface HeroSectionProps {
@@ -76,7 +72,7 @@ export function HeroSection({
 }: HeroSectionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
   const videoSrc = hero.videoUrl?.trim() || undefined;
-  const playVideo = useHeroVideoPlayback(videoSrc, reduceMotion);
+  const { playVideo, videoPreload } = useHeroVideoPlayback(videoSrc, reduceMotion);
   const posterSrc =
     optimizePosterUrl(hero.videoPoster?.trim()) ?? HERO_POSTER_FALLBACK;
 
@@ -113,7 +109,7 @@ export function HeroSection({
             muted
             loop
             playsInline
-            preload="none"
+            preload={videoPreload}
             autoPlay
             aria-hidden
           >

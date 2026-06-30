@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <rect width="180" height="180" rx="40" fill="#0b1224"/>
+  <path
+    d="M54 54 90 102 126 54H148L98 115 149 149H127L90 119 53 149H31L82 115 32 54H54Z"
+    fill="url(#xoraGrad)"
+  />
+  <defs>
+    <linearGradient id="xoraGrad" x1="34" y1="44" x2="146" y2="156" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34d399"/>
+      <stop offset="0.45" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+</svg>

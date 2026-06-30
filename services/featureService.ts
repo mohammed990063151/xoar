@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import {
   defaultPlatformFeatures,
   resolveFeatureEnabled,
@@ -16,8 +17,7 @@ export type PlatformFeature = {
 export const featureService = {
   async list(locale: Locale): Promise<{ features: PlatformFeature[]; fromApi: boolean }> {
     try {
-      const res = await fetch(`${getApiBaseUrl()}/api/site/${locale}/features`, {
-        headers: { Accept: "application/json" },
+      const res = await laravelFetch(`/api/site/${locale}/features`, {
         next: { revalidate: 300 },
       });
       if (!res.ok) {

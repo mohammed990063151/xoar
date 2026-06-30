@@ -10,24 +10,9 @@ function normalizeApiOrigin(value: string | undefined): string | undefined {
 }
 
 /**
- * Presence heartbeat must hit Laravel directly so `$request->ip()` is the visitor,
- * not the Next.js server IP from `/api/*` rewrites.
- */
-export function getPresenceApiBaseUrl(): string {
-  if (typeof window !== "undefined") {
-    const direct = normalizeApiOrigin(process.env.NEXT_PUBLIC_API_URL);
-    if (direct) {
-      return direct;
-    }
-  }
-
-  return getApiBaseUrl();
-}
-
-/**
  * Base URL for API requests.
- * - Browser: always same-origin (`""`) so `/api/*` hits Next.js rewrites (no CORS).
- * - Server (SSR): `API_PROXY_TARGET` → Laravel directly on cPanel/production.
+ * - Browser: same-origin (`""`) → Next.js `/api/*` proxy injects FRONTEND_API_KEY server-side.
+ * - Server (SSR): direct to API_PROXY_TARGET with FRONTEND_API_KEY header.
  */
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {

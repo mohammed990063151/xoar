@@ -134,7 +134,7 @@ http_checks() {
 
   echo "Site is up (verified via ${verified})." >&2
   http_check_optional "${SITE_URL}/" "Site home"
-  http_check_optional "${API_URL}/api/activities/ar?per_page=1" "Laravel API"
+  http_check_optional "${SITE_URL}/api/activities/ar?per_page=1" "Next.js API proxy"
 }
 
 case "${MODE}" in

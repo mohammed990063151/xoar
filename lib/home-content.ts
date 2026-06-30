@@ -2,7 +2,7 @@ import { cache } from "react";
 import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
-import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
 import {
@@ -320,12 +320,10 @@ async function fetchHomeApi(locale: Locale): Promise<HomeApiPayload | null> {
     return null;
   }
 
-  const base = getApiBaseUrl();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), HOME_API_TIMEOUT_MS);
   try {
-    const res = await fetch(`${base}/api/site/${locale}/home`, {
-      headers: { Accept: "application/json" },
+    const res = await laravelFetch(`/api/site/${locale}/home`, {
       next: { revalidate: HOME_REVALIDATE_SECONDS },
       signal: controller.signal,
     });

@@ -2,7 +2,7 @@ import { cache } from "react";
 import { getDictionary } from "@/lib/dictionary";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
-import { API_PROXY_TARGET } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
 
@@ -284,8 +284,7 @@ const fetchPageBundle = cache(async function fetchPageBundle(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8_000);
   try {
-    const res = await fetch(`${API_PROXY_TARGET}/api/site/${locale}/pages/${page}`, {
-      headers: { Accept: "application/json" },
+    const res = await laravelFetch(`/api/site/${locale}/pages/${page}`, {
       next: { revalidate: PAGE_REVALIDATE_SECONDS },
       signal: controller.signal,
     });
