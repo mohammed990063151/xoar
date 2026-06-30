@@ -33,28 +33,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify GitHub secrets
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          FRONTEND_API_KEY: ${{ secrets.FRONTEND_API_KEY }}
-        run: |
-          set -euo pipefail
-          missing=0
-          for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME FRONTEND_API_KEY; do
-            value="${!name:-}"
-            if [ -z "${value}" ]; then
-              echo "::error::Missing GitHub secret: ${name}"
-              missing=1
-            fi
-          done
-          if [ "${missing}" -eq 1 ]; then
-            echo "::error::Add secrets at Settings → Secrets and variables → Actions (see DEPLOY.md)."
-            exit 1
-          fi
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -73,9 +51,6 @@ jobs:
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
-            if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
-              echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
-            fi
           } >> "$GITHUB_ENV"
 
       - name: Build Next.js (webpack)
@@ -104,15 +79,24 @@ jobs:
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
-            if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
-              echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
-            fi
           } > .env.deploy
           echo "Prepared .env.deploy (redacted)."
 
       - name: Setup SSH
         run: |
           set -euo pipefail
+          missing=0
+          for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME; do
+            value="${!name:-}"
+            if [ -z "${value}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "${missing}" -eq 1 ]; then
+            echo "::error::Add secrets at Settings → Secrets and variables → Actions"
+            exit 1
+          fi
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
@@ -200,30 +184,10 @@ jobs:
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
 
-          echo "Ensure server .env (merge deploy keys into existing .env)"
+          echo "Ensure server .env (keep existing — never overwrite)"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             .env.deploy "$HOST:${DEPLOY_PATH}/.env.deploy"
-          ssh $SSH_OPTS "$HOST" "bash -s" "${DEPLOY_PATH}" <<'REMOTE'
-set -euo pipefail
-DEPLOY_PATH="$1"
-cd "$DEPLOY_PATH"
-if [ ! -f .env ]; then
-  mv .env.deploy .env
-  exit 0
-fi
-if [ ! -f .env.deploy ]; then
-  exit 0
-fi
-for key in API_PROXY_TARGET NEXT_PUBLIC_API_URL NEXT_PUBLIC_ADMIN_URL NEXT_PUBLIC_PORTAL_URL NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_GTM_ID FRONTEND_API_KEY; do
-  line="$(grep -m1 "^${key}=" .env.deploy 2>/dev/null || true)"
-  if [ -n "$line" ]; then
-    grep -v "^${key}=" .env > .env.tmp || true
-    printf '%s\n' "$line" >> .env.tmp
-    mv .env.tmp .env
-  fi
-done
-rm -f .env.deploy
-REMOTE
+          ssh $SSH_OPTS "$HOST" "if [ ! -f '${DEPLOY_PATH}/.env' ]; then mv '${DEPLOY_PATH}/.env.deploy' '${DEPLOY_PATH}/.env'; else rm -f '${DEPLOY_PATH}/.env.deploy'; fi"
 
           echo "Syncing node_modules/ (real files, not cPanel symlinks)"
           rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
@@ -392,4 +356,3 @@ REMOTE
             .next/trace
             npm-debug.log*
           if-no-files-found: ignore
-
