@@ -33,6 +33,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify GitHub secrets
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          FRONTEND_API_KEY: ${{ secrets.FRONTEND_API_KEY }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME FRONTEND_API_KEY; do
+            value="${!name:-}"
+            if [ -z "${value}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "${missing}" -eq 1 ]; then
+            echo "::error::Add secrets at Settings → Secrets and variables → Actions (see DEPLOY.md)."
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -41,14 +63,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Verify deploy secrets
-        run: |
-          set -euo pipefail
-          if [ -z "${{ secrets.FRONTEND_API_KEY }}" ]; then
-            echo "::error::Missing GitHub secret FRONTEND_API_KEY (must match xoraplus.com Laravel .env)."
-            exit 1
-          fi
 
       - name: Configure production URLs
         run: |
@@ -99,18 +113,6 @@ jobs:
       - name: Setup SSH
         run: |
           set -euo pipefail
-          missing=0
-          for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME; do
-            value="${!name:-}"
-            if [ -z "${value}" ]; then
-              echo "::error::Missing GitHub secret: ${name}"
-              missing=1
-            fi
-          done
-          if [ "${missing}" -eq 1 ]; then
-            echo "::error::Add secrets at Settings → Secrets and variables → Actions"
-            exit 1
-          fi
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
