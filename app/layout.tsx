@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   description:
     "Design and delivery of conferences, exhibitions, celebrations, and recreation in Saudi Arabia.",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
   },
 };

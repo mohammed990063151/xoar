@@ -36,6 +36,7 @@ function useHeroVideoPlayback(
   reduceMotion: boolean | null,
 ): { playVideo: boolean; videoPreload: "none" | "metadata" | "auto" } {
   const [playVideo, setPlayVideo] = useState(Boolean(videoSrc && !reduceMotion));
+  const [videoPreload, setVideoPreload] = useState<"none" | "metadata" | "auto">("auto");
 
   useEffect(() => {
     if (!videoSrc || reduceMotion) {
@@ -43,10 +44,33 @@ function useHeroVideoPlayback(
       return;
     }
 
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+    // Mobile: keep preload light; large hero MP4 can stutter on cellular.
+    setVideoPreload(isMobile ? "metadata" : "auto");
+
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+
+    const saveData = Boolean(connection?.saveData);
+    const effectiveType = (connection?.effectiveType || "").toLowerCase();
+    const slowNetwork =
+      effectiveType === "slow-2g" || effectiveType === "2g" || effectiveType === "3g";
+
+    // If user explicitly prefers saving data or is on a slow cellular network,
+    // show the poster only (no autoplay attempts → no visible buffering).
+    if (saveData || (isMobile && slowNetwork)) {
+      setPlayVideo(false);
+      return;
+    }
+
     setPlayVideo(true);
   }, [videoSrc, reduceMotion]);
 
-  return { playVideo, videoPreload: "auto" };
+  return { playVideo, videoPreload };
 }
 
 function HeroBackgroundMedia({

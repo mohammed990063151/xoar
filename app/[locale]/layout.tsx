@@ -42,6 +42,14 @@ export async function generateMetadata({
   return {
     title: dict.brand.name,
     description: dict.hero.subtitle,
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: "/icon.svg", type: "image/svg+xml" },
+      ],
+      shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+      apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
+    },
     alternates: {
       languages: {
         ar: "/ar",
