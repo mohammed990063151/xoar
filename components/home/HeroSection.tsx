@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EventRequestLink } from "@/components/ui/EventRequestLink";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
@@ -36,7 +36,6 @@ function useHeroVideoPlayback(
   reduceMotion: boolean | null,
 ): { playVideo: boolean; videoPreload: "none" | "metadata" | "auto" } {
   const [playVideo, setPlayVideo] = useState(Boolean(videoSrc && !reduceMotion));
-  const [videoPreload, setVideoPreload] = useState<"none" | "metadata" | "auto">("metadata");
 
   useEffect(() => {
     if (!videoSrc || reduceMotion) {
@@ -44,21 +43,107 @@ function useHeroVideoPlayback(
       return;
     }
 
-    const saveData = (
-      navigator as Navigator & { connection?: { saveData?: boolean } }
-    ).connection?.saveData;
-
-    if (saveData) {
-      setPlayVideo(false);
-      return;
-    }
-
-    const mobile = window.matchMedia("(max-width: 768px)").matches;
-    setVideoPreload(mobile ? "metadata" : "auto");
     setPlayVideo(true);
   }, [videoSrc, reduceMotion]);
 
-  return { playVideo, videoPreload };
+  return { playVideo, videoPreload: "auto" };
+}
+
+function HeroBackgroundMedia({
+  videoSrc,
+  posterSrc,
+  playVideo,
+  videoPreload,
+}: {
+  videoSrc: string | undefined;
+  posterSrc: string;
+  playVideo: boolean;
+  videoPreload: "none" | "metadata" | "auto";
+}): React.ReactElement {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoVisible, setVideoVisible] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!playVideo || !videoSrc || !video) {
+      setVideoVisible(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const showVideo = () => {
+      if (!cancelled) setVideoVisible(true);
+    };
+
+    const hideVideo = () => {
+      if (!cancelled) setVideoVisible(false);
+    };
+
+    const tryPlay = async () => {
+      try {
+        video.muted = true;
+        video.playsInline = true;
+        await video.play();
+        showVideo();
+      } catch {
+        hideVideo();
+      }
+    };
+
+    video.addEventListener("playing", showVideo);
+    video.addEventListener("pause", hideVideo);
+    video.addEventListener("error", hideVideo);
+
+    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      void tryPlay();
+    } else {
+      video.addEventListener("loadeddata", () => void tryPlay(), { once: true });
+      video.addEventListener("canplay", () => void tryPlay(), { once: true });
+      void tryPlay();
+    }
+
+    return () => {
+      cancelled = true;
+      video.removeEventListener("playing", showVideo);
+      video.removeEventListener("pause", hideVideo);
+      video.removeEventListener("error", hideVideo);
+    };
+  }, [playVideo, videoSrc]);
+
+  return (
+    <>
+      {/* Poster always visible — mobile autoplay often fails; avoids black hero */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={posterSrc}
+        alt=""
+        className="absolute inset-0 h-full w-full scale-105 object-cover object-center"
+        fetchPriority="high"
+        decoding="async"
+        aria-hidden
+      />
+      {playVideo && videoSrc ? (
+        <video
+          ref={videoRef}
+          key={videoSrc}
+          className={cn(
+            "absolute inset-0 h-full w-full scale-105 object-cover object-center transition-opacity duration-500",
+            videoVisible ? "opacity-100" : "opacity-0",
+          )}
+          poster={posterSrc}
+          muted
+          loop
+          playsInline
+          preload={videoPreload}
+          autoPlay
+          aria-hidden
+        >
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+      ) : null}
+    </>
+  );
 }
 
 interface HeroSectionProps {
@@ -101,31 +186,12 @@ export function HeroSection({
           ))
         : null}
       <div className="absolute inset-0">
-        {playVideo && videoSrc ? (
-          <video
-            key={videoSrc}
-            className="h-full w-full scale-105 object-cover object-center"
-            poster={posterSrc}
-            muted
-            loop
-            playsInline
-            preload={videoPreload}
-            autoPlay
-            aria-hidden
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={posterSrc}
-            alt=""
-            className="h-full w-full scale-105 object-cover object-center"
-            fetchPriority="high"
-            decoding="async"
-            aria-hidden
-          />
-        )}
+        <HeroBackgroundMedia
+          videoSrc={videoSrc}
+          posterSrc={posterSrc}
+          playVideo={playVideo}
+          videoPreload={videoPreload}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/65 to-[#020617]/35" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/25 via-transparent to-purple-950/35" />
       </div>
