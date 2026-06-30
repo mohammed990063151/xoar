@@ -1,0 +1,81 @@
+name: Rollback cPanel (restore last working release)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  DEPLOY_PATH: /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
+  SITE_URL: https://xoraevents.com
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME; do
+            value="${!name:-}"
+            if [ -z "${value}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "${missing}" -eq 1 ]; then
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=20"
+          ssh ${SSH_OPTS} "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" "echo SSH_OK"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+
+      - name: Rollback on server
+        run: |
+          set -euo pipefail
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+          echo "Running rollback script on server..."
+          ssh $SSH_OPTS "$HOST" \
+            "set -euo pipefail; cd '${DEPLOY_PATH}'; chmod +x scripts/*.sh; DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'"
+
+      - name: Wait for Passenger
+        run: sleep 60
+
+      - name: Quick check
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 45 -L "${SITE_URL}/ar" || echo "000")"
+          echo "GET ${SITE_URL}/ar → ${code}"
+          case "${code}" in
+            200|301|302|307|308) exit 0 ;;
+          esac
+          echo "::warning::Site still not OK after rollback (HTTP ${code}). Check cPanel Node.js logs."
+          exit 0
+
