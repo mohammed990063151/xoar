@@ -62,7 +62,7 @@ jobs:
       - name: Validate build output
         run: |
           set -euo pipefail
-          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh
+          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh
           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
 
@@ -151,7 +151,7 @@ jobs:
           rsync -avz -e "ssh $SSH_OPTS" \
             scripts/backup-deployment.sh scripts/rollback-deployment.sh \
             scripts/fix-deploy-permissions.sh scripts/server-next-check.sh \
-            scripts/resolve-server-node.sh scripts/server-npm-ci.sh \
+            scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh \
             "$HOST:${DEPLOY_PATH}/scripts/"
 
           ssh $SSH_OPTS "$HOST" \
@@ -188,27 +188,8 @@ jobs:
           echo "Ensure server .env (merge deploy keys into existing .env)"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             .env.deploy "$HOST:${DEPLOY_PATH}/.env.deploy"
-          ssh $SSH_OPTS "$HOST" "bash -s" "${DEPLOY_PATH}" <<'REMOTE'
-set -euo pipefail
-DEPLOY_PATH="$1"
-cd "$DEPLOY_PATH"
-if [ ! -f .env ]; then
-  mv .env.deploy .env
-  exit 0
-fi
-if [ ! -f .env.deploy ]; then
-  exit 0
-fi
-for key in API_PROXY_TARGET NEXT_PUBLIC_API_URL NEXT_PUBLIC_ADMIN_URL NEXT_PUBLIC_PORTAL_URL NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_GTM_ID FRONTEND_API_KEY; do
-  line="$(grep -m1 "^${key}=" .env.deploy 2>/dev/null || true)"
-  if [ -n "$line" ]; then
-    grep -v "^${key}=" .env > .env.tmp || true
-    printf '%s\n' "$line" >> .env.tmp
-    mv .env.tmp .env
-  fi
-done
-rm -f .env.deploy
-REMOTE
+          ssh $SSH_OPTS "$HOST" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/merge-server-env.sh'"
 
           echo "Install node_modules on server (matches cPanel Node / Passenger)"
           ssh $SSH_OPTS "$HOST" \
