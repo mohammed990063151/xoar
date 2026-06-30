@@ -111,8 +111,8 @@ http_checks() {
   )
   local attempt route url code verified=""
 
-  for attempt in 1 2 3 4 5; do
-    echo "Health check round ${attempt}/5 ..." >&2
+  for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    echo "Health check round ${attempt}/10 ..." >&2
     for route in "${routes[@]}"; do
       url="${SITE_URL}${route}"
       code="$(http_fetch "${url}" "${route} (round ${attempt})")"
@@ -122,14 +122,14 @@ http_checks() {
       fi
     done
 
-    if [ "${attempt}" -lt 5 ]; then
-      echo "  no route OK yet, waiting 8s ..." >&2
-      sleep 8
+    if [ "${attempt}" -lt 10 ]; then
+      echo "  no route OK yet, waiting 15s ..." >&2
+      sleep 15
     fi
   done
 
   if [ -z "${verified}" ]; then
-    fail "Site health check failed after 5 rounds. None of: ${routes[*]}"
+    fail "Site health check failed after 10 rounds. None of: ${routes[*]}"
   fi
 
   echo "Site is up (verified via ${verified})." >&2
