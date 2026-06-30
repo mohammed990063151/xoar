@@ -24,7 +24,7 @@ defaults:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     permissions:
       contents: read
       checks: write
@@ -62,12 +62,9 @@ jobs:
       - name: Validate build output
         run: |
           set -euo pipefail
-          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh
+          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh
           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
-
-      - name: Prune dev dependencies for production
-        run: npm prune --omit=dev
 
       - name: Prepare server .env for deploy
         run: |
@@ -79,6 +76,9 @@ jobs:
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
+            if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
+              echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
+            fi
           } > .env.deploy
           echo "Prepared .env.deploy (redacted)."
 
@@ -151,6 +151,7 @@ jobs:
           rsync -avz -e "ssh $SSH_OPTS" \
             scripts/backup-deployment.sh scripts/rollback-deployment.sh \
             scripts/fix-deploy-permissions.sh scripts/server-next-check.sh \
+            scripts/resolve-server-node.sh scripts/server-npm-ci.sh \
             "$HOST:${DEPLOY_PATH}/scripts/"
 
           ssh $SSH_OPTS "$HOST" \
@@ -184,14 +185,34 @@ jobs:
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
 
-          echo "Ensure server .env (keep existing — never overwrite)"
+          echo "Ensure server .env (merge deploy keys into existing .env)"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             .env.deploy "$HOST:${DEPLOY_PATH}/.env.deploy"
-          ssh $SSH_OPTS "$HOST" "if [ ! -f '${DEPLOY_PATH}/.env' ]; then mv '${DEPLOY_PATH}/.env.deploy' '${DEPLOY_PATH}/.env'; else rm -f '${DEPLOY_PATH}/.env.deploy'; fi"
+          ssh $SSH_OPTS "$HOST" "bash -s" "${DEPLOY_PATH}" <<'REMOTE'
+set -euo pipefail
+DEPLOY_PATH="$1"
+cd "$DEPLOY_PATH"
+if [ ! -f .env ]; then
+  mv .env.deploy .env
+  exit 0
+fi
+if [ ! -f .env.deploy ]; then
+  exit 0
+fi
+for key in API_PROXY_TARGET NEXT_PUBLIC_API_URL NEXT_PUBLIC_ADMIN_URL NEXT_PUBLIC_PORTAL_URL NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_GTM_ID FRONTEND_API_KEY; do
+  line="$(grep -m1 "^${key}=" .env.deploy 2>/dev/null || true)"
+  if [ -n "$line" ]; then
+    grep -v "^${key}=" .env > .env.tmp || true
+    printf '%s\n' "$line" >> .env.tmp
+    mv .env.tmp .env
+  fi
+done
+rm -f .env.deploy
+REMOTE
 
-          echo "Syncing node_modules/ (real files, not cPanel symlinks)"
-          rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
-            node_modules/ "$HOST:${DEPLOY_PATH}/node_modules/"
+          echo "Install node_modules on server (matches cPanel Node / Passenger)"
+          ssh $SSH_OPTS "$HOST" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-npm-ci.sh'"
 
           ssh $SSH_OPTS "$HOST" \
             "chmod +x '${DEPLOY_PATH}/scripts/'*.sh && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/fix-deploy-permissions.sh'"
@@ -204,7 +225,7 @@ jobs:
 
           if ssh $SSH_OPTS "$HOST" \
             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-next-check.sh'"; then
-            echo "New build passes next.prepare() — safe to restart Passenger."
+            echo "New build passes server checks — safe to restart Passenger."
             exit 0
           fi
 
@@ -310,8 +331,8 @@ jobs:
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          echo "Waiting for Passenger cold start (20s)..."
-          sleep 20
+          echo "Waiting for Passenger cold start (40s)..."
+          sleep 40
 
           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then

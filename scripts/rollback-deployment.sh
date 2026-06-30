@@ -32,6 +32,10 @@ if [ -f .next/BUILD_ID ]; then
   echo "Restored BUILD_ID=$(cat .next/BUILD_ID)"
 fi
 
+if [ -x "${DEPLOY_PATH}/scripts/server-npm-ci.sh" ]; then
+  DEPLOY_PATH="${DEPLOY_PATH}" "${DEPLOY_PATH}/scripts/server-npm-ci.sh"
+fi
+
 if [ "${SKIP_PASSENGER_RESTART:-}" != "1" ]; then
   touch tmp/restart.txt
   echo "Rollback complete — Passenger restart triggered."

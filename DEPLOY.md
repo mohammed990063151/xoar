@@ -59,19 +59,29 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 - GitHub Secret `FRONTEND_API_KEY`
 - Laravel `xoraplus.com/.env` → `FRONTEND_API_KEY=...`
 
+### سبب شائع لفشل Passenger
+
+`next.prepare()` ينجح لكن Passenger يعيد **Web application could not be started** عندما:
+
+1. `server.js` يستخدم `listen(0.0.0.0)` بدل `listen("passenger")`
+2. `node_modules` مرفوعة من GitHub (Node 24) بينما cPanel يشغّل Node مختلف
+
+الحل الحالي: `npm ci` على السيرفر + `server.js` متوافق مع Passenger.
+
 ---
 
 ## 3) ماذا يفعل الـ workflow؟
 
-1. يتحقق من الأسرار
+1. يتحقق من أسرار SSH
 2. `npm ci` + `npm run build` على GitHub
 3. يتصل بالسيرفر عبر SSH
 4. نسخة احتياطية من النسخة الحية (`.deploy-backup`)
-5. رفع: `.next/`, `public/`, `node_modules/`, `server.js`, `.htaccess`, `.env`
-6. دمج متغيرات `.env` على السيرفر (بدون مسح الموجود)
-7. فحص `next.prepare()` قبل إعادة التشغيل
-8. إعادة تشغيل Passenger (`tmp/restart.txt`)
-9. اختبار الموقع الحي — rollback تلقائي إذا فشل
+5. رفع: `.next/`, `public/`, `server.js`, `.htaccess`, `package.json`
+6. `npm ci --omit=dev` **على السيرفر** (نفس Node الذي يستخدمه Passenger)
+7. دمج متغيرات `.env` على السيرفر
+8. فحص `next.prepare()` + تشغيل `server.js` قبل إعادة التشغيل
+9. إعادة تشغيل Passenger (`tmp/restart.txt`)
+10. اختبار الموقع الحي — rollback تلقائي إذا فشل
 
 ---
 
