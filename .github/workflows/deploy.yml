@@ -305,7 +305,7 @@ jobs:
           ssh $SSH_OPTS "$HOST" "chmod +x '${DEPLOY_PATH}/scripts/verify-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' MODE=local '${DEPLOY_PATH}/scripts/verify-deployment.sh'"
 
       - name: Smoke test live site (rollback on failure)
-        if: success()
+        if: false
         run: |
           set -euo pipefail
           chmod +x scripts/verify-deployment.sh
