@@ -1,5 +1,8 @@
 import { proxyToLaravel } from "@/lib/laravel-proxy";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 type RouteContext = {
   params: Promise<{ path: string[] }>;
 };

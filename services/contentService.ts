@@ -1,7 +1,6 @@
 import { cache } from "react";
 import type { Dictionary } from "@/lib/dictionary";
 import { getDictionary } from "@/lib/dictionary";
-import { getApiBaseUrl } from "@/lib/api-base";
 import { laravelFetch } from "@/lib/laravel-fetch";
 import { eventGallery } from "@/lib/event-gallery";
 import type { Locale } from "@/lib/i18n";
@@ -117,7 +116,7 @@ async function fetchSiteContent(locale: Locale): Promise<SiteContent> {
   }
 
   try {
-    const response = await apiFetch(`${getApiBaseUrl()}/api/site/${locale}`, {
+    const response = await apiFetch(`/api/site/${locale}`, {
       headers: { Accept: "application/json" },
       next: { revalidate: REVALIDATE_SECONDS },
     });
@@ -146,7 +145,7 @@ export async function getEventBySlug(
   }
 
   try {
-    const response = await apiFetch(`${getApiBaseUrl()}/api/site/${locale}/events/${slug}`, {
+    const response = await apiFetch(`/api/site/${locale}/events/${slug}`, {
       headers: { Accept: "application/json" },
       next: { revalidate: REVALIDATE_SECONDS },
     });

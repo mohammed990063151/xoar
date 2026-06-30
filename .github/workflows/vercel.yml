@@ -1,0 +1,61 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify secrets
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Deploy to Vercel (production)
+        id: deploy
+        run: |
+          npx --yes vercel@latest deploy --prod --token="${VERCEL_TOKEN}" > deploy-url.txt
+          url="$(tail -n1 deploy-url.txt)"
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
+          echo "Live: ${url}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          url="${{ steps.deploy.outputs.url }}"
+          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 45 -L "${url}/ar")"
+          echo "GET ${url}/ar → ${code}"
+          case "${code}" in
+            200|301|302|307|308) exit 0 ;;
+            *) echo "::error::Smoke test failed (HTTP ${code})" && exit 1 ;;
+          esac
