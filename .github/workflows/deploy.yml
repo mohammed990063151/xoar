@@ -1,3 +1,364 @@
+# name: Build and Deploy to cPanel
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
+
+# concurrency:
+#   group: deploy-production
+#   cancel-in-progress: false
+
+# env:
+#   DEPLOY_PATH: /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
+#   SITE_URL: https://xoraevents.com
+#   API_PROXY_TARGET: https://xoraplus.com
+#   NEXT_TELEMETRY_DISABLED: "1"
+#   NEXT_PUBLIC_GTM_ID: GTM-TX7NM96K
+
+# defaults:
+#   run:
+#     shell: bash
+
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 40
+#     permissions:
+#       contents: read
+#       checks: write
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: "24"
+#           cache: "npm"
+
+#       - name: Install dependencies
+#         run: npm ci
+
+#       - name: Configure production URLs
+#         run: |
+#           {
+#             echo "API_PROXY_TARGET=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_API_URL=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
+#             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
+#           } >> "$GITHUB_ENV"
+
+#       - name: Build Next.js (webpack)
+#         run: npm run build
+#         env:
+#           NODE_ENV: production
+#           SKIP_API_DURING_BUILD: "1"
+
+#       - name: Validate build output
+#         run: |
+#           set -euo pipefail
+#           chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh
+#           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
+#           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
+
+#       - name: Prepare server .env for deploy
+#         run: |
+#           set -euo pipefail
+#           {
+#             echo "API_PROXY_TARGET=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_API_URL=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_ADMIN_URL=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
+#             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
+#             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
+#             if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
+#               echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
+#             fi
+#           } > .env.deploy
+#           echo "Prepared .env.deploy (redacted)."
+
+#       - name: Setup SSH
+#         run: |
+#           set -euo pipefail
+#           missing=0
+#           for name in SSH_PRIVATE_KEY SSH_HOST SSH_PORT SSH_USERNAME; do
+#             value="${!name:-}"
+#             if [ -z "${value}" ]; then
+#               echo "::error::Missing GitHub secret: ${name}"
+#               missing=1
+#             fi
+#           done
+#           if [ "${missing}" -eq 1 ]; then
+#             echo "::error::Add secrets at Settings → Secrets and variables → Actions"
+#             exit 1
+#           fi
+
+#           mkdir -p ~/.ssh
+#           chmod 700 ~/.ssh
+#           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+#           chmod 600 ~/.ssh/id_ed25519
+
+#           if ! grep -q "BEGIN.*PRIVATE KEY" ~/.ssh/id_ed25519; then
+#             echo "::error::SSH_PRIVATE_KEY is not a valid private key (expected PEM/OpenSSH format)"
+#             exit 1
+#           fi
+
+#           # ssh-keyscan may fail on some hosts; SSH uses StrictHostKeyChecking=no anyway.
+#           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=20"
+#           echo "Testing SSH to ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} ..."
+#           if ! ssh ${SSH_OPTS} "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" "echo SSH_OK"; then
+#             echo "::error::SSH connection failed. Check SSH_HOST, SSH_PORT, SSH_USERNAME, and SSH_PRIVATE_KEY."
+#             exit 1
+#           fi
+#         env:
+#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#           SSH_HOST: ${{ secrets.SSH_HOST }}
+#           SSH_PORT: ${{ secrets.SSH_PORT }}
+#           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+
+#       - name: Pre-deploy server checks
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+#           ssh $SSH_OPTS "$HOST" "test -d '${DEPLOY_PATH}'" \
+#             || { echo "::error::Deploy path missing on server: ${DEPLOY_PATH}"; exit 1; }
+
+#           if ssh $SSH_OPTS "$HOST" "test -f '${DEPLOY_PATH}/.env'"; then
+#             echo "Server .env found."
+#             if ssh $SSH_OPTS "$HOST" "grep -qE '^NODE_ENV=' '${DEPLOY_PATH}/.env'"; then
+#               echo "::error::Remove NODE_ENV from server .env — it causes build/runtime failures on cPanel."
+#               exit 1
+#             fi
+#           else
+#             echo "No .env yet — will be created during deploy from CI env."
+#           fi
+
+#       - name: Backup live release on server
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+#           rsync -avz -e "ssh $SSH_OPTS" \
+#             scripts/backup-deployment.sh scripts/rollback-deployment.sh \
+#             scripts/fix-deploy-permissions.sh scripts/server-next-check.sh \
+#             scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh \
+#             "$HOST:${DEPLOY_PATH}/scripts/"
+
+#           ssh $SSH_OPTS "$HOST" \
+#             "chmod +x '${DEPLOY_PATH}/scripts/backup-deployment.sh' '${DEPLOY_PATH}/scripts/rollback-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/backup-deployment.sh'"
+
+#       - name: Deploy build artifacts to server
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+#           ssh $SSH_OPTS "$HOST" "mkdir -p '${DEPLOY_PATH}/.next' '${DEPLOY_PATH}/public' '${DEPLOY_PATH}/tmp' '${DEPLOY_PATH}/scripts'"
+
+#           echo "Syncing .next/"
+#           rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
+#             .next/ "$HOST:${DEPLOY_PATH}/.next/"
+
+#           echo "Verifying .next on server immediately after rsync"
+#           ssh $SSH_OPTS "$HOST" "test -f '${DEPLOY_PATH}/.next/BUILD_ID' && ls -la '${DEPLOY_PATH}/.next/BUILD_ID'"
+
+#           echo "Syncing public/"
+#           rsync -avz --delete --info=stats2 -e "ssh $SSH_OPTS" \
+#             public/ "$HOST:${DEPLOY_PATH}/public/"
+
+#           echo "Syncing runtime files"
+#           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
+#             package.json package-lock.json next.config.mjs server.js .htaccess \
+#             "$HOST:${DEPLOY_PATH}/"
+
+#           echo "Syncing scripts/"
+#           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
+#             scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
+
+#           echo "Ensure server .env (merge deploy keys into existing .env)"
+#           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
+#             .env.deploy "$HOST:${DEPLOY_PATH}/.env.deploy"
+#           ssh $SSH_OPTS "$HOST" \
+#             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/merge-server-env.sh'"
+
+#           echo "Install node_modules on server (matches cPanel Node / Passenger)"
+#           ssh $SSH_OPTS "$HOST" \
+#             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-npm-ci.sh'"
+
+#           ssh $SSH_OPTS "$HOST" \
+#             "chmod +x '${DEPLOY_PATH}/scripts/'*.sh && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/fix-deploy-permissions.sh'"
+
+#       - name: Server-side Next.js prepare check (before Passenger restart)
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+#           if ssh $SSH_OPTS "$HOST" \
+#             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-next-check.sh'"; then
+#             echo "New build passes server checks — safe to restart Passenger."
+#             exit 0
+#           fi
+
+#           echo "::warning::New build failed next.prepare() — rolling back WITHOUT restarting Passenger."
+#           ssh $SSH_OPTS "$HOST" \
+#             "SKIP_PASSENGER_RESTART=1 DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'"
+
+#           sleep 10
+
+#           if ssh $SSH_OPTS "$HOST" \
+#             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-next-check.sh'"; then
+#             echo "::error::Deploy REJECTED — files rolled back. Live Passenger was NOT restarted."
+#           else
+#             echo "::error::Rollback completed but next.prepare() still fails."
+#             echo "::error::Check cPanel: Application mode = Production, startup file = server.js, Node 20+."
+#           fi
+#           exit 1
+
+#       - name: Restart Passenger app
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           ssh $SSH_OPTS "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" \
+#             "touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt'"
+
+#       - name: Tail server logs (best effort)
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+#           ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
+#             set +e
+#             echo \"== server diagnostics (best effort) ==\"
+#             echo \"whoami=$(whoami)\"; echo \"pwd=$(pwd)\"; echo \"home=$HOME\"
+#             echo \"DEPLOY_PATH=${DEPLOY_PATH}\"
+#             echo
+#             echo \"-- ls: \$HOME/logs --\"
+#             ls -la \"\$HOME/logs\" 2>/dev/null || true
+#             LATEST_LOG=\$(ls -1t \"\$HOME/logs/\"*xoraevents* 2>/dev/null | head -n 1 || true)
+#             if [ -n \"\$LATEST_LOG\" ]; then
+#               echo \"---- tail latest domain log: \$LATEST_LOG ----\"
+#               (zcat -f \"\$LATEST_LOG\" 2>/dev/null || cat \"\$LATEST_LOG\" 2>/dev/null) | tail -n 120 || true
+#             fi
+#             echo \"-- ls: ${DEPLOY_PATH}/tmp --\"
+#             ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
+#             echo
+#             echo \"-- nodevenv locations --\"
+#             ls -la \"\$HOME/nodevenv\" 2>/dev/null || true
+#             ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar\" 2>/dev/null || true
+#             ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24\" 2>/dev/null || true
+#             ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var\" 2>/dev/null || true
+#             ls -la \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log\" 2>/dev/null || true
+#             echo
+#             echo \"== tail candidate logs ==\"
+#             CANDIDATES=(
+#               \"\$HOME/logs/error_log\"
+#               \"\$HOME/logs/passenger.log\"
+#               \"\$HOME/logs/stderr.log\"
+#               \"\$HOME/logs/stdout.log\"
+#               \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/error.log\"
+#               \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/passenger.log\"
+#               \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stderr.log\"
+#               \"\$HOME/nodevenv/public_html/xoraevents.com/xoar/24/var/log/stdout.log\"
+#               \"${DEPLOY_PATH}/tmp/passenger-error.log\"
+#               \"${DEPLOY_PATH}/tmp/stderr.log\"
+#               \"${DEPLOY_PATH}/tmp/stdout.log\"
+#               \"${DEPLOY_PATH}/passenger.log\"
+#               \"${DEPLOY_PATH}/stderr.log\"
+#               \"${DEPLOY_PATH}/stdout.log\"
+#             )
+#             for f in \"\${CANDIDATES[@]}\"; do
+#               if [ -f \"\$f\" ]; then
+#                 echo \"---- tail: \$f ----\"
+#                 tail -n 160 \"\$f\" 2>/dev/null || true
+#               fi
+#             done
+#           '"
+
+#       - name: Verify remote files
+#         run: |
+#           set -euo pipefail
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+#           LOCAL_BUILD_ID="$(cat .next/BUILD_ID)"
+
+#           REMOTE_BUILD_ID="$(ssh $SSH_OPTS "$HOST" "cat '${DEPLOY_PATH}/.next/BUILD_ID'")"
+#           echo "Local  BUILD_ID=${LOCAL_BUILD_ID}"
+#           echo "Remote BUILD_ID=${REMOTE_BUILD_ID}"
+
+#           if [ "${LOCAL_BUILD_ID}" != "${REMOTE_BUILD_ID}" ]; then
+#             echo "::error::BUILD_ID mismatch after deploy — rsync may have failed partially."
+#             exit 1
+#           fi
+
+#           ssh $SSH_OPTS "$HOST" "chmod +x '${DEPLOY_PATH}/scripts/verify-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' MODE=local '${DEPLOY_PATH}/scripts/verify-deployment.sh'"
+
+#       - name: Smoke test live site (rollback on failure)
+#         if: false
+#         run: |
+#           set -euo pipefail
+#           chmod +x scripts/verify-deployment.sh
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+
+#           echo "Waiting for Passenger cold start (120s)..."
+#           sleep 120
+
+#           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
+#             scripts/verify-deployment.sh http; then
+#             echo "Deploy accepted — live site is healthy."
+#             exit 0
+#           fi
+
+#           echo "::warning::Smoke test failed — restoring previous live release (automatic rollback)."
+#           ssh $SSH_OPTS "$HOST" \
+#             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'"
+
+#           echo "Waiting for Passenger after rollback (45s)..."
+#           sleep 45
+
+#           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
+#             scripts/verify-deployment.sh http; then
+#             echo "::error::This deploy was REJECTED and rolled back. The previous version is live again."
+#           else
+#             echo "::error::Rollback ran but site is still unhealthy — check cPanel Node.js logs manually."
+#           fi
+
+#           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
+#           ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
+#             set +e
+#             echo \"== diagnostics after failed deploy ==\"
+#             ls -la \"${DEPLOY_PATH}/tmp\" 2>/dev/null || true
+#             LATEST_LOG=\$(ls -1t \"\$HOME/logs/\"*xoraevents* 2>/dev/null | head -n 1 || true)
+#             if [ -n \"\$LATEST_LOG\" ]; then
+#               echo \"---- tail: \$LATEST_LOG ----\"
+#               (zcat -f \"\$LATEST_LOG\" 2>/dev/null || cat \"\$LATEST_LOG\" 2>/dev/null) | tail -n 120 || true
+#             fi
+#           '"
+
+#           exit 1
+
+#       - name: Upload build log on failure
+#         if: failure()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: deploy-failure-logs
+#           path: |
+#             .next/trace
+#             npm-debug.log*
+#           if-no-files-found: ignore
+
 name: Build and Deploy to cPanel
 
 on:
@@ -24,7 +385,7 @@ defaults:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     permissions:
       contents: read
       checks: write
@@ -62,9 +423,12 @@ jobs:
       - name: Validate build output
         run: |
           set -euo pipefail
-          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh
+          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh
           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
+
+      - name: Prune dev dependencies for production
+        run: npm prune --omit=dev
 
       - name: Prepare server .env for deploy
         run: |
@@ -76,9 +440,6 @@ jobs:
             echo "NEXT_PUBLIC_PORTAL_URL=${API_PROXY_TARGET}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL}"
             echo "NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID}"
-            if [ -n "${{ secrets.FRONTEND_API_KEY }}" ]; then
-              echo "FRONTEND_API_KEY=${{ secrets.FRONTEND_API_KEY }}"
-            fi
           } > .env.deploy
           echo "Prepared .env.deploy (redacted)."
 
@@ -151,7 +512,6 @@ jobs:
           rsync -avz -e "ssh $SSH_OPTS" \
             scripts/backup-deployment.sh scripts/rollback-deployment.sh \
             scripts/fix-deploy-permissions.sh scripts/server-next-check.sh \
-            scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh \
             "$HOST:${DEPLOY_PATH}/scripts/"
 
           ssh $SSH_OPTS "$HOST" \
@@ -185,15 +545,14 @@ jobs:
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             scripts/ "$HOST:${DEPLOY_PATH}/scripts/"
 
-          echo "Ensure server .env (merge deploy keys into existing .env)"
+          echo "Ensure server .env (keep existing — never overwrite)"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
             .env.deploy "$HOST:${DEPLOY_PATH}/.env.deploy"
-          ssh $SSH_OPTS "$HOST" \
-            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/merge-server-env.sh'"
+          ssh $SSH_OPTS "$HOST" "if [ ! -f '${DEPLOY_PATH}/.env' ]; then mv '${DEPLOY_PATH}/.env.deploy' '${DEPLOY_PATH}/.env'; else rm -f '${DEPLOY_PATH}/.env.deploy'; fi"
 
-          echo "Install node_modules on server (matches cPanel Node / Passenger)"
-          ssh $SSH_OPTS "$HOST" \
-            "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-npm-ci.sh'"
+          echo "Syncing node_modules/ (real files, not cPanel symlinks)"
+          rsync -avz --delete --copy-links --info=stats2 -e "ssh $SSH_OPTS" \
+            node_modules/ "$HOST:${DEPLOY_PATH}/node_modules/"
 
           ssh $SSH_OPTS "$HOST" \
             "chmod +x '${DEPLOY_PATH}/scripts/'*.sh && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/fix-deploy-permissions.sh'"
@@ -206,7 +565,7 @@ jobs:
 
           if ssh $SSH_OPTS "$HOST" \
             "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/server-next-check.sh'"; then
-            echo "New build passes server checks — safe to restart Passenger."
+            echo "New build passes next.prepare() — safe to restart Passenger."
             exit 0
           fi
 
@@ -305,15 +664,15 @@ jobs:
           ssh $SSH_OPTS "$HOST" "chmod +x '${DEPLOY_PATH}/scripts/verify-deployment.sh' && DEPLOY_PATH='${DEPLOY_PATH}' MODE=local '${DEPLOY_PATH}/scripts/verify-deployment.sh'"
 
       - name: Smoke test live site (rollback on failure)
-        if: false
+        if: success()
         run: |
           set -euo pipefail
           chmod +x scripts/verify-deployment.sh
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          echo "Waiting for Passenger cold start (120s)..."
-          sleep 120
+          echo "Waiting for Passenger cold start (20s)..."
+          sleep 20
 
           if DEPLOY_PATH="${DEPLOY_PATH}" SITE_URL="${SITE_URL}" API_URL="${API_PROXY_TARGET}" \
             scripts/verify-deployment.sh http; then
@@ -358,5 +717,3 @@ jobs:
             .next/trace
             npm-debug.log*
           if-no-files-found: ignore
-
-
