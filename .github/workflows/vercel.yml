@@ -10,52 +10,42 @@ concurrency:
   group: vercel-production
   cancel-in-progress: true
 
+env:
+  SITE_URL: https://xoraevents.com
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 10
     permissions:
       contents: read
 
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Verify secrets
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Trigger Vercel production build
         run: |
           set -euo pipefail
-          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret: ${name}"
-              exit 1
-            fi
-          done
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "::error::أضف سراً واحداً فقط في GitHub → Settings → Secrets → VERCEL_DEPLOY_HOOK"
+            echo "::error::أنشئه من: Vercel → Project → Settings → Git → Deploy Hooks → main → Production"
+            echo "::error::أو اربط الريبو مباشرة من vercel.com (New Project) وتجاهل هذا الـ workflow."
+            exit 1
+          fi
+          curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+          echo "Vercel build triggered."
 
-      - name: Deploy to Vercel (production)
-        id: deploy
-        run: |
-          npx --yes vercel@latest deploy --prod --token="${VERCEL_TOKEN}" > deploy-url.txt
-          url="$(tail -n1 deploy-url.txt)"
-          echo "url=${url}" >> "$GITHUB_OUTPUT"
-          echo "Live: ${url}"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Wait for Vercel (build + deploy)
+        run: sleep 75
 
       - name: Smoke test
         run: |
           set -euo pipefail
-          url="${{ steps.deploy.outputs.url }}"
-          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 45 -L "${url}/ar")"
-          echo "GET ${url}/ar → ${code}"
-          case "${code}" in
-            200|301|302|307|308) exit 0 ;;
-            *) echo "::error::Smoke test failed (HTTP ${code})" && exit 1 ;;
-          esac
+          for attempt in 1 2 3 4 5; do
+            code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 45 -L "${SITE_URL}/ar")"
+            echo "Attempt ${attempt}: GET ${SITE_URL}/ar → ${code}"
+            case "${code}" in
+              200|301|302|307|308) exit 0 ;;
+            esac
+            sleep 15
+          done
+          echo "::error::Site not ready at ${SITE_URL}/ar after Vercel deploy."
+          exit 1
