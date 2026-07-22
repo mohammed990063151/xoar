@@ -1,8 +1,20 @@
+import type { Metadata } from "next";
 import { HappeningsGallery } from "@/components/happenings/HappeningsGallery";
 import { getDictionary } from "@/lib/dictionary";
 import { isLocale } from "@/lib/i18n";
+import { pageMetadata } from "@/lib/seo-service";
 import { notFound } from "next/navigation";
 import { getSiteContent } from "@/services/contentService";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: loc } = await params;
+  if (!isLocale(loc)) return {};
+  return pageMetadata("events", loc, `/${loc}/events`);
+}
 
 export default async function EventsPage({
   params,

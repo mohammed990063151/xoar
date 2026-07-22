@@ -1,8 +1,25 @@
+import type { Metadata } from "next";
 import { EventDetailView } from "@/components/events/EventDetailView";
 import { isLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import { pageMetadata } from "@/lib/seo-service";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getSiteContent } from "@/services/contentService";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { locale: loc, id } = await params;
+  if (!isLocale(loc)) return {};
+  const item = await getEventBySlug(loc, id);
+  if (!item) return {};
+  return pageMetadata("works.detail", loc, `/${loc}/works/${id}`, {
+    title: item.title,
+    description: item.description,
+  });
+}
 
 export default async function WorkDetailPage({
   params,

@@ -5,14 +5,14 @@ import { pageMetadata } from "@/lib/seo-service";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; code: string }>;
 }): Promise<Metadata> {
-  const { locale: loc } = await params;
+  const { locale: loc, code } = await params;
   if (!isLocale(loc)) return {};
-  return pageMetadata("account", loc, `/${loc}/account`);
+  return pageMetadata("group", loc, `/${loc}/group/${code}`);
 }
 
-export default function AccountLayout({
+export default function GroupJoinLayout({
   children,
 }: {
   children: React.ReactNode;

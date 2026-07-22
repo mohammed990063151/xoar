@@ -9,10 +9,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) return {};
-  return pageMetadata("account", loc, `/${loc}/account`);
+  return pageMetadata("payment.success", loc, `/${loc}/payment/success`);
 }
 
-export default function AccountLayout({
+export default function PaymentSuccessLayout({
   children,
 }: {
   children: React.ReactNode;

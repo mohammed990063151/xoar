@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import { ActivitiesDiscover } from "@/components/activities/ActivitiesDiscover";
 import { normalizeActivityFromApi } from "@/lib/activity";
 import { isLocale } from "@/lib/i18n";
 import { getActivitiesListingContent } from "@/lib/site-page";
+import { pageMetadata } from "@/lib/seo-service";
 import { serverFetch } from "@/services/api";
 import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: loc } = await params;
+  if (!isLocale(loc)) return {};
+  return pageMetadata("activities", loc, `/${loc}/activities`);
+}
 
 export default async function ActivitiesPage({
   params,

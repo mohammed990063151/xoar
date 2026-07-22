@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/home/HeroSection";
 import { EntertainmentActivitiesSection } from "@/components/home/EntertainmentActivitiesSection";
@@ -5,8 +6,19 @@ import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
 import { isLocale } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
+import { pageMetadata } from "@/lib/seo-service";
 import { getSiteContent } from "@/services/contentService";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: loc } = await params;
+  if (!isLocale(loc)) return {};
+  return pageMetadata("home", loc, `/${loc}`);
+}
 
 const HomeAmbientMotion = dynamic(
   () =>

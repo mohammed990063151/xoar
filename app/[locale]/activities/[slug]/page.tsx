@@ -1,10 +1,32 @@
+import type { Metadata } from "next";
 import { ActivityDetailView } from "@/components/activities/ActivityDetailView";
 import { normalizeActivityFromApi } from "@/lib/activity";
 import { isLocale } from "@/lib/i18n";
+import { pageMetadata } from "@/lib/seo-service";
 import { serverFetch } from "@/services/api";
 import type { PlatformFeature } from "@/services/featureService";
 import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
+  const { locale: loc, slug } = await params;
+  if (!isLocale(loc)) return {};
+  const detailRes = await serverFetch<{ data: Activity }>(
+    `/api/activities/${loc}/${slug}`,
+    { revalidate: 15 },
+  );
+  const raw = detailRes?.data;
+  if (!raw) return {};
+  const activity = normalizeActivityFromApi(raw);
+  return pageMetadata("activities.detail", loc, `/${loc}/activities/${slug}`, {
+    title: activity.title,
+    description: activity.description,
+  });
+}
 
 export default async function ActivityDetailPage({
   params,
