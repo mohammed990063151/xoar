@@ -1,6 +1,6 @@
 /**
- * cPanel / CloudLinux Passenger entry (loaded by app.js).
- * Startup file in cPanel must be app.js.
+ * cPanel Node.js / Passenger entry (loaded via app.js).
+ * CloudLinux Node Selector sets PORT and proxies to it — bind PORT, not the passenger socket.
  */
 process.env.NODE_ENV = "production";
 
@@ -9,7 +9,6 @@ const path = require("path");
 const http = require("http");
 const { parse } = require("url");
 
-// Passenger may start with a different cwd — pin to this app root.
 const root = __dirname;
 try {
   process.chdir(root);
@@ -30,6 +29,7 @@ function logBoot(msg, err) {
 }
 
 if (typeof PhusionPassenger !== "undefined") {
+  // Required by Passenger even when binding PORT under CloudLinux Node Selector.
   PhusionPassenger.configure({ autoInstall: false });
 }
 
@@ -50,15 +50,9 @@ app
       process.exit(1);
     });
 
-    if (typeof PhusionPassenger !== "undefined") {
-      server.listen("passenger", () => {
-        console.log("next-server-ready passenger root=" + root);
-      });
-      return;
-    }
-
+    // CloudLinux Node.js Selector expects a TCP listen on process.env.PORT.
     server.listen(port, () => {
-      console.log(`next-server-ready port=${port} root=${root}`);
+      console.log(`next-server-ready port=${port} root=${root} passenger=${typeof PhusionPassenger !== "undefined"}`);
     });
   })
   .catch((err) => {
