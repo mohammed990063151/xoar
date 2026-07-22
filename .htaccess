@@ -3,8 +3,6 @@
   PassengerAppType node
   PassengerStartupFile server.js
   PassengerAppRoot /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
-  # Force a Next.js-safe value; cPanel Application Mode can inject a bad NODE_ENV.
-  PassengerEnvVar NODE_ENV production
 </IfModule>
 
 Options -Indexes
