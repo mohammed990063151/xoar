@@ -6,6 +6,12 @@
 GitHub (main) → Actions build → SSH/rsync → cPanel Passenger → xoraevents.com
 ```
 
+## مهم: لا تشغّل `npm run build` على cPanel
+
+استضافة cPanel المشتركة تقتل عملية البناء (SIGABRT / نفاد الذاكرة) وتترك مجلد `.next` ناقصاً فيسقط الموقع بـ HTTP 500.
+
+البناء يتم فقط على GitHub Actions. على السيرفر شغّل التطبيق فقط (`server.js` عبر Passenger).
+
 ---
 
 ## 1) إعداد cPanel (مرة واحدة)
