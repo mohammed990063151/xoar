@@ -2,10 +2,12 @@
  * Phusion Passenger entry (cPanel Node.js).
  * Set "Application startup file" to server.js in cPanel.
  * Application mode must be Production.
- *
- * cPanel may inject a non-standard NODE_ENV — force production before loading Next.
  */
 process.env.NODE_ENV = "production";
+
+if (typeof PhusionPassenger !== "undefined") {
+  PhusionPassenger.configure({ autoInstall: false });
+}
 
 const http = require("http");
 const next = require("next");
@@ -23,14 +25,22 @@ app
       handle(req, res, parse(req.url, true));
     });
 
-    // cPanel Node.js / Passenger sets PORT. Do not bind 0.0.0.0 (EADDRINUSE / startup fail).
-    server.listen(port, () => {
-      console.log(`next-server-ready port=${port}`);
-    });
-
     server.on("error", (err) => {
       console.error("next-server-listen-failed", err);
       process.exit(1);
+    });
+
+    // Apache mod_passenger (via .htaccess) injects PhusionPassenger — must use its socket.
+    // cPanel shell / CI checks have no PhusionPassenger — bind PORT instead.
+    if (typeof PhusionPassenger !== "undefined") {
+      server.listen("passenger", () => {
+        console.log("next-server-ready passenger");
+      });
+      return;
+    }
+
+    server.listen(port, () => {
+      console.log(`next-server-ready port=${port}`);
     });
   })
   .catch((err) => {

@@ -241,11 +241,19 @@ jobs:
           echo "live_http=${code}"
           if [ "${code}" != "200" ] && [ "${code}" != "301" ] && [ "${code}" != "302" ] && [ "${code}" != "308" ]; then
             echo "::warning::Live site returned ${code} — collecting Passenger diagnostics"
-            head -c 500 /tmp/xoar-live.html || true
+            head -c 800 /tmp/xoar-live.html || true
             ssh $SSH_OPTS "$HOST" \
               "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
               | tee /tmp/passenger-diag.txt || true
-            echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."
+
+            echo "::warning::Rolling back to previous release to restore the site"
+            ssh $SSH_OPTS "$HOST" \
+              "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'" || true
+            sleep 20
+            rb="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 40 '${SITE_URL}/en' || echo err)"
+            echo "after_rollback_http=${rb}"
+
+            echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). Diagnostics above; rollback attempted."
             exit 1
           fi
 

@@ -52,3 +52,10 @@ if [ -n "${LATEST_LOG}" ]; then
 fi
 
 echo "==== passenger-diag-end ===="
+
+# Also write a copy under tmp for operators (not publicly served).
+{
+  echo "diag-written $(date -Is)"
+  echo "BUILD_ID=$(cat .next/BUILD_ID 2>/dev/null || echo missing)"
+  echo "node=${NODE_BIN}"
+} > "${DEPLOY_PATH}/tmp/boot-diag.txt" 2>/dev/null || true
