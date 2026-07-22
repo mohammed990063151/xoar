@@ -237,25 +237,20 @@ jobs:
           sleep 25
 
           echo "Live HTTP probe..."
-          code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 40 '${SITE_URL}/en' || echo err)"
-          echo "live_http=${code}"
+          # Double-quote SITE_URL so bash expands it (single quotes caused curl "Bad hostname").
+          code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 40 "${SITE_URL}/en" || echo err)"
+          echo "live_http=${code} url=${SITE_URL}/en"
           if [ "${code}" != "200" ] && [ "${code}" != "301" ] && [ "${code}" != "302" ] && [ "${code}" != "308" ]; then
-            echo "::warning::Live site returned ${code} — collecting Passenger diagnostics"
+            echo "::warning::Live site returned ${code} — collecting Passenger diagnostics (no auto-rollback)"
             head -c 800 /tmp/xoar-live.html || true
             ssh $SSH_OPTS "$HOST" \
               "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
               | tee /tmp/passenger-diag.txt || true
-
-            echo "::warning::Rolling back to previous release to restore the site"
-            ssh $SSH_OPTS "$HOST" \
-              "DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/rollback-deployment.sh'" || true
-            sleep 20
-            rb="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 40 '${SITE_URL}/en' || echo err)"
-            echo "after_rollback_http=${rb}"
-
-            echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). Diagnostics above; rollback attempted."
+            echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."
+            echo "::error::In cPanel → Setup Node.js App → Stop → Start the app, then check logs."
             exit 1
           fi
+          echo "Live site healthy after Passenger restart (HTTP ${code})."
 
       - name: Tail server logs (best effort)
         run: |
