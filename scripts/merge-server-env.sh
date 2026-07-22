@@ -13,6 +13,12 @@ if [ ! -f .env ]; then
 fi
 
 if [ ! -f .env.deploy ]; then
+  # Still strip NODE_ENV — cPanel/Passenger must not inherit a custom value.
+  if grep -qE '^NODE_ENV=' .env 2>/dev/null; then
+    grep -vE '^NODE_ENV=' .env > .env.tmp || true
+    mv .env.tmp .env
+    echo "Removed NODE_ENV from server .env"
+  fi
   exit 0
 fi
 
@@ -24,6 +30,13 @@ for key in API_PROXY_TARGET NEXT_PUBLIC_API_URL NEXT_PUBLIC_ADMIN_URL NEXT_PUBLI
     mv .env.tmp .env
   fi
 done
+
+# Next.js only accepts development | production | test. Never leave NODE_ENV in .env.
+if grep -qE '^NODE_ENV=' .env 2>/dev/null; then
+  grep -vE '^NODE_ENV=' .env > .env.tmp || true
+  mv .env.tmp .env
+  echo "Removed NODE_ENV from server .env"
+fi
 
 rm -f .env.deploy
 echo "Server .env merged from .env.deploy"

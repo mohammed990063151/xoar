@@ -135,8 +135,8 @@ jobs:
           if ssh $SSH_OPTS "$HOST" "test -f '${DEPLOY_PATH}/.env'"; then
             echo "Server .env found."
             if ssh $SSH_OPTS "$HOST" "grep -qE '^NODE_ENV=' '${DEPLOY_PATH}/.env'"; then
-              echo "::error::Remove NODE_ENV from server .env — it causes build/runtime failures on cPanel."
-              exit 1
+              echo "::warning::Removing NODE_ENV from server .env (Next.js rejects non-standard values)."
+              ssh $SSH_OPTS "$HOST" "grep -vE '^NODE_ENV=' '${DEPLOY_PATH}/.env' > '${DEPLOY_PATH}/.env.tmp' && mv '${DEPLOY_PATH}/.env.tmp' '${DEPLOY_PATH}/.env'"
             fi
           else
             echo "No .env yet — will be created during deploy from CI env."
