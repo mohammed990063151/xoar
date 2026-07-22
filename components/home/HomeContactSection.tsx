@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { SlideInEdge } from "@/components/motion/SlideInEdge";
 import { submitInquiry } from "@/services/inquiryService";
+import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import { whatsappHref } from "@/lib/whatsapp";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
@@ -34,6 +35,8 @@ export function HomeContactSection({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useFormProfileAutofill({ setName, setEmail, setPhone });
+
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setError("");
@@ -49,9 +52,6 @@ export function HomeContactSection({
         message,
       });
       setSent(true);
-      setName("");
-      setEmail("");
-      setPhone("");
       setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : locale === "ar" ? "تعذّر الإرسال" : "Could not send");

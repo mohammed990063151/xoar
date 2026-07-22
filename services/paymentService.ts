@@ -1,5 +1,6 @@
 import { getApiBaseUrl } from "@/lib/api-base";
 import type { Locale } from "@/lib/i18n";
+import { saveFormProfile } from "@/lib/form-profile-cookie";
 import type { BookingCheckoutResult, PaymentConfig } from "@/types/payment";
 import type { InquiryPayload } from "@/types/api";
 import { getCustomerToken } from "@/services/customerService";
@@ -44,6 +45,13 @@ export const paymentService = {
 
     const locale = (payload.locale === "en" ? "en" : "ar") as Locale;
     const json = await parseJson<{ data: BookingCheckoutResult }>(res, locale);
+
+    saveFormProfile({
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+    });
+
     return json.data;
   },
 

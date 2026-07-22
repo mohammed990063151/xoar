@@ -8,6 +8,7 @@ import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { parseApiError } from "@/lib/parse-api-error";
+import { formProfileDefaults, saveFormProfile } from "@/lib/form-profile-cookie";
 
 interface PartnerApplyModalProps {
   readonly open: boolean;
@@ -107,6 +108,11 @@ export function PartnerApplyModal({
         );
       }
       setDone(true);
+      saveFormProfile({
+        email: String(fd.get("email")),
+        phone: String(fd.get("phone")),
+        city: String(fd.get("city")),
+      });
     } catch (err) {
       setError(
         err instanceof Error
@@ -119,6 +125,18 @@ export function PartnerApplyModal({
       setSubmitting(false);
     }
   }
+
+  const savedDefaults = formProfileDefaults({
+    email: customer?.email,
+    phone: customer?.phone ?? undefined,
+    city: customer?.city ?? undefined,
+    name: customer?.name,
+  });
+  const defaultCity =
+    customer?.city ||
+    (CITIES.includes(savedDefaults.city as (typeof CITIES)[number])
+      ? savedDefaults.city
+      : "الرياض");
 
   return (
     <AnimatePresence>
@@ -202,7 +220,7 @@ export function PartnerApplyModal({
                     <input
                       name="partner_business_name"
                       required
-                      defaultValue={customer?.partnerBusinessName || customer?.name || ""}
+                      defaultValue={customer?.partnerBusinessName || customer?.name || savedDefaults.name || ""}
                       disabled={loadingPrefill}
                       className={inputClass}
                     />
@@ -213,7 +231,7 @@ export function PartnerApplyModal({
                       name="email"
                       type="email"
                       required
-                      defaultValue={customer?.email || ""}
+                      defaultValue={customer?.email || savedDefaults.email || ""}
                       disabled={loadingPrefill}
                       className={inputClass}
                     />
@@ -233,7 +251,7 @@ export function PartnerApplyModal({
                       <select
                         name="city"
                         required
-                        defaultValue={customer?.city || "الرياض"}
+                        defaultValue={defaultCity}
                         className={inputClass}
                       >
                         {CITIES.map((c) => (
@@ -250,7 +268,7 @@ export function PartnerApplyModal({
                       name="phone"
                       type="tel"
                       required
-                      defaultValue={customer?.phone || ""}
+                      defaultValue={customer?.phone || savedDefaults.phone || ""}
                       className={inputClass}
                     />
                   </Field>

@@ -6,6 +6,8 @@ import {
   submitInquiry,
   type InquiryType,
 } from "@/services/inquiryService";
+import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
+import { readFormProfile } from "@/lib/form-profile-cookie";
 import type { BookingModalOptions } from "@/components/providers/BookingModalProvider";
 import type { Locale } from "@/lib/i18n";
 
@@ -87,6 +89,8 @@ export function BookingModal({
   const locationLabel = labels.location ?? (ar ? "الموقع" : "Location");
   const minDate = new Date().toISOString().slice(0, 10);
 
+  useFormProfileAutofill({ setName, setEmail, setPhone }, open);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -107,7 +111,13 @@ export function BookingModal({
       setLoading(false);
       setPreferredDate("");
       setLocation("");
+      return;
     }
+
+    const saved = readFormProfile();
+    setName((value) => value || saved.name || "");
+    setEmail((value) => value || saved.email || "");
+    setPhone((value) => value || saved.phone || "");
   }, [open]);
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
@@ -148,9 +158,6 @@ export function BookingModal({
           : {}),
       });
       setSent(true);
-      setName("");
-      setEmail("");
-      setPhone("");
       setMessage("");
       setPreferredDate("");
       setLocation("");

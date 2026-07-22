@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { getApiBaseUrl } from "@/lib/api-base";
+import { saveFormProfile } from "@/lib/form-profile-cookie";
+import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import type { Locale } from "@/lib/i18n";
 
 interface WaitlistPanelProps {
@@ -22,6 +24,8 @@ export function WaitlistPanel({
   const [done, setDone] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useFormProfileAutofill({ setName, setEmail, setPhone });
+
   if (!enabled) return null;
 
   async function join(): Promise<void> {
@@ -36,7 +40,10 @@ export function WaitlistPanel({
         },
       );
       const json = (await res.json()) as { data?: { message?: string } };
-      if (res.ok) setDone(json.data?.message ?? (ar ? "تم التسجيل" : "Joined"));
+      if (res.ok) {
+        saveFormProfile({ name, email, phone });
+        setDone(json.data?.message ?? (ar ? "تم التسجيل" : "Joined"));
+      }
     } finally {
       setLoading(false);
     }

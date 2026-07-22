@@ -10,6 +10,8 @@ import { whatsappHref } from "@/lib/whatsapp";
 import { cn } from "@/lib/cn";
 import { pageBottom, pageTitle, siteContainer } from "@/lib/layout";
 import { submitInquiry } from "@/services/inquiryService";
+import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
+import { readFormProfile } from "@/lib/form-profile-cookie";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import type { SiteSettings } from "@/services/contentService";
@@ -73,6 +75,8 @@ export function ContactPageView({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useFormProfileAutofill({ setName, setEmail: setFormEmail, setPhone: setFormPhone });
+
   const successTitle =
     copy.successTitle ?? (ar ? "تم إرسال رسالتك بنجاح" : "Message sent successfully");
   const channelsTitle =
@@ -106,9 +110,6 @@ export function ContactPageView({
         message,
       });
       setSent(true);
-      setName("");
-      setFormEmail("");
-      setFormPhone("");
       setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : ar ? "تعذّر الإرسال" : "Could not send");
@@ -120,6 +121,11 @@ export function ContactPageView({
   function resetForm(): void {
     setSent(false);
     setError("");
+    const saved = readFormProfile();
+    setName(saved.name ?? "");
+    setFormEmail(saved.email ?? "");
+    setFormPhone(saved.phone ?? "");
+    setMessage("");
   }
 
   const channels: {

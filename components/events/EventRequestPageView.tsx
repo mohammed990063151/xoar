@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { SlideInEdge } from "@/components/motion/SlideInEdge";
 import { submitInquiry } from "@/services/inquiryService";
+import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { pageBottom, pageTitle, siteContainer } from "@/lib/layout";
@@ -78,6 +79,8 @@ export function EventRequestPageView({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useFormProfileAutofill({ setName, setEmail, setPhone });
+
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setError("");
@@ -119,9 +122,6 @@ export function EventRequestPageView({
       setGuestsCount("");
       setLocation("");
       setCustomerMessage("");
-      setName("");
-      setEmail("");
-      setPhone("");
     } catch (err) {
       setError(err instanceof Error ? err.message : ar ? "تعذّر إرسال الطلب" : "Could not submit request");
     } finally {

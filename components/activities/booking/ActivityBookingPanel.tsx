@@ -28,6 +28,7 @@ import { localizedPath } from "@/lib/i18n";
 import { customerService } from "@/services/customerService";
 import type { Customer } from "@/types/customer";
 import { paymentService } from "@/services/paymentService";
+import { formProfileDefaults } from "@/lib/form-profile-cookie";
 import { couponService, type CouponValidationResult } from "@/services/couponService";
 import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import type { PaymentConfig, PaymentMethodOption } from "@/types/payment";
@@ -210,6 +211,12 @@ export function ActivityBookingPanel({
 
   const paymentMethods: PaymentMethodOption[] = paymentConfig?.methods ?? [];
   const livePayments = paymentConfig?.liveMode ?? false;
+  const guestDefaults = formProfileDefaults({
+    name: customer?.name,
+    email: customer?.email,
+    phone: customer?.phone ?? undefined,
+    city: customer?.city ?? undefined,
+  });
 
   useEffect(() => {
     onScheduleChange?.({
@@ -783,8 +790,8 @@ export function ActivityBookingPanel({
                   <input
                     name="name"
                     required
-                    defaultValue={customer?.name ?? ""}
-                    key={`booking-name-${customer?.id ?? "guest"}`}
+                    defaultValue={guestDefaults.name}
+                    key={`booking-name-${customer?.id ?? "guest"}-${guestDefaults.name}`}
                     placeholder={
                       giftReady
                         ? ar
@@ -800,8 +807,8 @@ export function ActivityBookingPanel({
                     name="email"
                     type="email"
                     required
-                    defaultValue={customer?.email ?? ""}
-                    key={`booking-email-${customer?.id ?? "guest"}`}
+                    defaultValue={guestDefaults.email}
+                    key={`booking-email-${customer?.id ?? "guest"}-${guestDefaults.email}`}
                     placeholder={ar ? "البريد الإلكتروني *" : "Email *"}
                     className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-400/50"
                   />
@@ -809,8 +816,8 @@ export function ActivityBookingPanel({
                     name="phone"
                     type="tel"
                     required
-                    defaultValue={customer?.phone ?? ""}
-                    key={`booking-phone-${customer?.id ?? "guest"}`}
+                    defaultValue={guestDefaults.phone}
+                    key={`booking-phone-${customer?.id ?? "guest"}-${guestDefaults.phone}`}
                     placeholder={ar ? "رقم الجوال *" : "Phone *"}
                     className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-400/50"
                   />

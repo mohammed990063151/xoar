@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/api-base";
+import { saveFormProfile } from "@/lib/form-profile-cookie";
 
 export type InquiryType = "booking" | "contact" | "service";
 
@@ -44,6 +45,12 @@ export async function submitInquiry(
       data.errors && Object.values(data.errors).flat()[0];
     throw new Error(firstError ?? data.message ?? "Request failed");
   }
+
+  saveFormProfile({
+    name: payload.name,
+    email: payload.email,
+    phone: payload.phone,
+  });
 
   return {
     id: data.data?.id ?? 0,

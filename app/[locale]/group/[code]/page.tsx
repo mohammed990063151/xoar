@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { getCustomerToken } from "@/services/customerService";
+import { saveFormProfile } from "@/lib/form-profile-cookie";
+import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import { isLocale, localizedPath, type Locale } from "@/lib/i18n";
 
 type GroupActivity = {
@@ -75,6 +77,8 @@ export default function GroupJoinPage(): React.ReactElement {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joinedTicket, setJoinedTicket] = useState<JoinedMember | null>(null);
 
+  useFormProfileAutofill({ setName, setPhone });
+
   async function loadGroup(): Promise<void> {
     const res = await fetch(`${getApiBaseUrl()}/api/group-bookings/${code}`);
     if (!res.ok) {
@@ -123,6 +127,7 @@ export default function GroupJoinPage(): React.ReactElement {
       }
       setGroup(json.data ?? null);
       setJoinedTicket(json.data?.joinedMember ?? null);
+      saveFormProfile({ name: name.trim(), phone: phone.trim() });
       setName("");
       setPhone("");
     } finally {
