@@ -255,11 +255,20 @@ jobs:
 
           # Only annotate real failure signals (avoid matching comments in server.js).
           if [ -f /tmp/passenger-diag.txt ]; then
-            grep -E 'prepare-fail|prepare-exit=|server-boot-exit=|MODULE_NOT_FOUND|Error:|EADDRINUSE|xoar-boot|BUILD_ID=missing' /tmp/passenger-diag.txt \
-              | head -n 30 \
+            grep -E 'prepare-fail|prepare-exit=|server-boot-exit=|MODULE_NOT_FOUND|Error:|EADDRINUSE|xoar-boot|BUILD_ID=missing|Could not|cannot|App .* exit|passenger' /tmp/passenger-diag.txt \
+              | head -n 40 \
               | while IFS= read -r line; do
                   echo "::error::diag: ${line}"
                 done || true
+          fi
+
+          # Always surface the Passenger app log if present.
+          ssh $SSH_OPTS "$HOST" "tail -n 60 '${DEPLOY_PATH}/passenger.log' 2>/dev/null || true" \
+            | tee /tmp/passenger-app.log || true
+          if [ -f /tmp/passenger-app.log ]; then
+            head -n 40 /tmp/passenger-app.log | while IFS= read -r line; do
+              [ -n "$line" ] && echo "::error::passenger.log: ${line}"
+            done || true
           fi
 
           echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."

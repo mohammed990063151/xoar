@@ -1,5 +1,5 @@
 /**
- * cPanel / CloudLinux Passenger startup file.
- * Setup Node.js App sets PassengerStartupFile=app.js — do not rename without updating cPanel.
+ * cPanel PassengerStartupFile — keep identical boot path to server.js.
+ * (Some Passenger builds resolve relative requires poorly; inline require is enough.)
  */
-require("./server.js");
+module.exports = require("./server.js");

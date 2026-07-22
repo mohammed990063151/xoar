@@ -39,6 +39,10 @@ echo "-- .htaccess passenger lines --"
 grep -nE 'Passenger|Nodejs' .htaccess 2>/dev/null || true
 echo
 
+echo "-- passenger.log (app) --"
+tail -n 80 "${DEPLOY_PATH}/passenger.log" 2>/dev/null || echo "(none)"
+echo
+
 echo "-- boot-error.log --"
 tail -n 80 "${DEPLOY_PATH}/tmp/boot-error.log" 2>/dev/null || echo "(none)"
 echo
