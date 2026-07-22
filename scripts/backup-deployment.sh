@@ -13,7 +13,7 @@ mkdir -p "${BACKUP}"
 cd "${DEPLOY_PATH}"
 
 # Do not backup node_modules (huge; cp -a often breaks symlinks/permissions on cPanel).
-for item in .next public server.js package.json package-lock.json next.config.mjs .htaccess .env; do
+for item in .next public server.js app.js package.json package-lock.json next.config.mjs .htaccess .env; do
   if [ -e "${item}" ]; then
     echo "  backup: ${item}"
     cp -a "${item}" "${BACKUP}/"

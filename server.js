@@ -1,9 +1,7 @@
 /**
  * Phusion Passenger / cPanel Node.js entry.
- * cPanel → Setup Node.js App → startup file = server.js, mode = Production.
- *
- * CloudLinux injects PhusionPassenger — listen on the passenger socket.
- * Do not duplicate Passenger* directives in .htaccess (cPanel owns that config).
+ * cPanel → Setup Node.js App → startup file = app.js (loads this file), mode = Production.
+ * CloudLinux injects PhusionPassenger — must listen("passenger").
  */
 process.env.NODE_ENV = "production";
 

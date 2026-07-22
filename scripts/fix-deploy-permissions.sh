@@ -13,7 +13,7 @@ if [ -d node_modules ]; then
   chmod -R u+rwX,go+rX node_modules 2>/dev/null || true
 fi
 
-for f in server.js package.json next.config.mjs .htaccess; do
+for f in server.js app.js package.json next.config.mjs .htaccess; do
   [ -f "${f}" ] && chmod 644 "${f}" || true
 done
 

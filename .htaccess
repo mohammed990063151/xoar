@@ -1,6 +1,10 @@
-# cPanel "Setup Node.js App" already configures Passenger for this vhost.
-# Do NOT set Passenger* directives here — they conflict and cause HTTP 500.
-# Startup file must remain server.js in cPanel.
+# Generated/kept in sync with cPanel "Setup Node.js App" (startup = app.js).
+PassengerAppRoot "/home/cjfyc2evye0k/public_html/xoraevents.com/xoar"
+PassengerBaseURI "/"
+PassengerNodejs "/home/cjfyc2evye0k/nodevenv/public_html/xoraevents.com/xoar/24/bin/node"
+PassengerAppType node
+PassengerStartupFile app.js
+PassengerAppLogFile "/home/cjfyc2evye0k/public_html/xoraevents.com/xoar/passenger.log"
 
 Options -Indexes
 
@@ -22,6 +26,9 @@ Options -Indexes
     Require all denied
   </Files>
   <Files "boot-error.log">
+    Require all denied
+  </Files>
+  <Files "passenger.log">
     Require all denied
   </Files>
 </IfModule>

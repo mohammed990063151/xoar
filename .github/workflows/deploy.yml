@@ -178,7 +178,7 @@ jobs:
 
           echo "Syncing runtime files"
           rsync -avz --info=stats2 -e "ssh $SSH_OPTS" \
-            package.json package-lock.json next.config.mjs server.js .htaccess \
+            package.json package-lock.json next.config.mjs server.js app.js .htaccess \
             "$HOST:${DEPLOY_PATH}/"
 
           echo "Syncing scripts/"
@@ -221,7 +221,7 @@ jobs:
             echo "::error::Deploy REJECTED — files rolled back. Live Passenger was NOT restarted."
           else
             echo "::error::Rollback completed but next.prepare() still fails."
-            echo "::error::Check cPanel: Application mode = Production, startup file = server.js, Node 20+."
+            echo "::error::Check cPanel: Application mode = Production, startup file = app.js, Node 20+."
           fi
           exit 1
 
@@ -234,12 +234,12 @@ jobs:
           ssh $SSH_OPTS "$HOST" \
             "mkdir -p '${DEPLOY_PATH}/tmp' && rm -f '${DEPLOY_PATH}/tmp/restart.txt' && touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt' && (command -v cloudlinux-selector >/dev/null && cloudlinux-selector restart --json --interpreter nodejs --app-root '${DEPLOY_PATH}' || true)"
 
-          echo "Waiting for Passenger cold start (Next prepare can take ~90s)..."
+          echo "Waiting for Passenger cold start..."
           # Double-quote SITE_URL so bash expands it (single quotes caused curl "Bad hostname").
           code="000"
-          for attempt in 1 2 3 4 5 6; do
-            sleep 20
-            code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 40 "${SITE_URL}/en" || echo err)"
+          for attempt in 1 2 3; do
+            sleep 12
+            code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 25 "${SITE_URL}/en" || echo err)"
             echo "live_http_attempt_${attempt}=${code} url=${SITE_URL}/en"
             if [ "${code}" = "200" ] || [ "${code}" = "301" ] || [ "${code}" = "302" ] || [ "${code}" = "308" ]; then
               echo "Live site healthy after Passenger restart (HTTP ${code}, attempt ${attempt})."
@@ -267,7 +267,7 @@ jobs:
           exit 1
 
       - name: Tail server logs (best effort)
-        if: always()
+        if: failure()
         run: |
           set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
