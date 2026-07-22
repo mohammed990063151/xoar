@@ -12,6 +12,6 @@ export async function generateMetadata({
   return pageMetadata("account.bookings", loc, `/${loc}/account/bookings`);
 }
 
-export default function Layout({ children }: { children: React.ReactNode }): React.ReactElement {
+export default function Layout({ children }: { children: React.ReactNode }): React.ReactNode {
   return children;
 }

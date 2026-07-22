@@ -16,6 +16,6 @@ export default function PaymentSuccessLayout({
   children,
 }: {
   children: React.ReactNode;
-}): React.ReactElement {
+}): React.ReactNode {
   return children;
 }

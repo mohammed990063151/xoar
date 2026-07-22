@@ -16,6 +16,6 @@ export default function GroupJoinLayout({
   children,
 }: {
   children: React.ReactNode;
-}): React.ReactElement {
+}): React.ReactNode {
   return children;
 }

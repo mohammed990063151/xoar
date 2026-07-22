@@ -12,6 +12,6 @@ export async function generateMetadata({
   return pageMetadata("account.referrals", loc, `/${loc}/account/referrals`);
 }
 
-export default function Layout({ children }: { children: React.ReactNode }): React.ReactElement {
+export default function Layout({ children }: { children: React.ReactNode }): React.ReactNode {
   return children;
 }
