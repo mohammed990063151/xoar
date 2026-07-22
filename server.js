@@ -1,6 +1,10 @@
 /**
  * cPanel Node.js / Passenger entry (loaded via app.js).
- * CloudLinux Node Selector sets PORT and proxies to it — bind PORT, not the passenger socket.
+ * Confirmed via passenger.log env dump: Passenger spawns this app with
+ * PASSENGER_USE_FEEDBACK_FD=true / IN_PASSENGER=1 and no PORT at all — this is
+ * classic Phusion Passenger native Node integration, which expects
+ * server.listen("passenger"), not a numeric TCP port. Falls back to PORT/3000
+ * only when running standalone outside Passenger (local/manual testing).
  */
 process.env.NODE_ENV = "production";
 
@@ -28,13 +32,15 @@ function logBoot(msg, err) {
   }
 }
 
-if (typeof PhusionPassenger !== "undefined") {
-  // Required by Passenger even when binding PORT under CloudLinux Node Selector.
+const isPassenger = typeof PhusionPassenger !== "undefined";
+
+if (isPassenger) {
   PhusionPassenger.configure({ autoInstall: false });
 }
 
 const next = require("next");
 const port = Number(process.env.PORT || 3000);
+const listenTarget = isPassenger ? "passenger" : port;
 const app = next({ dev: false, dir: root });
 const handle = app.getRequestHandler();
 
@@ -50,13 +56,10 @@ app
       process.exit(1);
     });
 
-    // CloudLinux Node.js Selector expects a TCP listen on process.env.PORT.
-    server.listen(port, () => {
-      const relevantEnv = Object.keys(process.env)
-        .filter((k) => /PORT|PASSENGER|CLOUDLINUX|^CL_|NODE_ENV/i.test(k))
-        .map((k) => `${k}=${process.env[k]}`)
-        .join(" ");
-      console.log(`next-server-ready port=${port} root=${root} passenger=${typeof PhusionPassenger !== "undefined"} env[${relevantEnv}]`);
+    // Under Passenger: bind its feedback-FD socket ("passenger"), not a TCP port.
+    // Standalone (local/manual testing): bind the numeric PORT/3000 fallback.
+    server.listen(listenTarget, () => {
+      console.log(`next-server-ready target=${listenTarget} root=${root} passenger=${isPassenger}`);
     });
   })
   .catch((err) => {

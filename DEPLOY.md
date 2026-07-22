@@ -72,7 +72,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 1. `server.js` يستخدم `listen(0.0.0.0)` بدل `listen("passenger")`
 2. `node_modules` مرفوعة من GitHub (Node 24) بينما cPanel يشغّل Node مختلف
 
-الحل الحالي: `npm ci` على السيرفر + `server.js` متوافق مع Passenger.
+الحل الحالي: `npm ci` على السيرفر (عبر تفعيل CloudLinux nodevenv أولاً — راجع `scripts/server-npm-ci.sh`) + `server.js` يستخدم `server.listen("passenger")` فعلياً عند التشغيل تحت Passenger (وليس رقم منفذ)، مع fallback لـ `PORT`/3000 فقط عند التشغيل المباشر خارج Passenger.
+
+**حادثة 2026-07-22:** كان `server.js` يستخدم `server.listen(port)` برقم منفذ حتى تحت Passenger — وهذا بالضبط سبب #1 أعلاه. تأكيد ذلك جاء من `passenger.log` نفسه بعد إضافة تسجيل مؤقت لمتغيرات البيئة عند الإقلاع: البيئة الحقيقية التي يشغّل بها Passenger التطبيق تحتوي `PASSENGER_USE_FEEDBACK_FD=true` و`IN_PASSENGER=1` ولا تحتوي `PORT` إطلاقاً — أي أن الإعداد الفعلي هو Phusion Passenger الكلاسيكي (feedback FD)، وليس "CloudLinux Node Selector يمرّر PORT" كما كان مفترضاً سابقاً.
 
 ---
 
