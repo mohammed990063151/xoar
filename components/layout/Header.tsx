@@ -48,17 +48,25 @@ const prefetchRoutes = process.env.NODE_ENV === "production";
 
 function NavTextLink({
   href,
+  pathname,
   children,
   active,
 }: {
   readonly href: string;
+  readonly pathname: string;
   readonly children: React.ReactNode;
   readonly active: boolean;
 }): React.ReactElement {
+  const isExactPage = pathname === href;
+
   return (
     <Link
       href={href}
       prefetch={prefetchRoutes}
+      scroll={!isExactPage}
+      onClick={(e) => {
+        if (isExactPage) e.preventDefault();
+      }}
       className={cn(
         "relative pb-1 text-sm font-medium transition-colors",
         active ? "text-white" : "text-slate-400 hover:text-white",
@@ -129,15 +137,19 @@ export function Header({
         </Link>
 
         <nav className="hidden min-w-0 items-center gap-4 lg:flex xl:gap-6" aria-label="Main">
-          {navKeys.map(({ href, key }) => (
-            <NavTextLink
-              key={href}
-              href={resolveHref(locale, href)}
-              active={isActive(href)}
-            >
-              {navLabel(locale, key, nav)}
-            </NavTextLink>
-          ))}
+          {navKeys.map(({ href, key }) => {
+            const resolved = resolveHref(locale, href);
+            return (
+              <NavTextLink
+                key={href}
+                href={resolved}
+                pathname={pathname}
+                active={isActive(href)}
+              >
+                {navLabel(locale, key, nav)}
+              </NavTextLink>
+            );
+          })}
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -204,14 +216,21 @@ export function Header({
               />
               <div className="my-1 h-px w-full bg-white/10" role="separator" aria-hidden />
               {navKeys.map(({ href, key }) => {
+                const resolved = resolveHref(locale, href);
                 const active = isActive(href);
                 const isContact = href === "/contact";
+                const isExactPage = pathname === resolved;
 
                 return (
                   <Link
                     key={href}
-                    href={resolveHref(locale, href)}
+                    href={resolved}
                     prefetch={prefetchRoutes}
+                    scroll={!isExactPage}
+                    onClick={(e) => {
+                      if (isExactPage) e.preventDefault();
+                      setOpen(false);
+                    }}
                     className={cn(
                       "flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-center text-base font-medium transition",
                       active
@@ -220,7 +239,6 @@ export function Header({
                           ? "border border-purple-500/35 bg-purple-500/10 text-purple-100 hover:bg-purple-500/15"
                           : "text-slate-100 hover:bg-white/5",
                     )}
-                    onClick={() => setOpen(false)}
                   >
                     {navLabel(locale, key, nav)}
                   </Link>

@@ -5,7 +5,6 @@ import { getActivitiesListingContent } from "@/lib/site-page";
 import { serverFetch } from "@/services/api";
 import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 export default async function ActivitiesPage({
   params,
@@ -22,8 +21,6 @@ export default async function ActivitiesPage({
   const activities = (res?.data ?? []).map(normalizeActivityFromApi);
 
   return (
-    <Suspense fallback={<div className="min-h-[50vh]" />}>
-      <ActivitiesDiscover locale={loc} page={page} initialActivities={activities} />
-    </Suspense>
+    <ActivitiesDiscover locale={loc} page={page} initialActivities={activities} />
   );
 }

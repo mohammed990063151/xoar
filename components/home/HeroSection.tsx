@@ -31,140 +31,192 @@ const item = {
   },
 };
 
-function useHeroVideoPlayback(
+type NetworkInfo = Navigator & {
+  connection?: { saveData?: boolean; effectiveType?: string };
+};
+
+function shouldSkipHeroVideo(): boolean {
+  if (typeof window === "undefined") return true;
+
+  const connection = (navigator as NetworkInfo).connection;
+  const saveData = Boolean(connection?.saveData);
+  const effectiveType = (connection?.effectiveType || "").toLowerCase();
+  const slowNetwork =
+    effectiveType === "slow-2g" || effectiveType === "2g" || effectiveType === "3g";
+
+  return saveData || slowNetwork;
+}
+
+/** Defer mounting the video element until the page has painted and is idle. */
+function useDeferredHeroVideo(
   videoSrc: string | undefined,
   reduceMotion: boolean | null,
-): { playVideo: boolean; videoPreload: "none" | "metadata" | "auto" } {
-  const [playVideo, setPlayVideo] = useState(Boolean(videoSrc && !reduceMotion));
-  const [videoPreload, setVideoPreload] = useState<"none" | "metadata" | "auto">("auto");
+): boolean {
+  const [mountVideo, setMountVideo] = useState(false);
 
   useEffect(() => {
-    if (!videoSrc || reduceMotion) {
-      setPlayVideo(false);
+    if (!videoSrc || reduceMotion || shouldSkipHeroVideo()) {
+      setMountVideo(false);
       return;
     }
 
+    let cancelled = false;
+    let cleanupIdle: (() => void) | undefined;
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const delayMs = isMobile ? 2200 : 900;
 
-    // Mobile: keep preload light; large hero MP4 can stutter on cellular.
-    setVideoPreload(isMobile ? "metadata" : "auto");
+    const mount = (): void => {
+      if (!cancelled) setMountVideo(true);
+    };
 
-    const connection = (
-      navigator as Navigator & {
-        connection?: { saveData?: boolean; effectiveType?: string };
+    const schedule = (): void => {
+      if (typeof window.requestIdleCallback === "function") {
+        const id = window.requestIdleCallback(mount, { timeout: delayMs + 800 });
+        cleanupIdle = () => window.cancelIdleCallback(id);
+      } else {
+        const timer = setTimeout(mount, delayMs);
+        cleanupIdle = () => clearTimeout(timer);
       }
-    ).connection;
+    };
 
-    const saveData = Boolean(connection?.saveData);
-    const effectiveType = (connection?.effectiveType || "").toLowerCase();
-    const slowNetwork =
-      effectiveType === "slow-2g" || effectiveType === "2g" || effectiveType === "3g";
+    const start = (): void => {
+      schedule();
+    };
 
-    // If user explicitly prefers saving data or is on a slow cellular network,
-    // show the poster only (no autoplay attempts → no visible buffering).
-    if (saveData || (isMobile && slowNetwork)) {
-      setPlayVideo(false);
-      return;
+    if (document.readyState === "complete") {
+      start();
+    } else {
+      window.addEventListener("load", start, { once: true });
     }
 
-    setPlayVideo(true);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", start);
+      cleanupIdle?.();
+    };
   }, [videoSrc, reduceMotion]);
 
-  return { playVideo, videoPreload };
+  return mountVideo;
 }
 
 function HeroBackgroundMedia({
   videoSrc,
   posterSrc,
-  playVideo,
-  videoPreload,
+  mountVideo,
 }: {
   videoSrc: string | undefined;
   posterSrc: string;
-  playVideo: boolean;
-  videoPreload: "none" | "metadata" | "auto";
+  mountVideo: boolean;
 }): React.ReactElement {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const visibleRef = useRef(false);
   const [videoVisible, setVideoVisible] = useState(false);
 
   useEffect(() => {
+    visibleRef.current = videoVisible;
+  }, [videoVisible]);
+
+  useEffect(() => {
     const video = videoRef.current;
-    if (!playVideo || !videoSrc || !video) {
+    if (!mountVideo || !videoSrc || !video) {
       setVideoVisible(false);
+      visibleRef.current = false;
       return;
     }
 
     let cancelled = false;
+    let started = false;
+    let fallbackTimer = 0;
 
-    const showVideo = () => {
-      if (!cancelled) setVideoVisible(true);
+    const hideVideo = (): void => {
+      if (!cancelled) {
+        visibleRef.current = false;
+        setVideoVisible(false);
+      }
     };
 
-    const hideVideo = () => {
-      if (!cancelled) setVideoVisible(false);
-    };
+    const startPlayback = async (): Promise<void> => {
+      if (cancelled || started) return;
+      started = true;
+      window.clearTimeout(fallbackTimer);
 
-    const tryPlay = async () => {
       try {
         video.muted = true;
         video.playsInline = true;
         await video.play();
-        showVideo();
+        if (!cancelled) {
+          visibleRef.current = true;
+          setVideoVisible(true);
+        }
       } catch {
         hideVideo();
       }
     };
 
-    video.addEventListener("playing", showVideo);
-    video.addEventListener("pause", hideVideo);
-    video.addEventListener("error", hideVideo);
+    const onVisibility = (): void => {
+      if (document.hidden) {
+        video.pause();
+        return;
+      }
+      if (visibleRef.current) {
+        void video.play().catch(() => hideVideo());
+      }
+    };
 
-    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      void tryPlay();
-    } else {
-      video.addEventListener("loadeddata", () => void tryPlay(), { once: true });
-      video.addEventListener("canplay", () => void tryPlay(), { once: true });
-      void tryPlay();
-    }
+    video.src = videoSrc;
+    video.preload = "metadata";
+    video.load();
+
+    video.addEventListener("canplaythrough", () => void startPlayback(), { once: true });
+    video.addEventListener("error", hideVideo);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    fallbackTimer = window.setTimeout(() => {
+      if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+        void startPlayback();
+      }
+    }, 6000);
 
     return () => {
       cancelled = true;
-      video.removeEventListener("playing", showVideo);
-      video.removeEventListener("pause", hideVideo);
+      visibleRef.current = false;
+      window.clearTimeout(fallbackTimer);
       video.removeEventListener("error", hideVideo);
+      document.removeEventListener("visibilitychange", onVisibility);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      setVideoVisible(false);
     };
-  }, [playVideo, videoSrc]);
+  }, [mountVideo, videoSrc]);
 
   return (
     <>
-      {/* Poster always visible — mobile autoplay often fails; avoids black hero */}
+      {/* Poster is LCP — always shown; video fades in only when buffered */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={posterSrc}
         alt=""
-        className="absolute inset-0 h-full w-full scale-105 object-cover object-center"
+        className="absolute inset-0 h-full w-full object-cover object-center"
         fetchPriority="high"
         decoding="async"
         aria-hidden
       />
-      {playVideo && videoSrc ? (
+      {mountVideo && videoSrc ? (
         <video
           ref={videoRef}
-          key={videoSrc}
           className={cn(
-            "absolute inset-0 h-full w-full scale-105 object-cover object-center transition-opacity duration-500",
+            "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 ease-out",
             videoVisible ? "opacity-100" : "opacity-0",
           )}
           poster={posterSrc}
           muted
           loop
           playsInline
-          preload={videoPreload}
-          autoPlay
+          disablePictureInPicture
+          disableRemotePlayback
           aria-hidden
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        />
       ) : null}
     </>
   );
@@ -181,7 +233,7 @@ export function HeroSection({
 }: HeroSectionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
   const videoSrc = hero.videoUrl?.trim() || undefined;
-  const { playVideo, videoPreload } = useHeroVideoPlayback(videoSrc, reduceMotion);
+  const mountVideo = useDeferredHeroVideo(videoSrc, reduceMotion);
   const posterSrc =
     optimizePosterUrl(hero.videoPoster?.trim()) ?? HERO_POSTER_FALLBACK;
 
@@ -213,8 +265,7 @@ export function HeroSection({
         <HeroBackgroundMedia
           videoSrc={videoSrc}
           posterSrc={posterSrc}
-          playVideo={playVideo}
-          videoPreload={videoPreload}
+          mountVideo={mountVideo}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/65 to-[#020617]/35" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/25 via-transparent to-purple-950/35" />
@@ -254,8 +305,8 @@ export function HeroSection({
         <motion.div
           className="mx-auto w-full max-w-3xl space-y-3 text-center sm:mx-0 sm:space-y-6 sm:text-start"
           variants={container}
-          initial="hidden"
-          animate="show"
+          initial={reduceMotion ? false : "hidden"}
+          animate={reduceMotion ? undefined : "show"}
         >
           <motion.p
             className="mx-auto inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] font-medium leading-snug text-cyan-100/90 backdrop-blur-md sm:mx-0 sm:justify-start sm:px-4 sm:text-xs"

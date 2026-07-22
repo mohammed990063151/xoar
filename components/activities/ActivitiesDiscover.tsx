@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ActivitiesFilters, type ActivitiesFilterState } from "@/components/activities/ActivitiesFilters";
-import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { ActivityCardGrid } from "@/components/activities/ActivityCardGrid";
 import { normalizeActivityFromApi } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
@@ -53,7 +52,7 @@ export function ActivitiesDiscover({
   const { isEnabled, loading: featuresLoading } = usePlatformFeatures(locale);
   const mapEnabled = featuresLoading || isEnabled("map_discovery");
   const recommendationsEnabled = isEnabled("ai_recommendations");
-  const { highlightedSlugs } = useActivityRecommendations(
+  const { highlightedSlugs, getHighlight } = useActivityRecommendations(
     locale,
     recommendationsEnabled,
   );
@@ -134,34 +133,32 @@ export function ActivitiesDiscover({
           aria-hidden
         />
         <div className={pageHeroInner}>
-          <ScrollReveal>
-            <div className={pageHeroCentered}>
-              {page.eyebrow ? <p className={pageEyebrow}>{page.eyebrow}</p> : null}
-              <h1 className={pageTitle}>
-                {locale === "ar" ? "الأنشطة الترفيهية" : page.title}
-              </h1>
-              <p className={`${pageIntro} text-slate-400`}>{page.intro}</p>
-            </div>
+          <div className={pageHeroCentered}>
+            {page.eyebrow ? <p className={pageEyebrow}>{page.eyebrow}</p> : null}
+            <h1 className={pageTitle}>
+              {locale === "ar" ? "الأنشطة الترفيهية" : page.title}
+            </h1>
+            <p className={`${pageIntro} text-slate-400`}>{page.intro}</p>
+          </div>
 
-            <div className="relative mx-auto mt-8 max-w-2xl">
-              <input
-                type="search"
-                placeholder={labels.search}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-2xl border border-white/12 bg-slate-950/90 py-3.5 pe-4 ps-11 text-sm text-white shadow-[0_12px_40px_rgba(0,0,0,0.35)] outline-none transition focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20"
-              />
-              <span
-                className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-slate-500"
-                aria-hidden
-              >
-                <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.6">
-                  <circle cx="9" cy="9" r="5.5" />
-                  <path d="M14 14l3 3" strokeLinecap="round" />
-                </svg>
-              </span>
-            </div>
-          </ScrollReveal>
+          <div className="relative mx-auto mt-8 max-w-2xl">
+            <input
+              type="search"
+              placeholder={labels.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-2xl border border-white/12 bg-slate-950/90 py-3.5 pe-4 ps-11 text-sm text-white shadow-[0_12px_40px_rgba(0,0,0,0.35)] outline-none transition focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20"
+            />
+            <span
+              className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-slate-500"
+              aria-hidden
+            >
+              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.6">
+                <circle cx="9" cy="9" r="5.5" />
+                <path d="M14 14l3 3" strokeLinecap="round" />
+              </svg>
+            </span>
+          </div>
         </div>
       </section>
 
@@ -198,7 +195,7 @@ export function ActivitiesDiscover({
             </div>
           </aside>
 
-          <div className="order-1 min-w-0 lg:order-2">
+          <div className="order-1 min-w-0 lg:order-2" id="activities-grid">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-slate-500">{resultLabel}</p>
               {loading ? (
@@ -213,7 +210,13 @@ export function ActivitiesDiscover({
                 ))}
               </div>
             ) : sortedActivities.length > 0 ? (
-              <ActivityCardGrid locale={locale} activities={sortedActivities} />
+              <ActivityCardGrid
+                locale={locale}
+                activities={sortedActivities}
+                getHighlight={getHighlight}
+                showSocialProof={isEnabled("social_proof")}
+                showCountdown={isEnabled("countdown")}
+              />
             ) : (
               <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-16 text-center">
                 <p className="text-lg font-medium text-slate-300">{labels.noResults}</p>

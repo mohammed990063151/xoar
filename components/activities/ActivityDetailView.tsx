@@ -32,6 +32,7 @@ import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import { formatSarPrice } from "@/lib/format-price";
 import type { Activity, FaqItem } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
+import { scrollToHashWhenReady } from "@/lib/scroll-to";
 import { cn } from "@/lib/cn";
 import { localizedPath } from "@/lib/i18n";
 import { gridCards3, pageBottom, scrollRow, siteContainer } from "@/lib/layout";
@@ -120,10 +121,9 @@ export function ActivityDetailView({
     galleryImages.length > 0 ? galleryImages : activityGalleryUrls(activity);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hash === "#book") {
-      document.getElementById("book")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
+    if (typeof window === "undefined" || window.location.hash !== "#book") return;
+    return scrollToHashWhenReady("#book");
+  }, [activity.slug]);
 
   return (
     <div className={cn(siteContainer, pageBottom, "relative py-8 sm:py-10 lg:py-12")}>

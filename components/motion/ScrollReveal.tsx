@@ -17,6 +17,11 @@ function prefersLightMotion(): boolean {
   );
 }
 
+function isInViewport(node: HTMLElement): boolean {
+  const rect = node.getBoundingClientRect();
+  return rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
+}
+
 export function ScrollReveal({
   children,
   className,
@@ -42,6 +47,9 @@ export function ScrollReveal({
     const raf = requestAnimationFrame(() => {
       if (cancelled || !ref.current) return;
       const node = ref.current;
+
+      if (isInViewport(node)) return;
+
       ctx = gsap.context(() => {
         gsap.from(node, {
           opacity: 0,
@@ -50,7 +58,7 @@ export function ScrollReveal({
           ease: "power2.out",
           scrollTrigger: {
             trigger: node,
-            start: "top 90%",
+            start: "top bottom",
             toggleActions: "play none none none",
           },
         });

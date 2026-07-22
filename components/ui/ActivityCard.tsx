@@ -65,6 +65,7 @@ interface ActivityCardProps {
   readonly highlightHint?: string;
   readonly showSocialProof?: boolean;
   readonly showCountdown?: boolean;
+  readonly imagePriority?: boolean;
 }
 
 function IconPin({ className }: { readonly className?: string }): React.ReactElement {
@@ -102,6 +103,7 @@ export function ActivityCard({
   highlightHint,
   showSocialProof = true,
   showCountdown = false,
+  imagePriority = false,
 }: ActivityCardProps): React.ReactElement {
   const router = useRouter();
   const { toggle, has } = useWishlist();
@@ -165,6 +167,7 @@ export function ActivityCard({
             title={activity.title}
             locale={locale}
             onSlideClick={goToDetail}
+            imagePriority={imagePriority}
           />
 
           <ActivityBadgeRibbon

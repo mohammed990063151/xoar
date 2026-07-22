@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ActivityCard } from "@/components/ui/ActivityCard";
-import { useActivityRecommendations } from "@/hooks/useActivityRecommendations";
+import { useActivityRecommendations, type ActivityHighlightMeta } from "@/hooks/useActivityRecommendations";
 import { usePlatformFeatures } from "@/hooks/usePlatformFeatures";
 import { toActivityCardData } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
@@ -15,17 +15,31 @@ interface ActivityCardGridProps {
   readonly locale: Locale;
   readonly activities: readonly Activity[];
   readonly className?: string;
+  readonly getHighlight?: (slug: string) => ActivityHighlightMeta | undefined;
+  readonly showSocialProof?: boolean;
+  readonly showCountdown?: boolean;
 }
 
 export function ActivityCardGrid({
   locale,
   activities,
   className,
+  getHighlight: getHighlightProp,
+  showSocialProof: showSocialProofProp,
+  showCountdown: showCountdownProp,
 }: ActivityCardGridProps): React.ReactElement {
   const labels = bookingLabels(locale);
+  const reduceMotion = useReducedMotion();
   const { isEnabled } = usePlatformFeatures(locale);
   const recommendationsEnabled = isEnabled("ai_recommendations");
-  const { getHighlight } = useActivityRecommendations(locale, recommendationsEnabled);
+  const { getHighlight: getHighlightFromHook } = useActivityRecommendations(
+    locale,
+    recommendationsEnabled && !getHighlightProp,
+  );
+
+  const getHighlight = getHighlightProp ?? getHighlightFromHook;
+  const showSocialProof = showSocialProofProp ?? isEnabled("social_proof");
+  const showCountdown = showCountdownProp ?? isEnabled("countdown");
 
   return (
     <div className={cn(gridCards3, className)}>
@@ -40,12 +54,14 @@ export function ActivityCardGrid({
             }
           : fromRec;
 
+        const animateIn = !reduceMotion && index < 8;
+
         return (
           <motion.div
             key={activity.id ?? activity.slug}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.04, duration: 0.45 }}
+            initial={animateIn ? { opacity: 0, y: 12 } : false}
+            animate={animateIn ? { opacity: 1, y: 0 } : undefined}
+            transition={{ delay: Math.min(index * 0.03, 0.24), duration: 0.35 }}
           >
             <ActivityCard
               locale={locale}
@@ -56,9 +72,10 @@ export function ActivityCardGrid({
               highlightLabel={highlight?.label}
               highlightVariant={highlight?.variant}
               highlightHint={highlight?.hint}
-              showSocialProof={isEnabled("social_proof")}
+              showSocialProof={showSocialProof}
               showWishlist={activity.showWishlist ?? true}
-              showCountdown={isEnabled("countdown")}
+              showCountdown={showCountdown}
+              imagePriority={index < 4}
             />
           </motion.div>
         );

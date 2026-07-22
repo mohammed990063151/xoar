@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/home/HeroSection";
+import { EntertainmentActivitiesSection } from "@/components/home/EntertainmentActivitiesSection";
 import { getDictionary } from "@/lib/dictionary";
 import { getHomeContent } from "@/lib/home-content";
 import { isLocale } from "@/lib/i18n";
@@ -27,14 +28,6 @@ const HeroImageGallery = dynamic(
   () =>
     import("@/components/home/HeroImageGallery").then((m) => ({
       default: m.HeroImageGallery,
-    })),
-  { loading: () => null },
-);
-
-const EntertainmentActivitiesSection = dynamic(
-  () =>
-    import("@/components/home/EntertainmentActivitiesSection").then((m) => ({
-      default: m.EntertainmentActivitiesSection,
     })),
   { loading: () => null },
 );

@@ -1,6 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { setLenisInstance } from "@/lib/scroll-to";
 
 export interface LenisScrollState {
   readonly scrollY: number;
@@ -59,9 +62,11 @@ export function SmoothScrollProvider({
     const root = document.documentElement;
     root.classList.add("lenis", "lenis-smooth");
 
+    gsap.registerPlugin(ScrollTrigger);
+
     let lenis: import("lenis").default | null = null;
     let unsubscribe = (): void => {};
-    let frameId = 0;
+    let tickerFn: ((time: number) => void) | null = null;
     let cancelled = false;
 
     void import("lenis").then(({ default: Lenis }) => {
@@ -72,7 +77,29 @@ export function SmoothScrollProvider({
         smoothWheel: true,
       });
 
-      unsubscribe = lenis.on("scroll", (instance) => {
+      setLenisInstance(lenis);
+
+      ScrollTrigger.scrollerProxy(root, {
+        scrollTop(value) {
+          if (!lenis) return 0;
+          if (arguments.length && typeof value === "number") {
+            lenis.scrollTo(value, { immediate: true });
+          }
+          return lenis.scroll;
+        },
+        getBoundingClientRect() {
+          return {
+            top: 0,
+            left: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
+          };
+        },
+      });
+
+      lenis.on("scroll", ScrollTrigger.update);
+
+      const unsubState = lenis.on("scroll", (instance) => {
         const next: LenisScrollState = {
           scrollY: instance.scroll,
           direction: instance.direction as -1 | 0 | 1,
@@ -81,19 +108,26 @@ export function SmoothScrollProvider({
         setScrollState((prev) => (shouldPublishScroll(prev, next) ? next : prev));
       });
 
-      function raf(time: number): void {
-        lenis?.raf(time);
-        frameId = requestAnimationFrame(raf);
-      }
+      tickerFn = (time: number) => {
+        lenis?.raf(time * 1000);
+      };
+      gsap.ticker.add(tickerFn);
+      gsap.ticker.lagSmoothing(0);
 
-      frameId = requestAnimationFrame(raf);
+      ScrollTrigger.refresh();
+
+      unsubscribe = () => {
+        unsubState();
+      };
     });
 
     return () => {
       cancelled = true;
       unsubscribe();
-      cancelAnimationFrame(frameId);
+      if (tickerFn) gsap.ticker.remove(tickerFn);
       lenis?.destroy();
+      setLenisInstance(null);
+      ScrollTrigger.scrollerProxy(root, {});
       root.classList.remove("lenis", "lenis-smooth");
     };
   }, []);

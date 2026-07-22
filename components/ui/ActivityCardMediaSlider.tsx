@@ -19,6 +19,7 @@ interface ActivityCardMediaSliderProps {
   readonly locale: Locale;
   readonly className?: string;
   readonly onSlideClick?: () => void;
+  readonly imagePriority?: boolean;
 }
 
 function isValidSlideUrl(url: string): boolean {
@@ -31,6 +32,7 @@ export function ActivityCardMediaSlider({
   locale,
   className,
   onSlideClick,
+  imagePriority = false,
 }: ActivityCardMediaSliderProps): React.ReactElement {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -138,7 +140,7 @@ export function ActivityCardMediaSlider({
                 unoptimized={useUnoptimizedImage(current.url)}
                 className="object-cover"
                 sizes="(max-width:768px) 100vw, 33vw"
-                priority={index === 0}
+                priority={imagePriority && index === 0}
               />
             </button>
           ) : null}
