@@ -52,7 +52,11 @@ app
 
     // CloudLinux Node.js Selector expects a TCP listen on process.env.PORT.
     server.listen(port, () => {
-      console.log(`next-server-ready port=${port} root=${root} passenger=${typeof PhusionPassenger !== "undefined"}`);
+      const relevantEnv = Object.keys(process.env)
+        .filter((k) => /PORT|PASSENGER|CLOUDLINUX|^CL_|NODE_ENV/i.test(k))
+        .map((k) => `${k}=${process.env[k]}`)
+        .join(" ");
+      console.log(`next-server-ready port=${port} root=${root} passenger=${typeof PhusionPassenger !== "undefined"} env[${relevantEnv}]`);
     });
   })
   .catch((err) => {
