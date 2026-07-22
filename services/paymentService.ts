@@ -3,13 +3,15 @@ import type { Locale } from "@/lib/i18n";
 import type { BookingCheckoutResult, PaymentConfig } from "@/types/payment";
 import type { InquiryPayload } from "@/types/api";
 import { getCustomerToken } from "@/services/customerService";
+import { sanitizePublicError } from "@/lib/parse-api-error";
 
-async function parseJson<T>(res: Response): Promise<T> {
+async function parseJson<T>(res: Response, locale: Locale = "ar"): Promise<T> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(
-      (err as { message?: string }).message ?? `Request failed (${res.status})`,
-    );
+    const fallback =
+      locale === "ar" ? "تعذّر إتمام الحجز. حاول مرة أخرى." : "Booking failed. Please try again.";
+    const raw = (err as { message?: string }).message ?? "";
+    throw new Error(sanitizePublicError(raw, fallback));
   }
   return res.json() as Promise<T>;
 }
@@ -20,7 +22,7 @@ export const paymentService = {
       headers: { Accept: "application/json" },
       cache: "no-store",
     });
-    const json = await parseJson<{ data: PaymentConfig }>(res);
+    const json = await parseJson<{ data: PaymentConfig }>(res, locale);
     return json.data;
   },
 
@@ -40,7 +42,8 @@ export const paymentService = {
       body: JSON.stringify({ ...payload, type: "booking" }),
     });
 
-    const json = await parseJson<{ data: BookingCheckoutResult }>(res);
+    const locale = (payload.locale === "en" ? "en" : "ar") as Locale;
+    const json = await parseJson<{ data: BookingCheckoutResult }>(res, locale);
     return json.data;
   },
 

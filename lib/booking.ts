@@ -18,9 +18,38 @@ export function calculateBookingTotal(
   unitPrice: number,
   adults: number,
   children: number,
+  days = 1,
 ): number {
   if (unitPrice <= 0) return 0;
-  return unitPrice * adults + unitPrice * 0.5 * children;
+  const dayCount = Math.max(1, Math.floor(days));
+  return (unitPrice * adults + unitPrice * 0.5 * children) * dayCount;
+}
+
+/** Inclusive ISO date list from dateFrom to dateTo (calendar days). */
+export function isoDaysInInclusiveRange(dateFrom: string, dateTo: string): string[] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) return [];
+  const end = /^\d{4}-\d{2}-\d{2}$/.test(dateTo) ? dateTo : dateFrom;
+  const start = dateFrom <= end ? dateFrom : end;
+  const stop = dateFrom <= end ? end : dateFrom;
+  const out: string[] = [];
+  const cursor = new Date(`${start}T12:00:00`);
+  const last = new Date(`${stop}T12:00:00`);
+  while (cursor <= last) {
+    out.push(toIsoDate(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return out;
+}
+
+/** Bookable ISO dates inside an inclusive range. */
+export function bookableIsoDaysInRange(
+  dateFrom: string,
+  dateTo: string,
+  bookableIsoSet: ReadonlySet<string>,
+): string[] {
+  return isoDaysInInclusiveRange(dateFrom, dateTo || dateFrom).filter((iso) =>
+    bookableIsoSet.has(iso),
+  );
 }
 
 export function applyCouponDiscount(

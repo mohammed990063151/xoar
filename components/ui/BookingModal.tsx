@@ -17,6 +17,8 @@ interface BookingModalProps {
     readonly email: string;
     readonly phone: string;
     readonly message: string;
+    readonly preferredDate?: string;
+    readonly location?: string;
     readonly send: string;
     readonly success: string;
     readonly error: string;
@@ -25,6 +27,39 @@ interface BookingModalProps {
   };
   readonly options: BookingModalOptions;
   readonly onClose: () => void;
+}
+
+function buildEventMessage(parts: {
+  ar: boolean;
+  title?: string;
+  preferredDate: string;
+  location: string;
+  message: string;
+}): string {
+  const lines: string[] = [
+    parts.ar ? "[طلب فعالية]" : "[Event inquiry]",
+  ];
+  if (parts.title?.trim()) {
+    lines.push(
+      `${parts.ar ? "الفعالية" : "Event"}: ${parts.title.trim()}`,
+    );
+  }
+  if (parts.preferredDate) {
+    lines.push(
+      `${parts.ar ? "التاريخ المفضل" : "Preferred date"}: ${parts.preferredDate}`,
+    );
+  }
+  if (parts.location.trim()) {
+    lines.push(
+      `${parts.ar ? "الموقع" : "Location"}: ${parts.location.trim()}`,
+    );
+  }
+  if (parts.message.trim()) {
+    lines.push(
+      `${parts.ar ? "التفاصيل" : "Details"}: ${parts.message.trim()}`,
+    );
+  }
+  return lines.join("\n");
 }
 
 export function BookingModal({
@@ -38,12 +73,19 @@ export function BookingModal({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const type: InquiryType = options.type ?? "booking";
+  const isEvent = options.variant === "event";
+  const type: InquiryType = options.type ?? (isEvent ? "service" : "contact");
   const title = options.title ?? labels.defaultTitle;
+  const ar = locale === "ar";
+  const dateLabel = labels.preferredDate ?? (ar ? "التاريخ المفضل" : "Preferred date");
+  const locationLabel = labels.location ?? (ar ? "الموقع" : "Location");
+  const minDate = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     if (!open) return;
@@ -63,6 +105,8 @@ export function BookingModal({
       setSent(false);
       setError(null);
       setLoading(false);
+      setPreferredDate("");
+      setLocation("");
     }
   }, [open]);
 
@@ -71,6 +115,16 @@ export function BookingModal({
     setLoading(true);
     setError(null);
     try {
+      const composedMessage = isEvent
+        ? buildEventMessage({
+            ar,
+            title: options.title,
+            preferredDate,
+            location,
+            message,
+          })
+        : message || undefined;
+
       await submitInquiry({
         type,
         source: options.source,
@@ -78,13 +132,28 @@ export function BookingModal({
         name,
         email,
         phone: phone || undefined,
-        message: message || undefined,
+        message: composedMessage,
+        activity_id: options.activityId,
+        ...(isEvent
+          ? {
+              event_type: "other",
+              title: options.title || undefined,
+              preferred_date: preferredDate || undefined,
+              location: location || undefined,
+              customer_message: message || undefined,
+              event_slug: options.source?.startsWith("event-detail:")
+                ? options.source.replace("event-detail:", "")
+                : undefined,
+            }
+          : {}),
       });
       setSent(true);
       setName("");
       setEmail("");
       setPhone("");
       setMessage("");
+      setPreferredDate("");
+      setLocation("");
     } catch (err) {
       setError(err instanceof Error ? err.message : labels.error);
     } finally {
@@ -169,6 +238,31 @@ export function BookingModal({
                         className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-white outline-none focus:border-cyan-400/50"
                       />
                     </label>
+                    {isEvent ? (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <label className="text-sm text-slate-300">
+                          {dateLabel}
+                          <input
+                            type="date"
+                            dir="ltr"
+                            min={minDate}
+                            value={preferredDate}
+                            onChange={(e) => setPreferredDate(e.target.value)}
+                            className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-white outline-none focus:border-cyan-400/50 [color-scheme:dark]"
+                          />
+                        </label>
+                        <label className="text-sm text-slate-300 sm:col-span-1">
+                          {locationLabel}
+                          <input
+                            type="text"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            placeholder={ar ? "مدينة أو موقع…" : "City or venue…"}
+                            className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-white outline-none focus:border-cyan-400/50"
+                          />
+                        </label>
+                      </div>
+                    ) : null}
                     <label className="text-sm text-slate-300">
                       {labels.message}
                       <textarea

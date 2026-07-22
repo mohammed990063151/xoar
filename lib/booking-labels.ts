@@ -25,8 +25,21 @@ export function bookingLabels(locale: Locale) {
     giftBookingType: ar ? "نوع الحجز" : "Booking type",
     giftModeSelf: ar ? "حجز لنفسي" : "Book for myself",
     giftModeSelfHint: ar ? "بدون إهداء" : "Standard booking",
+    giftModeGroup: ar ? "حجز جماعي" : "Group booking",
+    giftModeGroupHint: ar ? "عدة أشخاص — السعر حسب العدد" : "Multiple people — price by count",
     giftModeGift: ar ? "إهداء النشاط" : "Gift this activity",
     giftModeGiftHint: ar ? "لشخص آخر" : "For someone else",
+    groupMembersTitle: ar ? "أسماء وأرقام المشاركين" : "Participant names & phones",
+    groupMembersHint: ar
+      ? "أدخل اسم ورقم جوال كل مشارك — يظهران في بوليصة الحجز"
+      : "Enter each guest’s name and phone — shown on the booking policy",
+    groupMemberName: ar ? "اسم المشارك" : "Guest name",
+    groupMemberPhone: ar ? "جوال المشارك" : "Guest phone",
+    groupRequired: ar
+      ? "أكمل أسماء وأرقام جميع المشاركين"
+      : "Complete name and phone for every participant",
+    groupBadge: ar ? "حجز جماعي" : "Group booking",
+    peopleCount: ar ? "عدد الأشخاص" : "Number of people",
     giftModalTitle: ar ? "بيانات المهدى إليه" : "Recipient details",
     giftModalHint: ar
       ? "أدخل بيانات الشخص الذي تهديه — لن تُكرَّر هذه الخطوة بعد التأكيد."
@@ -61,7 +74,7 @@ export function bookingLabels(locale: Locale) {
     included: ar ? "ما يشمله" : "What's included",
     policies: ar ? "السياسات" : "Policies",
     recommended: ar ? "قد يعجبك أيضاً" : "Recommended for you",
-    selectDate: ar ? "اختر التاريخ والمشاركين" : "Select date & guests",
+    selectDate: ar ? "اختر الفترة والمشاركين" : "Select dates & guests",
     adults: ar ? "بالغون" : "Adults",
     children: ar ? "أطفال" : "Children",
     total: ar ? "الإجمالي" : "Total",

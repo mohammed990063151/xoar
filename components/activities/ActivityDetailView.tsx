@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ActivityBookingPanel } from "@/components/activities/booking/ActivityBookingPanel";
+import {
+  ActivityBookingPanel,
+  type BookingScheduleSelection,
+} from "@/components/activities/booking/ActivityBookingPanel";
 import { ActivitySocialProof } from "@/components/features/ActivitySocialProof";
 import { BookingCountdown } from "@/components/features/BookingCountdown";
 import { AddToCalendarButton } from "@/components/features/AddToCalendarButton";
@@ -49,7 +52,10 @@ export function ActivityDetailView({
   initialFeatures,
 }: ActivityDetailViewProps): React.ReactElement {
   const labels = bookingLabels(locale);
-  const { isEnabled } = usePlatformFeatures(locale, initialFeatures ? [...initialFeatures] : undefined);
+  const { isEnabled } = usePlatformFeatures(
+    locale,
+    initialFeatures ? [...initialFeatures] : undefined,
+  );
   const galleryImages = activityAllImages(activity);
   const promoVideo = activityPromoVideoUrl(activity);
   const organizer = activity.organizer ?? activity.provider?.name ?? "Xora";
@@ -74,6 +80,16 @@ export function ActivityDetailView({
 
   const [activeImage, setActiveImage] = useState(0);
   const [tab, setTab] = useState<TabId>("description");
+  const [bookingSchedule, setBookingSchedule] = useState<BookingScheduleSelection>({
+    dateFrom: "",
+    dateTo: "",
+    bookingTime: "",
+  });
+  const [partySize, setPartySize] = useState(1);
+  const [groupBookingActive, setGroupBookingActive] = useState(false);
+  const onBookingScheduleChange = useCallback((schedule: BookingScheduleSelection) => {
+    setBookingSchedule(schedule);
+  }, []);
   const rating = activity.rating;
   const reviewsCount =
     activity.reviews_count ?? (activity as Activity & { reviewsCount?: number }).reviewsCount;
@@ -433,6 +449,13 @@ export function ActivityDetailView({
             activity={activity}
             locale={locale}
             enabled={isEnabled("group_booking")}
+            dateFrom={bookingSchedule.dateFrom}
+            dateTo={bookingSchedule.dateTo}
+            bookingTime={bookingSchedule.bookingTime}
+            active={groupBookingActive}
+            onActiveChange={setGroupBookingActive}
+            membersCount={partySize}
+            onMembersCountChange={setPartySize}
           />
           {activity.isFull && isEnabled("waitlist") ? (
             <WaitlistPanel slug={activity.slug} locale={locale} enabled />
@@ -440,7 +463,11 @@ export function ActivityDetailView({
             <ActivityBookingPanel
               activity={activity}
               locale={locale}
-              giftBookingEnabled={isEnabled("booking_gift")}
+              giftBookingEnabled={!groupBookingActive}
+              onScheduleChange={onBookingScheduleChange}
+              partySize={partySize}
+              onPartySizeChange={setPartySize}
+              forceGroup={groupBookingActive}
             />
           )}
         </aside>

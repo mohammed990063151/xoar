@@ -20,9 +20,18 @@ type Filter = "all" | "individual" | "exhibitions" | "entertainment";
 
 interface EventsGalleryProps {
   readonly locale: Locale;
-  readonly copy: Dictionary["pages"]["events"];
+  readonly copy: {
+    title: string;
+    intro: string;
+    filterAll?: string;
+    filterIndividual?: string;
+    filterExpo?: string;
+    filterFun?: string;
+  };
   readonly section: Dictionary["eventsSection"];
   readonly events: readonly EventGalleryItem[];
+  /** Base path for detail links, e.g. `/works` */
+  readonly detailBase?: string;
 }
 
 export function EventsGallery({
@@ -30,9 +39,10 @@ export function EventsGallery({
   copy,
   section,
   events,
+  detailBase = "/works",
 }: EventsGalleryProps): React.ReactElement {
   const [filter, setFilter] = useState<Filter>("all");
-  const defaults = getDictionary(locale).pages.events;
+  const defaults = getDictionary(locale).pages.works;
 
   const tabs = useMemo(
     () => [
@@ -48,18 +58,17 @@ export function EventsGallery({
   );
 
   const counts = useMemo(() => {
-    const map: Record<Filter, number> = {
+    const map: Record<string, number> = {
       all: events.length,
       individual: 0,
       exhibitions: 0,
       entertainment: 0,
     };
     for (const event of events) {
-      if (event.filter in map) {
-        map[event.filter as Exclude<Filter, "all">] += 1;
-      }
+      const key = event.filter || "entertainment";
+      map[key] = (map[key] ?? 0) + 1;
     }
-    return map;
+    return map as Record<Filter, number>;
   }, [events]);
 
   const items = useMemo(() => {
@@ -131,10 +140,11 @@ export function EventsGallery({
                 title={item.title}
                 description={item.description}
                 imageSrc={item.image}
-                href={`/events/${item.id}`}
+                href={`${detailBase}/${item.id}`}
                 cta={section.viewDetails}
                 imageAspect="4 / 3"
                 imageObjectFit="cover"
+                badge={item.filterLabel}
               />
             </ScrollReveal>
           ))}

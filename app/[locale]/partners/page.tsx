@@ -1,5 +1,4 @@
 import { PartnersPageView } from "@/components/partners/PartnersPageView";
-import { getDictionary } from "@/lib/dictionary";
 import { isLocale } from "@/lib/i18n";
 import { getPartnersPageContent } from "@/lib/site-page";
 import { notFound } from "next/navigation";
@@ -12,12 +11,7 @@ export default async function PartnersPage({
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
 
-  const [content, dict] = await Promise.all([
-    getPartnersPageContent(loc),
-    Promise.resolve(getDictionary(loc)),
-  ]);
+  const content = await getPartnersPageContent(loc);
 
-  return (
-    <PartnersPageView locale={loc} content={content} contactCta={dict.nav.cta} />
-  );
+  return <PartnersPageView locale={loc} content={content} />;
 }

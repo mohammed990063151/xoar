@@ -309,7 +309,7 @@ export function HeroSection({
             />
             <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
               <Link
-                href={localizedPath(locale, "/events")}
+                href={localizedPath(locale, "/works")}
                 className="group inline-flex w-full items-center justify-center gap-2 py-1.5 text-sm font-medium text-slate-200 transition hover:text-white sm:w-auto sm:justify-start"
               >
                 {hero.secondaryCta}

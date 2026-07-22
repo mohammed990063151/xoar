@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { customerService } from "@/services/customerService";
 import type { Locale } from "@/lib/i18n";
-import { portalPath } from "@/lib/portal-url";
+import { localizedPath } from "@/lib/i18n";
 
 interface AccountLoginFormProps {
   readonly locale: Locale;
@@ -54,7 +54,7 @@ export function AccountLoginForm({
           locale,
         });
       }
-      const next = safeReturnPath(returnTo) ?? portalPath("/bookings");
+      const next = safeReturnPath(returnTo) ?? localizedPath(locale, "/account");
       window.location.assign(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : ar ? "تعذّر تسجيل الدخول" : "Auth failed");

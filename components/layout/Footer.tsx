@@ -25,6 +25,7 @@ const navLinks = [
   { href: "/", key: "home" as const },
   { href: "/about", key: "about" as const },
   { href: "/services", key: "services" as const },
+  { href: "/works", key: "works" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
   { href: "/partners", key: "partners" as const },
@@ -32,6 +33,16 @@ const navLinks = [
   { href: "/careers", key: "careers" as const },
   { href: "/contact", key: "contact" as const },
 ];
+
+function footerNavLabel(
+  locale: Locale,
+  key: (typeof navLinks)[number]["key"],
+  nav: Dictionary["nav"],
+): string {
+  if (key === "works") return locale === "ar" ? "أعمالنا" : "Our work";
+  if (key === "events") return locale === "ar" ? "فعالياتنا" : "Our events";
+  return nav[key];
+}
 
 const container = {
   hidden: { opacity: 0 },
@@ -149,7 +160,7 @@ export function Footer({
                       href={localizedPath(locale, href)}
                       className="text-slate-400 transition hover:text-cyan-300"
                     >
-                      {nav[key]}
+                      {footerNavLabel(locale, key, nav)}
                     </Link>
                   </li>
                 ))}

@@ -12,7 +12,7 @@ export const DEFAULT_PLATFORM_FEATURE_FLAGS: Readonly<Record<string, boolean>> =
   bundles: true,
   referrals: true,
   wallet: true,
-  gift_cards: true,
+  gift_cards: false,
   booking_gift: true,
   social_proof: true,
   countdown: true,
@@ -44,9 +44,6 @@ export function resolveFeatureEnabled(
   const row = features.find((f) => f.key === key);
   if (row !== undefined) return row.enabled;
 
-  if (options?.apiLoaded === false || features.length === 0) {
-    return DEFAULT_PLATFORM_FEATURE_FLAGS[key] ?? false;
-  }
-
-  return false;
+  // Unknown / missing keys: use product defaults (never hide core booking UX on partial APIs).
+  return DEFAULT_PLATFORM_FEATURE_FLAGS[key] ?? false;
 }

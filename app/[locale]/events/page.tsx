@@ -1,8 +1,8 @@
-import { EventsGallery } from "@/components/events/EventsGallery";
-
-import { getSiteContent } from "@/services/contentService";
+import { HappeningsGallery } from "@/components/happenings/HappeningsGallery";
+import { getDictionary } from "@/lib/dictionary";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
+import { getSiteContent } from "@/services/contentService";
 
 export default async function EventsPage({
   params,
@@ -11,14 +11,26 @@ export default async function EventsPage({
 }): Promise<React.ReactElement> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
-  const dict = await getSiteContent(loc);
+  const [site, dict] = await Promise.all([
+    getSiteContent(loc),
+    Promise.resolve(getDictionary(loc)),
+  ]);
+
+  const copy = site.pages.happenings ?? {
+    title: dict.nav.events,
+    intro:
+      loc === "ar"
+        ? "استكشف فعالياتنا القادمة والحالية."
+        : "Explore our upcoming and current events.",
+  };
 
   return (
-    <EventsGallery
+    <HappeningsGallery
       locale={loc}
-      copy={dict.pages.events}
-      section={dict.eventsSection}
-      events={dict.eventsGallery}
+      title={copy.title}
+      intro={copy.intro}
+      items={site.happeningsGallery ?? []}
+      viewDetailsLabel={dict.eventsSection.viewDetails}
     />
   );
 }

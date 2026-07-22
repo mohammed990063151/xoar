@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { laravelFetch } from "@/lib/laravel-fetch";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
+import { eventGallery } from "@/lib/event-gallery";
 import {
   normalizeMediaUrl,
   optimizePosterUrl,
@@ -159,9 +160,36 @@ function heroGalleryCopy(dict: Dictionary): HeroGalleryCopy {
 
 function worksSectionCopy(api: HomeApiPayload, dict: Dictionary): WorksSectionCopy {
   return {
-    title: nonEmpty(api.worksSection?.title) ?? dict.pages.events.title,
-    subtitle: nonEmpty(api.worksSection?.subtitle) ?? dict.eventsSection.subtitle,
+    title: nonEmpty(api.worksSection?.title) ?? dict.pages.works.title,
+    subtitle: nonEmpty(api.worksSection?.subtitle) ?? dict.pages.works.intro,
   };
+}
+
+function fallbackWorks(locale: Locale): HomeWork[] {
+  return eventGallery.slice(0, 6).map((event) => ({
+    slug: event.id,
+    title: locale === "ar" ? event.titleAr : event.titleEn,
+    description: locale === "ar" ? event.descAr : event.descEn,
+    image: event.image,
+    filter: event.filter,
+    filterLabel:
+      locale === "ar"
+        ? event.filter === "individual"
+          ? "أفراد"
+          : event.filter === "exhibitions"
+            ? "معارض"
+            : "ترفيه"
+        : event.filter === "individual"
+          ? "Individuals"
+          : event.filter === "exhibitions"
+            ? "Exhibitions"
+            : "Entertainment",
+  }));
+}
+
+function resolveWorks(locale: Locale, raw?: HomeWork[]): HomeWork[] {
+  const mapped = mapWorks(raw);
+  return mapped.length > 0 ? mapped : fallbackWorks(locale);
 }
 
 function ownedActivitiesSectionCopy(
@@ -293,7 +321,7 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
     heroGallery: heroGalleryCopy(dict),
     galleryImages: hero.gallery ?? [],
     worksSection: worksSectionCopy(api, dict),
-    works: mapWorks(api.works),
+    works: resolveWorks(locale, api.works),
     ownedActivitiesSection: ownedActivitiesSectionCopy(api, dict),
     ownedActivities: mapActivityCards(api.ownedActivities),
     entertainmentActivitiesSection: entertainmentActivitiesSectionCopy(api, locale),
@@ -359,10 +387,10 @@ async function fetchHomeContent(locale: Locale): Promise<HomeContent> {
     heroGallery: heroGalleryCopy(dict),
     galleryImages: [],
     worksSection: {
-      title: dict.pages.events.title,
-      subtitle: dict.eventsSection.subtitle,
+      title: dict.pages.works.title,
+      subtitle: dict.pages.works.intro,
     },
-    works: [],
+    works: fallbackWorks(locale),
     ownedActivitiesSection: dict.ownedActivitiesSection as OwnedActivitiesSectionCopy,
     ownedActivities: [],
     entertainmentActivitiesSection: entertainmentActivitiesSectionCopy({}, locale),

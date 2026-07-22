@@ -4,7 +4,8 @@
     "home": "Home",
     "about": "About",
     "services": "Services",
-    "events": "Our work",
+    "works": "Our work",
+    "events": "Our events",
     "activities": "Entertainment",
     "partners": "Partners",
     "blog": "Xora Blog",
@@ -232,6 +233,8 @@
     "email": "Email",
     "phone": "Phone",
     "message": "Details",
+    "preferredDate": "Preferred date",
+    "location": "Location",
     "send": "Submit request",
     "success": "Request received — we will contact you soon.",
     "error": "Could not send. Please try again.",
@@ -302,6 +305,7 @@
       "eyebrow": "What we offer",
       "title": "Our services",
       "intro": "We cover the full event lifecycle — from advisory to post-event wrap-up.",
+      "detailCta": "Details",
       "closing": {
         "text": "Talk to us to build a plan that fits your goals and budget."
       },
@@ -324,13 +328,21 @@
         }
       ]
     },
-    "events": {
-      "title": "Events",
-      "intro": "A sample of our work — exhibitions, conferences, and entertainment at different scales.",
+    "works": {
+      "title": "Our work",
+      "intro": "A cinematic archive of delivered projects — case studies, not bookings.",
       "filterAll": "All",
       "filterIndividual": "Individuals",
       "filterExpo": "Exhibitions",
       "filterFun": "Entertainment"
+    },
+    "happenings": {
+      "title": "Our events",
+      "intro": "Live events ready to explore and book — large cards and moving galleries."
+    },
+    "events": {
+      "title": "Our events",
+      "intro": "Live events ready to explore and book — large cards and moving galleries."
     },
     "activities": {
       "eyebrow": "Discover & choose",

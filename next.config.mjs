@@ -17,6 +17,30 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["framer-motion", "gsap", "lenis"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/:locale/gifts",
+        destination: "/:locale",
+        permanent: false,
+      },
+      {
+        source: "/:locale/account/gifts",
+        destination: "/:locale/account",
+        permanent: false,
+      },
+      {
+        source: "/:locale/portfolio",
+        destination: "/:locale/works",
+        permanent: false,
+      },
+      {
+        source: "/:locale/portfolio/:slug*",
+        destination: "/:locale/works/:slug*",
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

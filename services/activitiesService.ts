@@ -7,7 +7,10 @@ export interface ActivityFilters {
   location?: string;
   city?: string;
   category?: string;
+  /** @deprecated Prefer date_from / date_to */
   date?: string;
+  date_from?: string;
+  date_to?: string;
   badge?: string;
   per_page?: number;
 }

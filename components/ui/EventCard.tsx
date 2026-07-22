@@ -18,6 +18,7 @@ interface EventCardProps {
   readonly className?: string;
   readonly imageAspect?: string;
   readonly imageObjectFit?: "cover" | "contain";
+  readonly badge?: string;
   /** Opens booking flow instead of navigating via CTA link */
   readonly onBook?: () => void;
 }
@@ -32,6 +33,7 @@ export function EventCard({
   className,
   imageAspect = "16 / 10",
   imageObjectFit = "cover",
+  badge,
   onBook,
 }: EventCardProps): React.ReactElement {
   const path = href.startsWith("/") ? localizedPath(locale, href) : href;
@@ -73,6 +75,11 @@ export function EventCard({
                 isContain ? "opacity-50" : "opacity-90",
               )}
             />
+            {badge ? (
+              <span className="absolute start-3 top-3 rounded-full border border-white/15 bg-black/50 px-2.5 py-1 text-[11px] font-semibold text-cyan-100 backdrop-blur">
+                {badge}
+              </span>
+            ) : null}
           </div>
         </Link>
         <div className="flex flex-1 flex-col gap-2 p-4">

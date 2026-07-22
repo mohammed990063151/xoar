@@ -2,11 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { defaultLocale, isLocale } from "./lib/i18n";
 import { defaultLaravelOrigin } from "./lib/laravel-origin";
-import { portalPath } from "./lib/portal-url";
-
-function isAccountPath(pathname: string): boolean {
-  return /^\/(ar|en)\/account(\/|$)/.test(pathname);
-}
 
 function isAdminPath(pathname: string): boolean {
   return (
@@ -27,23 +22,6 @@ export function middleware(request: NextRequest): NextResponse {
       defaultLaravelOrigin();
     const adminPath = pathname.match(/^\/(ar|en)\/admin(\/.*)?$/)?.[2] ?? "";
     return NextResponse.redirect(`${adminBase}/admin${adminPath || "/login"}`);
-  }
-
-  if (isAccountPath(pathname)) {
-    const sub = pathname.match(/^\/(ar|en)\/account(\/.*)?$/)?.[2] ?? "";
-    if (sub === "/login" || sub === "") {
-      return NextResponse.redirect(portalPath("/login"));
-    }
-    if (sub === "/register") {
-      return NextResponse.redirect(portalPath("/register"));
-    }
-    if (sub.startsWith("/bookings")) {
-      return NextResponse.redirect(portalPath("/bookings"));
-    }
-    if (sub.startsWith("/profile")) {
-      return NextResponse.redirect(portalPath("/profile"));
-    }
-    return NextResponse.redirect(portalPath());
   }
 
   if (

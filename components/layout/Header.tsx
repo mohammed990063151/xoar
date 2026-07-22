@@ -22,6 +22,7 @@ const navKeys = [
   { href: "/", key: "home" as const },
   { href: "/about", key: "about" as const },
   { href: "/services", key: "services" as const },
+  { href: "/works", key: "works" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
   { href: "/partners", key: "partners" as const },
@@ -29,6 +30,17 @@ const navKeys = [
   { href: "/careers", key: "careers" as const },
   { href: "/contact", key: "contact" as const },
 ] satisfies ReadonlyArray<{ href: string; key: keyof Dictionary["nav"] }>;
+
+/** Fixed split: أعمالنا ≠ فعالياتنا (CMS/cache must not blur them). */
+function navLabel(
+  locale: Locale,
+  key: keyof Dictionary["nav"],
+  nav: Dictionary["nav"],
+): string {
+  if (key === "works") return locale === "ar" ? "أعمالنا" : "Our work";
+  if (key === "events") return locale === "ar" ? "فعالياتنا" : "Our events";
+  return nav[key];
+}
 
 const accountActive = (pathname: string): boolean => pathname.includes("/account");
 
@@ -80,7 +92,7 @@ export function Header({
   const isActive = (href: string): boolean => {
     const full = localizedPath(locale, href);
     if (href === "/") return pathname === full;
-    return pathname.startsWith(full);
+    return pathname === full || pathname.startsWith(`${full}/`);
   };
 
   useEffect(() => {
@@ -123,7 +135,7 @@ export function Header({
               href={resolveHref(locale, href)}
               active={isActive(href)}
             >
-              {nav[key]}
+              {navLabel(locale, key, nav)}
             </NavTextLink>
           ))}
         </nav>
@@ -210,7 +222,7 @@ export function Header({
                     )}
                     onClick={() => setOpen(false)}
                   >
-                    {nav[key]}
+                    {navLabel(locale, key, nav)}
                   </Link>
                 );
               })}

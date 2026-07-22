@@ -269,6 +269,83 @@ svg {
   }
 }
 
+/* WhatsApp FAB — green glow + expanding rings (button only) */
+.inquiry-fab-wa {
+  overflow: visible;
+  box-shadow:
+    0 0 0 0 rgba(37, 211, 102, 0.55),
+    0 0 18px 4px rgba(37, 211, 102, 0.45);
+  animation: inquiry-fab-wa-glow 2.4s ease-in-out infinite;
+}
+
+.inquiry-fab-wa__rings {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inquiry-fab-wa__ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  border: 2px solid rgba(37, 211, 102, 0.75);
+  background: transparent;
+  box-shadow: 0 0 12px rgba(37, 211, 102, 0.35);
+  animation: inquiry-fab-wa-ripple 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+  opacity: 0;
+}
+
+.inquiry-fab-wa__ring:nth-child(2) {
+  animation-delay: 0.8s;
+}
+
+.inquiry-fab-wa__ring:nth-child(3) {
+  animation-delay: 1.6s;
+}
+
+@keyframes inquiry-fab-wa-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(2.35);
+    opacity: 0;
+  }
+}
+
+@keyframes inquiry-fab-wa-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(37, 211, 102, 0.4),
+      0 0 14px 3px rgba(37, 211, 102, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(37, 211, 102, 0.12),
+      0 0 28px 8px rgba(37, 211, 102, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inquiry-fab-wa,
+  .inquiry-fab-wa__ring {
+    animation: none;
+  }
+
+  .inquiry-fab-wa {
+    box-shadow: 0 0 14px 3px rgba(37, 211, 102, 0.4);
+  }
+}
+
 /* Activities map (Leaflet) */
 .activity-map-canvas {
   background: #0f172a;

@@ -35,12 +35,20 @@ export function YoutubeEmbed({
   }, [fallbacks.length]);
 
   if (!active && thumbSrc) {
+    // Use a div (not <button>) so this can sit inside accordion/tab panels that are already buttons.
     return (
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setActive(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setActive(true);
+          }
+        }}
         className={cn(
-          "group relative flex h-full w-full items-center justify-center overflow-hidden bg-black",
+          "group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden bg-black",
           className,
         )}
         aria-label={title}
@@ -59,7 +67,7 @@ export function YoutubeEmbed({
         >
           ▶
         </span>
-      </button>
+      </div>
     );
   }
 

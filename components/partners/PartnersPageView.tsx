@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { isStorageImage } from "@/lib/image-url";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
-import { localizedPath } from "@/lib/i18n";
 import type { PartnerItem, PartnersPageContent } from "@/lib/site-page";
+import { PartnerApplyModal } from "@/components/partners/PartnerApplyModal";
 import {
   pageBottom,
   pageEyebrow,
@@ -22,7 +22,6 @@ import {
 interface PartnersPageViewProps {
   readonly locale: Locale;
   readonly content: PartnersPageContent;
-  readonly contactCta: string;
 }
 
 function PartnerLogoCard({
@@ -42,8 +41,8 @@ function PartnerLogoCard({
         className={cn(
           "pointer-events-none absolute inset-0 opacity-0 transition duration-500 group-hover:opacity-100",
           featured
-            ? "bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.2),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(168,85,247,0.18),transparent_50%)]"
-            : "bg-gradient-to-b from-violet-500/10 to-transparent",
+            ? "bg-[radial-gradient(circle_at_30%_20%,rgba(34,211,238,0.16),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(16,185,129,0.14),transparent_50%)]"
+            : "bg-gradient-to-b from-cyan-500/10 to-transparent",
         )}
         aria-hidden
       />
@@ -83,7 +82,7 @@ function PartnerLogoCard({
     whileInView: reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 },
     viewport: { once: true, margin: "-40px" as const },
     transition: { delay: index * 0.06, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
-    whileHover: reduceMotion ? undefined : { y: -6, borderColor: "rgba(168, 85, 247, 0.45)" },
+    whileHover: reduceMotion ? undefined : { y: -6, borderColor: "rgba(34, 211, 238, 0.45)" },
   };
 
   if (partner.website) {
@@ -100,17 +99,25 @@ function PartnerLogoCard({
 export function PartnersPageView({
   locale,
   content,
-  contactCta,
 }: PartnersPageViewProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
-  const contactPath = localizedPath(locale, "/contact");
+  const ar = locale === "ar";
   const partners = content.partners;
+  const [applyOpen, setApplyOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("apply") === "1") {
+      setApplyOpen(true);
+    }
+  }, []);
 
   return (
     <div className={pageBottom}>
       <section className={pageHeroSection}>
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(59,130,246,0.2),transparent),radial-gradient(ellipse_50%_45%_at_10%_90%,rgba(168,85,247,0.14),transparent)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(34,211,238,0.18),transparent),radial-gradient(ellipse_50%_45%_at_10%_90%,rgba(16,185,129,0.12),transparent)]"
           aria-hidden
         />
         <div className={pageHeroInner}>
@@ -123,6 +130,15 @@ export function PartnersPageView({
             {content.eyebrow ? <p className={pageEyebrow}>{content.eyebrow}</p> : null}
             <h1 className={pageTitle}>{content.title}</h1>
             <p className={pageIntro}>{content.intro}</p>
+            <motion.button
+              type="button"
+              onClick={() => setApplyOpen(true)}
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-gradient-to-l from-cyan-500 to-teal-400 px-7 py-3.5 text-sm font-bold text-slate-950 shadow-[0_16px_40px_rgba(34,211,238,0.25)]"
+              whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+            >
+              {ar ? "انضم كشريك" : "Become a partner"}
+            </motion.button>
           </motion.div>
         </div>
       </section>
@@ -133,18 +149,16 @@ export function PartnersPageView({
             {content.stats.map((stat, index) => (
               <motion.div
                 key={`${stat.label}-${index}`}
-                className="gradient-border text-center"
+                className="text-center"
                 initial={reduceMotion ? false : { opacity: 0, y: 20 }}
                 whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                <div className="inner px-4 py-6 sm:py-8">
-                  <p className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                    {stat.value}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-400">{stat.label}</p>
-                </div>
+                <p className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                  {stat.value}
+                </p>
+                <p className="mt-2 text-sm text-slate-400">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -166,7 +180,7 @@ export function PartnersPageView({
             </div>
           ) : (
             <p className="text-center text-slate-400">
-              {locale === "ar" ? "سيتم عرض الشركاء قريباً." : "Partners will appear here soon."}
+              {ar ? "سيتم عرض الشركاء قريباً." : "Partners will appear here soon."}
             </p>
           )}
         </div>
@@ -175,14 +189,14 @@ export function PartnersPageView({
       <section className="pb-16 sm:pb-20">
         <div className={siteContainer}>
           <motion.div
-            className="relative overflow-hidden rounded-3xl border border-violet-500/25 bg-gradient-to-br from-slate-900/90 via-slate-950 to-indigo-950/80 px-6 py-10 text-center sm:px-10 sm:py-14"
+            className="relative overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-[#071525] px-6 py-10 text-center sm:px-10 sm:py-14"
             initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
             <div
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.2),transparent_60%)]"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.16),transparent_60%)]"
               aria-hidden
             />
             <div className="relative">
@@ -190,16 +204,19 @@ export function PartnersPageView({
               <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
                 {content.closing.text}
               </p>
-              <Link
-                href={contactPath}
-                className="mt-6 inline-flex items-center justify-center rounded-full border border-violet-400/40 bg-violet-500/10 px-6 py-3 text-sm font-semibold text-white transition hover:border-violet-300/60 hover:bg-violet-500/20"
+              <button
+                type="button"
+                onClick={() => setApplyOpen(true)}
+                className="mt-6 inline-flex items-center justify-center rounded-full border border-cyan-400/40 bg-cyan-500/10 px-6 py-3 text-sm font-semibold text-white transition hover:border-cyan-300/60 hover:bg-cyan-500/20"
               >
-                {contactCta}
-              </Link>
+                {ar ? "قدّم طلب الشراكة" : "Apply to partner"}
+              </button>
             </div>
           </motion.div>
         </div>
       </section>
+
+      <PartnerApplyModal open={applyOpen} locale={locale} onClose={() => setApplyOpen(false)} />
     </div>
   );
 }

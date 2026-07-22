@@ -3,9 +3,11 @@ import type { Dictionary } from "@/lib/dictionary";
 import { getDictionary } from "@/lib/dictionary";
 import { laravelFetch } from "@/lib/laravel-fetch";
 import { eventGallery } from "@/lib/event-gallery";
+import { fallbackServiceBySlug, fallbackServices } from "@/lib/service-catalog";
+import { fallbackHappeningBySlug, fallbackHappenings } from "@/lib/happening-catalog";
 import type { Locale } from "@/lib/i18n";
 import { skipApiDuringBuild } from "@/lib/skip-api-during-build";
-const REVALIDATE_SECONDS = 60;
+const REVALIDATE_SECONDS = 10;
 const API_FETCH_TIMEOUT_MS = 8_000;
 
 async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
@@ -20,11 +22,35 @@ async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
 
 export type EventGalleryItem = {
   id: string;
-  filter: "individual" | "exhibitions" | "entertainment";
+  filter: string;
+  filterLabel?: string;
   title: string;
   description: string;
   bodyExtra?: string | null;
+  clientName?: string | null;
+  location?: string | null;
+  eventDate?: string | null;
+  highlights?: string[];
   image: string;
+  gallery?: string[];
+  related?: EventGalleryItem[];
+};
+
+export type ServiceListItem = {
+  id: string;
+  slug: string;
+  title: string;
+  shortLabel?: string | null;
+  description: string;
+  body?: string | null;
+  highlights?: string[];
+  iconKey?: string | null;
+  image: string;
+  gallery?: string[];
+};
+
+export type ServiceDetail = ServiceListItem & {
+  related?: ServiceListItem[];
 };
 
 export type SiteSettings = {
@@ -41,8 +67,26 @@ export type SiteSettings = {
   social?: Record<string, string>;
 };
 
+export type HappeningItem = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  body?: string | null;
+  category?: string | null;
+  categoryLabel?: string | null;
+  location?: string | null;
+  eventDate?: string | null;
+  highlights?: string[];
+  image: string;
+  gallery?: string[];
+  related?: HappeningItem[];
+};
+
 export type SiteContent = Dictionary & {
   eventsGallery: EventGalleryItem[];
+  happeningsGallery?: HappeningItem[];
+  servicesGallery?: ServiceListItem[];
   settings?: SiteSettings;
 };
 
@@ -66,6 +110,8 @@ function mergePages(
     about: { ...dictPages.about, ...apiPages.about },
     services: { ...dictPages.services, ...apiPages.services },
     events: { ...dictPages.events, ...apiPages.events },
+    works: { ...dictPages.works, ...apiPages.works },
+    happenings: { ...dictPages.happenings, ...apiPages.happenings },
     activities: { ...dictPages.activities, ...apiPages.activities },
     partners: { ...dictPages.partners, ...apiPages.partners },
     careers: { ...dictPages.careers, ...apiPages.careers },
@@ -101,10 +147,24 @@ function mergeSiteContent(
     homeContact: { ...dict.homeContact, ...api.homeContact },
     achievements: { ...dict.achievements, ...api.achievements },
     footer: { ...dict.footer, ...api.footer },
-    nav: { ...dict.nav, ...api.nav },
+    nav: {
+      ...dict.nav,
+      ...api.nav,
+      // Keep أعمالنا / فعالياتنا split — never let stale CMS override
+      works: dict.nav.works,
+      events: dict.nav.events,
+    },
     inquiryForm: { ...dict.inquiryForm, ...api.inquiryForm },
     inquiryFab: { ...dict.inquiryFab, ...api.inquiryFab },
     eventsGallery,
+    happeningsGallery:
+      api.happeningsGallery && api.happeningsGallery.length > 0
+        ? api.happeningsGallery
+        : fallbackHappenings(locale),
+    servicesGallery:
+      api.servicesGallery && api.servicesGallery.length > 0
+        ? api.servicesGallery
+        : fallbackServices(locale),
   };
 }
 
@@ -112,7 +172,12 @@ async function fetchSiteContent(locale: Locale): Promise<SiteContent> {
   const dict = getDictionary(locale);
 
   if (skipApiDuringBuild()) {
-    return { ...dict, eventsGallery: fallbackEvents(locale) };
+    return {
+      ...dict,
+      eventsGallery: fallbackEvents(locale),
+      happeningsGallery: fallbackHappenings(locale),
+      servicesGallery: fallbackServices(locale),
+    };
   }
 
   try {
@@ -130,7 +195,12 @@ async function fetchSiteContent(locale: Locale): Promise<SiteContent> {
     // API unavailable — static fallback below
   }
 
-  return { ...dict, eventsGallery: fallbackEvents(locale) };
+  return {
+    ...dict,
+    eventsGallery: fallbackEvents(locale),
+    happeningsGallery: fallbackHappenings(locale),
+    servicesGallery: fallbackServices(locale),
+  };
 }
 
 /** Deduped per request (layout + page + metadata share one fetch). */
@@ -160,4 +230,56 @@ export async function getEventBySlug(
   }
 
   return fallbackEvents(locale).find((event) => event.id === slug) ?? null;
+}
+
+export async function getServiceBySlug(
+  locale: Locale,
+  slug: string,
+): Promise<ServiceDetail | null> {
+  if (skipApiDuringBuild()) {
+    return fallbackServiceBySlug(locale, slug);
+  }
+
+  try {
+    const response = await apiFetch(`/api/site/${locale}/services/${slug}`, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (response.ok) {
+      const json = (await response.json()) as { data?: ServiceDetail };
+      if (json.data) {
+        return json.data;
+      }
+    }
+  } catch {
+    // unavailable
+  }
+
+  return fallbackServiceBySlug(locale, slug);
+}
+
+export async function getHappeningBySlug(
+  locale: Locale,
+  slug: string,
+): Promise<HappeningItem | null> {
+  if (skipApiDuringBuild()) {
+    return fallbackHappeningBySlug(locale, slug);
+  }
+
+  try {
+    const response = await apiFetch(`/api/site/${locale}/happenings/${slug}`, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (response.ok) {
+      const json = (await response.json()) as { data?: HappeningItem };
+      if (json.data) {
+        return json.data;
+      }
+    }
+  } catch {
+    // unavailable
+  }
+
+  return fallbackHappeningBySlug(locale, slug);
 }

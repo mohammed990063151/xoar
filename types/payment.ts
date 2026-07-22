@@ -26,4 +26,8 @@ export interface BookingCheckoutResult {
   checkoutUrl?: string | null;
   pdfUrl?: string | null;
   liveMode?: boolean;
+  isGroup?: boolean;
+  groupInviteCode?: string | null;
+  inviteUrl?: string | null;
+  whatsappUrl?: string | null;
 }

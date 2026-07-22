@@ -125,12 +125,15 @@ export interface InquiryPayload {
   message?: string;
   activity_id?: number;
   booking_date?: string;
+  booking_end_date?: string;
   booking_time?: string;
   is_gift?: boolean;
   gift_recipient_name?: string;
   gift_recipient_phone?: string;
   gift_recipient_email?: string;
   gift_message?: string;
+  is_group?: boolean;
+  group_members?: Array<{ name: string; phone: string }>;
   adults?: number;
   children?: number;
   total_amount?: string;

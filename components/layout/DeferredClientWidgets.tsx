@@ -35,8 +35,6 @@ export function DeferredClientWidgets({
     <>
       <InquiryFab
         locale={locale}
-        label={inquiryFab.label}
-        aria={inquiryFab.aria}
         whatsappAria={inquiryFab.whatsappAria}
         whatsapp={whatsapp}
       />

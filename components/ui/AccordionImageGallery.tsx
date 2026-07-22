@@ -312,19 +312,25 @@ export function AccordionImageGallery({
           );
         })}
         {safeVideo ? (
-          <motion.button
+          <motion.div
             key="promo-video"
-            type="button"
             role="listitem"
+            tabIndex={0}
             layout={!reduceMotion}
             onClick={() => setActive(imageCount)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setActive(imageCount);
+              }
+            }}
             onMouseEnter={() => setHoveredIndex(imageCount)}
             onFocus={() => setHoveredIndex(imageCount)}
             onBlur={() => setHoveredIndex(null)}
             aria-label={labels.video}
             aria-current={imageCount === activeIndex ? "true" : undefined}
             className={cn(
-              "relative shrink-0 overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
+              "relative shrink-0 cursor-pointer overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
               isCream ? "shadow-md" : "border border-violet-500/30",
             )}
             initial={false}
@@ -364,14 +370,14 @@ export function AccordionImageGallery({
             )}
             <div
               className={cn(
-                "absolute inset-0 transition-opacity duration-500",
+                "pointer-events-none absolute inset-0 transition-opacity duration-500",
                 imageCount === focusedIndex
                   ? "opacity-0"
                   : "bg-black/35 opacity-100",
               )}
               aria-hidden
             />
-          </motion.button>
+          </motion.div>
         ) : null}
       </div>
 

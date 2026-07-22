@@ -1,11 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
-import type { ServicesPageContent } from "@/lib/site-page";
+import { ServiceCard } from "@/components/ui/ServiceCard";
+import type { ServicesPageContent, ServiceListItem } from "@/lib/site-page";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { isStorageImage } from "@/lib/image-url";
 import {
+  gridCards3,
   pageBottom,
   pageEyebrow,
   pageHeroInner,
@@ -24,38 +28,59 @@ interface ServicesPageViewProps {
   readonly contactCta: string;
 }
 
-const SERVICE_ICONS = [
-  (
-    <svg key="strategy" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+const SERVICE_ICONS: Record<string, React.ReactElement> = {
+  strategy: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="h-6 w-6">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="4" />
       <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
     </svg>
   ),
-  (
-    <svg key="production" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+  production: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="h-6 w-6">
       <path d="M4 7h16v10H4z" />
       <path d="M8 7V5h8v2M9 12h6" />
     </svg>
   ),
-  (
-    <svg key="content" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+  content: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="h-6 w-6">
       <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
       <path d="M5 19h14M8 16h8" />
     </svg>
   ),
-  (
-    <svg key="media" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+  media: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="h-6 w-6">
       <rect x="3" y="6" width="18" height="13" rx="2" />
       <path d="M8 6l2-3h4l2 3M10 11.5l6 3.5-6 3.5v-7z" />
     </svg>
   ),
-];
+  tech: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="h-6 w-6">
+      <rect x="3" y="4" width="18" height="14" rx="2" />
+      <path d="M8 21h8M12 18v3" />
+    </svg>
+  ),
+  hospitality: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="h-6 w-6">
+      <path d="M4 11h16v8H4z" />
+      <path d="M6 11V8a6 6 0 0112 0v3" />
+    </svg>
+  ),
+};
+
+const ICON_FALLBACKS = Object.values(SERVICE_ICONS);
 
 const STEP_LABELS = {
   ar: ["التخطيط", "التنفيذ", "ما بعد الحدث"],
   en: ["Planning", "Delivery", "Post-event"],
 };
+
+function serviceIcon(item: ServiceListItem, index: number): React.ReactElement {
+  if (item.iconKey && SERVICE_ICONS[item.iconKey]) {
+    return SERVICE_ICONS[item.iconKey];
+  }
+  return ICON_FALLBACKS[index % ICON_FALLBACKS.length];
+}
 
 export function ServicesPageView({
   locale,
@@ -64,6 +89,7 @@ export function ServicesPageView({
 }: ServicesPageViewProps): React.ReactElement {
   const contactPath = localizedPath(locale, "/contact");
   const steps = STEP_LABELS[locale];
+  const detailCta = content.detailCta || (locale === "ar" ? "التفاصيل" : "Details");
 
   return (
     <div className={pageBottom}>
@@ -133,20 +159,20 @@ export function ServicesPageView({
           </div>
         </ScrollReveal>
 
-        <ul className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:gap-6">
+        <ul className={`${gridCards3} mt-8 sm:mt-10`}>
           {content.items.map((item, index) => (
-            <ScrollReveal key={`${item.title}-${index}`}>
-              <li className="group gradient-border h-full transition duration-300 hover:shadow-[0_20px_50px_rgba(59,130,246,0.14)]">
-                <div className="inner flex h-full flex-col p-6 sm:p-7">
-                  <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-600/25 text-cyan-300 ring-1 ring-white/10 transition group-hover:scale-105">
-                    {SERVICE_ICONS[index % SERVICE_ICONS.length]}
-                  </span>
-                  <span className="text-xs font-medium text-slate-500">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-1 text-xl font-semibold text-white">{item.title}</h3>
-                  <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">{item.body}</p>
-                </div>
+            <ScrollReveal key={item.slug || `${item.title}-${index}`}>
+              <li className="h-full">
+                <ServiceCard
+                  locale={locale}
+                  title={item.title}
+                  description={item.body || item.description}
+                  href={item.slug ? `/services/${item.slug}` : "/contact"}
+                  cta={detailCta}
+                  imageSrc={item.image}
+                  icon={serviceIcon(item, index)}
+                  indexLabel={String(index + 1).padStart(2, "0")}
+                />
               </li>
             </ScrollReveal>
           ))}

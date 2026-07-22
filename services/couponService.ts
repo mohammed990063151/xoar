@@ -20,6 +20,7 @@ export const couponService = {
     code: string,
     adults: number,
     children: number,
+    days = 1,
   ): Promise<CouponValidationResult> {
     const res = await fetch(
       `${getApiBaseUrl()}/api/activities/${locale}/${encodeURIComponent(slug)}/coupons/validate`,
@@ -29,7 +30,7 @@ export const couponService = {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code, adults, children }),
+        body: JSON.stringify({ code, adults, children, days }),
       },
     );
 

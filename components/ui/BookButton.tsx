@@ -8,16 +8,20 @@ import { cn } from "@/lib/cn";
 interface BookButtonProps {
   readonly children: React.ReactNode;
   readonly type?: InquiryType;
+  readonly variant?: "default" | "event";
   readonly source?: string;
   readonly title?: string;
+  readonly activityId?: number;
   readonly className?: string;
 }
 
 export function BookButton({
   children,
-  type = "booking",
+  type = "contact",
+  variant = "default",
   source,
   title,
+  activityId,
   className,
 }: BookButtonProps): React.ReactElement {
   const { openBooking } = useBookingModal();
@@ -28,7 +32,7 @@ export function BookButton({
       className={cn(className)}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      onClick={() => openBooking({ type, source, title })}
+      onClick={() => openBooking({ type, source, title, variant, activityId })}
     >
       {children}
     </motion.button>

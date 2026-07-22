@@ -61,7 +61,8 @@ export function ActivitiesDiscover({
   const [search, setSearch] = useState("");
   const [geoFilters, setGeoFilters] = useState<ActivitiesFilterState>({
     city: "",
-    date: "",
+    dateFrom: "",
+    dateTo: "",
     category: "",
   });
   const [loading, setLoading] = useState(false);
@@ -76,8 +77,13 @@ export function ActivitiesDiscover({
   }, [initialActivities]);
 
   useEffect(() => {
+    const dateFrom = geoFilters.dateFrom;
+    const dateTo = geoFilters.dateTo || dateFrom;
     const hasFilters =
-      search || geoFilters.city || geoFilters.date || geoFilters.category;
+      search ||
+      geoFilters.city ||
+      dateFrom ||
+      geoFilters.category;
     if (initialActivities.length > 0 && !hasFilters) {
       setActivities(initialActivities);
       return;
@@ -88,7 +94,8 @@ export function ActivitiesDiscover({
       .list(locale, {
         search: search || undefined,
         city: geoFilters.city || undefined,
-        date: geoFilters.date || undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateFrom ? dateTo : undefined,
         category: geoFilters.category || undefined,
         per_page: 24,
       })
@@ -103,7 +110,10 @@ export function ActivitiesDiscover({
       : `${activities.length} activities available`;
 
   const hasActiveFilters =
-    search || geoFilters.city || geoFilters.date || geoFilters.category;
+    search ||
+    geoFilters.city ||
+    geoFilters.dateFrom ||
+    geoFilters.category;
 
   const sortedActivities = useMemo(() => {
     if (hasActiveFilters || highlightedSlugs.size === 0) return activities;
@@ -172,7 +182,12 @@ export function ActivitiesDiscover({
                     type="button"
                     onClick={() => {
                       setSearch("");
-                      setGeoFilters({ city: "", date: "", category: "" });
+                      setGeoFilters({
+                        city: "",
+                        dateFrom: "",
+                        dateTo: "",
+                        category: "",
+                      });
                     }}
                     className="mt-5 w-full rounded-xl border border-white/10 py-2 text-xs text-slate-400 transition hover:border-white/20 hover:text-white"
                   >

@@ -94,6 +94,13 @@ export function EventRequestPageView({
         name,
         email,
         phone: phone || undefined,
+        event_type: eventType,
+        title: requestTitle,
+        description: description || undefined,
+        preferred_date: preferredDate || undefined,
+        location: location || undefined,
+        guests_count: guestsCount ? Number(guestsCount) : undefined,
+        customer_message: customerMessage || undefined,
         message: buildMessage({
           eventTypeLabel,
           requestTitle,

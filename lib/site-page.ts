@@ -374,35 +374,83 @@ export interface ServiceItem {
   body: string;
 }
 
+export interface ServiceListItem {
+  slug: string;
+  title: string;
+  body: string;
+  description: string;
+  shortLabel?: string;
+  iconKey?: string;
+  image?: string;
+}
+
 export interface ServicesPageContent {
   eyebrow: string;
   title: string;
   intro: string;
-  items: ServiceItem[];
+  items: ServiceListItem[];
   closingText: string;
   heroImage: string;
+  detailCta: string;
 }
 
-function normalizeServiceItems(raw: unknown, fallback: ServiceItem[]): ServiceItem[] {
-  if (!raw) return fallback;
+function normalizeServiceItems(raw: unknown, fallback: ServiceItem[]): ServiceListItem[] {
+  const defaultSlugs = [
+    "event-strategy",
+    "production-delivery",
+    "content-experience",
+    "coverage-broadcast",
+  ];
 
-  const mapItem = (item: unknown, index: number): ServiceItem => {
+  if (!raw) {
+    return fallback.map((item, index) => ({
+      slug: defaultSlugs[index] ?? `service-${index + 1}`,
+      title: item.title,
+      body: item.body,
+      description: item.body,
+      iconKey: ["strategy", "production", "content", "media"][index],
+    }));
+  }
+
+  const mapItem = (item: unknown, index: number): ServiceListItem => {
     if (typeof item === "string") {
-      return { title: item, body: fallback[index]?.body ?? "" };
+      return {
+        slug: defaultSlugs[index] ?? `service-${index + 1}`,
+        title: item,
+        body: fallback[index]?.body ?? "",
+        description: fallback[index]?.body ?? "",
+      };
     }
     if (item && typeof item === "object") {
       const obj = item as Record<string, unknown>;
+      const title = nonEmpty(obj.title) ?? fallback[index]?.title ?? "";
+      const body =
+        nonEmpty(obj.body) ??
+        nonEmpty(obj.description) ??
+        nonEmpty(obj.desc) ??
+        fallback[index]?.body ??
+        "";
+      const slug =
+        nonEmpty(obj.slug) ??
+        nonEmpty(obj.id) ??
+        defaultSlugs[index] ??
+        `service-${index + 1}`;
       return {
-        title: nonEmpty(obj.title) ?? fallback[index]?.title ?? "",
-        body:
-          nonEmpty(obj.body) ??
-          nonEmpty(obj.description) ??
-          nonEmpty(obj.desc) ??
-          fallback[index]?.body ??
-          "",
+        slug,
+        title,
+        body,
+        description: body,
+        shortLabel: nonEmpty(obj.shortLabel) ?? nonEmpty(obj.short_label) ?? undefined,
+        iconKey: nonEmpty(obj.iconKey) ?? nonEmpty(obj.icon_key) ?? undefined,
+        image: nonEmpty(obj.image) ? normalizeStorageImageUrl(String(obj.image)) : undefined,
       };
     }
-    return fallback[index] ?? { title: "", body: "" };
+    return {
+      slug: defaultSlugs[index] ?? `service-${index + 1}`,
+      title: fallback[index]?.title ?? "",
+      body: fallback[index]?.body ?? "",
+      description: fallback[index]?.body ?? "",
+    };
   };
 
   if (Array.isArray(raw)) {
@@ -415,12 +463,14 @@ function normalizeServiceItems(raw: unknown, fallback: ServiceItem[]): ServiceIt
       .map(([, item], index) => mapItem(item, index));
   }
 
-  return fallback;
+  return fallback.map((item, index) => mapItem(item, index));
 }
 
 function fallbackServices(dict: Dictionary): ServicesPageContent {
   const services = dict.pages.services as ServicesPageContent & {
     closing?: { text?: string };
+    items: ServiceItem[];
+    detailCta?: string;
   };
 
   return {
@@ -430,10 +480,15 @@ function fallbackServices(dict: Dictionary): ServicesPageContent {
     items: normalizeServiceItems(services.items, services.items),
     closingText: services.closing?.text ?? "",
     heroImage: "",
+    detailCta: services.detailCta ?? "",
   };
 }
 
-function mergeServices(apiContent: PageApiContent, dict: Dictionary): ServicesPageContent {
+function mergeServices(
+  apiContent: PageApiContent,
+  items: unknown[],
+  dict: Dictionary,
+): ServicesPageContent {
   const fallback = fallbackServices(dict);
   const closing = apiContent.closing;
 
@@ -443,24 +498,32 @@ function mergeServices(apiContent: PageApiContent, dict: Dictionary): ServicesPa
   }
 
   const images = mapImages(apiContent.images);
+  const listItems =
+    items.length > 0
+      ? normalizeServiceItems(items, fallback.items)
+      : normalizeServiceItems(apiContent.items, fallback.items);
 
   return {
     eyebrow: nonEmpty(apiContent.eyebrow) ?? fallback.eyebrow,
     title: nonEmpty(apiContent.title) ?? fallback.title,
     intro: nonEmpty(apiContent.intro) ?? fallback.intro,
-    items: normalizeServiceItems(apiContent.items, fallback.items),
+    items: listItems,
     closingText: closingText,
     heroImage: images[0] ?? "",
+    detailCta:
+      nonEmpty(apiContent.detailCta) ??
+      fallback.detailCta ??
+      "",
   };
 }
 
 export async function getServicesPageContent(locale: Locale): Promise<ServicesPageContent> {
   const dict = getDictionary(locale);
   const fallback = fallbackServices(dict);
-  const api = await fetchPageApi(locale, "services");
-  if (!api) return fallback;
+  const bundle = await fetchPageBundle(locale, "services");
+  if (!bundle) return fallback;
 
-  return mergeServices(api, dict);
+  return mergeServices(bundle.content, bundle.items, dict);
 }
 
 export interface ActivitiesListingContent {

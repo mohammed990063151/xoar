@@ -75,7 +75,7 @@ export function BookingBand({
           </motion.span>
           <motion.span whileHover={{ scale: 1.04 }}>
             <BookButton
-              type="booking"
+              type="contact"
               source="home-booking-band"
               className="inline-flex rounded-full border border-emerald-300/40 px-5 py-2.5 text-sm font-medium text-emerald-50 backdrop-blur-sm transition hover:bg-emerald-500/15"
             >

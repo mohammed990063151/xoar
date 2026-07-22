@@ -27,11 +27,7 @@ export function AddToCalendarButton({
   if (!enabled || !start) return null;
 
   const eventStart = start;
-
-  const pageUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}${localizedPath(locale, `/activities/${activity.slug}`)}`
-      : "";
+  const path = localizedPath(locale, `/activities/${activity.slug}`);
 
   function googleUrl(): string {
     const end = new Date(eventStart.getTime() + 2 * 60 * 60 * 1000);
@@ -47,12 +43,13 @@ export function AddToCalendarButton({
   }
 
   function downloadApple(): void {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const ics = buildActivityIcs({
       title: activity.title,
       description: activity.description,
       location: activity.location,
       start: eventStart,
-      url: pageUrl,
+      url: origin ? `${origin}${path}` : path,
     });
     downloadIcsFile(`${activity.slug}.ics`, ics);
   }

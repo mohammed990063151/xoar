@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
-import { portalPath } from "@/lib/portal-url";
+import { localizedPath } from "@/lib/i18n";
 
 interface HeaderAccountLinkProps {
   readonly locale: Locale;
@@ -34,8 +35,8 @@ export function HeaderAccountLink({
   const loginHint = locale === "ar" ? "الدخول إلى حسابك" : "Sign in to your account";
 
   return (
-    <a
-      href={portalPath("/login")}
+    <Link
+      href={localizedPath(locale, "/account")}
       className={cn(
         "inline-flex items-center justify-center gap-1.5 rounded-full border font-semibold transition",
         compact
@@ -52,6 +53,6 @@ export function HeaderAccountLink({
     >
       <UserIcon />
       <span className={compact ? "inline" : "hidden sm:inline"}>{label}</span>
-    </a>
+    </Link>
   );
 }

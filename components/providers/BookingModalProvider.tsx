@@ -16,6 +16,9 @@ export interface BookingModalOptions {
   type?: InquiryType;
   source?: string;
   title?: string;
+  /** Event inquiry: show preferred date + location fields */
+  variant?: "default" | "event";
+  activityId?: number;
 }
 
 interface BookingModalContextValue {
@@ -34,6 +37,8 @@ interface BookingModalProviderProps {
     readonly email: string;
     readonly phone: string;
     readonly message: string;
+    readonly preferredDate?: string;
+    readonly location?: string;
     readonly send: string;
     readonly success: string;
     readonly error: string;
