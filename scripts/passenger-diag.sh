@@ -29,6 +29,16 @@ next({dev:false}).prepare().then(()=>{console.log("prepare-ok");process.exit(0);
 ' || echo "prepare-exit=$?"
 echo
 
+echo "-- try server.js boot with nodevenv (12s) --"
+NODE_ENV=production timeout 12 "${NODE_BIN}" "${DEPLOY_PATH}/server.js" >"${DEPLOY_PATH}/tmp/server-boot.out" 2>"${DEPLOY_PATH}/tmp/server-boot.err" || echo "server-boot-exit=$?"
+echo "server-boot.out:"; head -n 40 "${DEPLOY_PATH}/tmp/server-boot.out" 2>/dev/null || true
+echo "server-boot.err:"; head -n 80 "${DEPLOY_PATH}/tmp/server-boot.err" 2>/dev/null || true
+echo
+
+echo "-- .htaccess passenger lines --"
+grep -nE 'Passenger|Nodejs' .htaccess 2>/dev/null || true
+echo
+
 echo "-- recent logs --"
 for f in \
   "$HOME/logs/error_log" \

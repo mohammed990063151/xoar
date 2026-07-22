@@ -231,7 +231,8 @@ jobs:
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
 
-          ssh $SSH_OPTS "$HOST" "mkdir -p '${DEPLOY_PATH}/tmp' && rm -f '${DEPLOY_PATH}/tmp/restart.txt' && touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt'"
+          ssh $SSH_OPTS "$HOST" \
+            "mkdir -p '${DEPLOY_PATH}/tmp' && rm -f '${DEPLOY_PATH}/tmp/restart.txt' && touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt' && (command -v cloudlinux-selector >/dev/null && cloudlinux-selector restart --json --interpreter nodejs --app-root '${DEPLOY_PATH}' || true)"
 
           echo "Waiting for Passenger cold start (Next prepare can take ~90s)..."
           # Double-quote SITE_URL so bash expands it (single quotes caused curl "Bad hostname").
@@ -251,11 +252,22 @@ jobs:
           ssh $SSH_OPTS "$HOST" \
             "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
             | tee /tmp/passenger-diag.txt || true
+
+          # Surface likely root-cause lines in Actions annotations (readable without downloading logs).
+          if [ -f /tmp/passenger-diag.txt ]; then
+            grep -E 'Error|error|ERR_|Cannot|failed|Exception|MODULE_NOT_FOUND|listen|Passenger|NODE_ENV|prepare-' /tmp/passenger-diag.txt \
+              | head -n 40 \
+              | while IFS= read -r line; do
+                  echo "::error::diag: ${line}"
+                done || true
+          fi
+
           echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."
           echo "::error::In cPanel → Setup Node.js App → Stop → Start the app, then check logs."
           exit 1
 
       - name: Tail server logs (best effort)
+        if: always()
         run: |
           set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"

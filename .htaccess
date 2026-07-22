@@ -4,6 +4,8 @@
   PassengerAppType node
   PassengerStartupFile server.js
   PassengerAppRoot /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
+  # Must match cPanel nodevenv or Passenger may start the wrong Node and fail boot.
+  PassengerNodejs /home/cjfyc2evye0k/nodevenv/public_html/xoraevents.com/xoar/24/bin/node
 </IfModule>
 
 Options -Indexes
