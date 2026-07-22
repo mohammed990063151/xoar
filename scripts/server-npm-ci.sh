@@ -34,10 +34,17 @@ export npm_config_fund=false
 # modules for application in ... " even though the install itself succeeds).
 if [ -f "${ACTIVATE}" ]; then
   echo "Activating CloudLinux nodevenv: ${ACTIVATE}"
+  # CloudLinux's activate script references its own internal vars (e.g.
+  # CL_VIRTUAL_ENV) without defaults, which trips our `set -u`. Relax nounset
+  # only for the duration of sourcing/deactivating this third-party script.
+  set +u
   # shellcheck disable=SC1090
   source "${ACTIVATE}"
+  set -u
   npm ci --omit=dev
+  set +u
   type deactivate >/dev/null 2>&1 && deactivate
+  set -u
 else
   echo "::warning::No nodevenv activate script at ${ACTIVATE} — falling back to direct npm invocation."
   "${NPM_BIN}" ci --omit=dev
