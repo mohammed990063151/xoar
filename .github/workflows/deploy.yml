@@ -236,10 +236,17 @@ jobs:
 
           echo "Waiting for Passenger cold start..."
           # Double-quote SITE_URL so bash expands it (single quotes caused curl "Bad hostname").
+          # Use a real browser UA/Accept so hosting-level bot/security filters don't
+          # misclassify this health check differently than actual visitor traffic.
+          BROWSER_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
           code="000"
           for attempt in 1 2 3; do
             sleep 12
-            code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 25 "${SITE_URL}/en" || echo err)"
+            code="$(curl -sS -o /tmp/xoar-live.html -D /tmp/xoar-live-headers.txt -w '%{http_code}' --max-time 25 \
+              -A "${BROWSER_UA}" \
+              -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+              -H "Accept-Language: en,ar;q=0.9" \
+              "${SITE_URL}/en" || echo err)"
             echo "live_http_attempt_${attempt}=${code} url=${SITE_URL}/en"
             if [ "${code}" = "200" ] || [ "${code}" = "301" ] || [ "${code}" = "302" ] || [ "${code}" = "308" ]; then
               echo "Live site healthy after Passenger restart (HTTP ${code}, attempt ${attempt})."
@@ -248,6 +255,9 @@ jobs:
           done
 
           echo "::warning::Live site returned ${code} after retries — collecting Passenger diagnostics (no auto-rollback)"
+          echo "-- response headers --"
+          cat /tmp/xoar-live-headers.txt 2>/dev/null || true
+          echo "-- response body (first 1200 bytes) --"
           head -c 1200 /tmp/xoar-live.html || true
           ssh $SSH_OPTS "$HOST" \
             "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
