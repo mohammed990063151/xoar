@@ -8,6 +8,7 @@ cd "${DEPLOY_PATH}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_BIN="$("${SCRIPT_DIR}/resolve-server-node.sh")"
 NPM_BIN="${NODE_BIN%/node}/npm"
+ACTIVATE="${NODE_BIN%/node}/activate"
 
 if [ ! -x "${NPM_BIN}" ]; then
   echo "::error::npm not found next to ${NODE_BIN}"
@@ -25,6 +26,21 @@ export NODE_ENV=production
 export npm_config_audit=false
 export npm_config_fund=false
 
-"${NPM_BIN}" ci --omit=dev
+# CloudLinux's Node.js Selector requires node_modules to be installed while its
+# "nodevenv" is activated — it manages where packages actually live and rejects
+# apps whose node_modules were created by invoking npm directly by path (this is
+# what the cPanel "Run NPM Install" button does internally; a bare `npm ci`
+# bypasses it and Passenger then refuses to start with "demands to store node
+# modules for application in ... " even though the install itself succeeds).
+if [ -f "${ACTIVATE}" ]; then
+  echo "Activating CloudLinux nodevenv: ${ACTIVATE}"
+  # shellcheck disable=SC1090
+  source "${ACTIVATE}"
+  npm ci --omit=dev
+  type deactivate >/dev/null 2>&1 && deactivate
+else
+  echo "::warning::No nodevenv activate script at ${ACTIVATE} — falling back to direct npm invocation."
+  "${NPM_BIN}" ci --omit=dev
+fi
 
 echo "server-npm-ci-ok"
