@@ -1,12 +1,6 @@
-# Passenger is required for this vhost — cPanel Node.js App alone is not enough.
-<IfModule mod_passenger.c>
-  PassengerEnabled on
-  PassengerAppType node
-  PassengerStartupFile server.js
-  PassengerAppRoot /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
-  # Must match cPanel nodevenv or Passenger may start the wrong Node and fail boot.
-  PassengerNodejs /home/cjfyc2evye0k/nodevenv/public_html/xoraevents.com/xoar/24/bin/node
-</IfModule>
+# cPanel "Setup Node.js App" already configures Passenger for this vhost.
+# Do NOT set Passenger* directives here — they conflict and cause HTTP 500.
+# Startup file must remain server.js in cPanel.
 
 Options -Indexes
 
@@ -25,6 +19,9 @@ Options -Indexes
     Require all denied
   </Files>
   <Files "boot-diag.txt">
+    Require all denied
+  </Files>
+  <Files "boot-error.log">
     Require all denied
   </Files>
 </IfModule>

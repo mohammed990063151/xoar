@@ -1,23 +1,35 @@
 /**
- * Phusion Passenger entry (cPanel Node.js).
- * Set "Application startup file" to server.js in cPanel.
- * Application mode must be Production.
+ * Phusion Passenger / cPanel Node.js entry.
+ * cPanel → Setup Node.js App → startup file = server.js, mode = Production.
  *
- * Under Apache mod_passenger, the process must listen on the Passenger socket.
- * Binding 0.0.0.0/PORT makes Passenger report: "Web application could not be started".
+ * CloudLinux injects PhusionPassenger — listen on the passenger socket.
+ * Do not duplicate Passenger* directives in .htaccess (cPanel owns that config).
  */
 process.env.NODE_ENV = "production";
+
+const fs = require("fs");
+const path = require("path");
+const http = require("http");
+const next = require("next");
+const { parse } = require("url");
+
+function logBoot(msg, err) {
+  const line = `[xoar-boot] ${new Date().toISOString()} ${msg}${err ? ` ${err && err.stack ? err.stack : err}` : ""}`;
+  console.error(line);
+  try {
+    const dir = path.join(__dirname, "tmp");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, "boot-error.log"), `${line}\n`);
+  } catch (_) {
+    /* ignore */
+  }
+}
 
 if (typeof PhusionPassenger !== "undefined") {
   PhusionPassenger.configure({ autoInstall: false });
 }
 
-const http = require("http");
-const next = require("next");
-const { parse } = require("url");
-
 const port = Number(process.env.PORT || 3000);
-
 const app = next({ dev: false });
 const handle = app.getRequestHandler();
 
@@ -29,7 +41,7 @@ app
     });
 
     server.on("error", (err) => {
-      console.error("next-server-listen-failed", err);
+      logBoot("listen-failed", err);
       process.exit(1);
     });
 
@@ -40,12 +52,12 @@ app
       return;
     }
 
-    // Local / CI boot checks (no PhusionPassenger global).
-    server.listen(port, "127.0.0.1", () => {
+    // SSH / CI checks (no Passenger global): bind PORT only.
+    server.listen(port, () => {
       console.log(`next-server-ready port=${port}`);
     });
   })
   .catch((err) => {
-    console.error("next-server-failed", err);
+    logBoot("prepare-failed", err);
     process.exit(1);
   });

@@ -253,10 +253,10 @@ jobs:
             "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
             | tee /tmp/passenger-diag.txt || true
 
-          # Surface likely root-cause lines in Actions annotations (readable without downloading logs).
+          # Only annotate real failure signals (avoid matching comments in server.js).
           if [ -f /tmp/passenger-diag.txt ]; then
-            grep -E 'Error|error|ERR_|Cannot|failed|Exception|MODULE_NOT_FOUND|listen|Passenger|NODE_ENV|prepare-' /tmp/passenger-diag.txt \
-              | head -n 40 \
+            grep -E 'prepare-fail|prepare-exit=|server-boot-exit=|MODULE_NOT_FOUND|Error:|EADDRINUSE|xoar-boot|BUILD_ID=missing' /tmp/passenger-diag.txt \
+              | head -n 30 \
               | while IFS= read -r line; do
                   echo "::error::diag: ${line}"
                 done || true
