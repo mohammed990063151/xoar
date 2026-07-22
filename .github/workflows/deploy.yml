@@ -230,27 +230,30 @@ jobs:
           set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
           HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
-          ssh $SSH_OPTS "$HOST" \
-            "touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt'"
 
-          echo "Waiting for Passenger restart (25s)..."
-          sleep 25
+          ssh $SSH_OPTS "$HOST" "mkdir -p '${DEPLOY_PATH}/tmp' && rm -f '${DEPLOY_PATH}/tmp/restart.txt' && touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt'"
 
-          echo "Live HTTP probe..."
+          echo "Waiting for Passenger cold start (Next prepare can take ~90s)..."
           # Double-quote SITE_URL so bash expands it (single quotes caused curl "Bad hostname").
-          code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 40 "${SITE_URL}/en" || echo err)"
-          echo "live_http=${code} url=${SITE_URL}/en"
-          if [ "${code}" != "200" ] && [ "${code}" != "301" ] && [ "${code}" != "302" ] && [ "${code}" != "308" ]; then
-            echo "::warning::Live site returned ${code} — collecting Passenger diagnostics (no auto-rollback)"
-            head -c 800 /tmp/xoar-live.html || true
-            ssh $SSH_OPTS "$HOST" \
-              "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
-              | tee /tmp/passenger-diag.txt || true
-            echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."
-            echo "::error::In cPanel → Setup Node.js App → Stop → Start the app, then check logs."
-            exit 1
-          fi
-          echo "Live site healthy after Passenger restart (HTTP ${code})."
+          code="000"
+          for attempt in 1 2 3 4 5 6; do
+            sleep 20
+            code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 40 "${SITE_URL}/en" || echo err)"
+            echo "live_http_attempt_${attempt}=${code} url=${SITE_URL}/en"
+            if [ "${code}" = "200" ] || [ "${code}" = "301" ] || [ "${code}" = "302" ] || [ "${code}" = "308" ]; then
+              echo "Live site healthy after Passenger restart (HTTP ${code}, attempt ${attempt})."
+              exit 0
+            fi
+          done
+
+          echo "::warning::Live site returned ${code} after retries — collecting Passenger diagnostics (no auto-rollback)"
+          head -c 1200 /tmp/xoar-live.html || true
+          ssh $SSH_OPTS "$HOST" \
+            "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
+            | tee /tmp/passenger-diag.txt || true
+          echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."
+          echo "::error::In cPanel → Setup Node.js App → Stop → Start the app, then check logs."
+          exit 1
 
       - name: Tail server logs (best effort)
         run: |
