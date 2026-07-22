@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 
 export interface ActivityCardData {
   readonly id: string;
+  readonly activityId?: number;
   readonly title: string;
   readonly description: string;
   readonly image: string;
@@ -127,7 +128,7 @@ export function ActivityCard({
           type="contact"
           source={`activity:${activity.id}`}
           title={`${formTitle} — ${activity.title}`}
-          activityId={activity.id}
+          activityId={activity.activityId}
           className="flex w-full items-center justify-center rounded-full bg-gradient-to-l from-violet-600 via-purple-600 to-cyan-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-900/30 sm:py-4 sm:text-base"
         >
           {bookCta}
