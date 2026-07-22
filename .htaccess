@@ -1,9 +1,5 @@
-<IfModule mod_passenger.c>
-  PassengerEnabled on
-  PassengerAppType node
-  PassengerStartupFile server.js
-  PassengerAppRoot /home/cjfyc2evye0k/public_html/xoraevents.com/xoar
-</IfModule>
+# cPanel "Setup Node.js App" already configures Passenger.
+# Do NOT set Passenger* directives here — they conflict and cause Apache/Passenger 500s.
 
 Options -Indexes
 

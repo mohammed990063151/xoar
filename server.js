@@ -3,8 +3,7 @@
  * Set "Application startup file" to server.js in cPanel.
  * Application mode must be Production.
  *
- * cPanel sometimes injects a non-standard NODE_ENV (not development|production|test).
- * Force production before loading Next so Passenger can boot the app.
+ * cPanel may inject a non-standard NODE_ENV — force production before loading Next.
  */
 process.env.NODE_ENV = "production";
 
@@ -17,18 +16,22 @@ const port = Number(process.env.PORT || 3000);
 const app = next({ dev: false });
 const handle = app.getRequestHandler();
 
-// Passenger sets process.env.PORT — bind to it (works on cPanel shared hosting).
 app
   .prepare()
   .then(() => {
-    http
-      .createServer((req, res) => {
-        handle(req, res, parse(req.url, true));
-      })
-      .listen(port, "0.0.0.0", (err) => {
-        if (err) throw err;
-        console.log(`next-server-ready port=${port}`);
-      });
+    const server = http.createServer((req, res) => {
+      handle(req, res, parse(req.url, true));
+    });
+
+    // cPanel Node.js / Passenger sets PORT. Do not bind 0.0.0.0 (EADDRINUSE / startup fail).
+    server.listen(port, () => {
+      console.log(`next-server-ready port=${port}`);
+    });
+
+    server.on("error", (err) => {
+      console.error("next-server-listen-failed", err);
+      process.exit(1);
+    });
   })
   .catch((err) => {
     console.error("next-server-failed", err);

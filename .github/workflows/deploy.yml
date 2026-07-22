@@ -62,7 +62,7 @@ jobs:
       - name: Validate build output
         run: |
           set -euo pipefail
-          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh
+          chmod +x scripts/verify-deployment.sh scripts/backup-deployment.sh scripts/rollback-deployment.sh scripts/fix-deploy-permissions.sh scripts/server-next-check.sh scripts/resolve-server-node.sh scripts/server-npm-ci.sh scripts/merge-server-env.sh scripts/passenger-diag.sh
           DEPLOY_PATH="." MODE=ci scripts/verify-deployment.sh
           echo "Local BUILD_ID=$(cat .next/BUILD_ID)"
 
@@ -229,8 +229,25 @@ jobs:
         run: |
           set -euo pipefail
           SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-          ssh $SSH_OPTS "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" \
+          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+          ssh $SSH_OPTS "$HOST" \
             "touch '${DEPLOY_PATH}/tmp/restart.txt' && ls -la '${DEPLOY_PATH}/tmp/restart.txt'"
+
+          echo "Waiting for Passenger restart (25s)..."
+          sleep 25
+
+          echo "Live HTTP probe..."
+          code="$(curl -sS -o /tmp/xoar-live.html -w '%{http_code}' --max-time 40 '${SITE_URL}/en' || echo err)"
+          echo "live_http=${code}"
+          if [ "${code}" != "200" ] && [ "${code}" != "301" ] && [ "${code}" != "302" ] && [ "${code}" != "308" ]; then
+            echo "::warning::Live site returned ${code} — collecting Passenger diagnostics"
+            head -c 500 /tmp/xoar-live.html || true
+            ssh $SSH_OPTS "$HOST" \
+              "chmod +x '${DEPLOY_PATH}/scripts/passenger-diag.sh' && DEPLOY_PATH='${DEPLOY_PATH}' '${DEPLOY_PATH}/scripts/passenger-diag.sh'" \
+              | tee /tmp/passenger-diag.txt || true
+            echo "::error::Passenger/live site unhealthy after restart (HTTP ${code}). See diagnostics above."
+            exit 1
+          fi
 
       - name: Tail server logs (best effort)
         run: |
