@@ -240,9 +240,10 @@ jobs:
           # misclassify this health check differently than actual visitor traffic.
           BROWSER_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
           code="000"
-          for attempt in 1 2 3; do
-            sleep 12
-            code="$(curl -sS -o /tmp/xoar-live.html -D /tmp/xoar-live-headers.txt -w '%{http_code}' --max-time 25 \
+          # Cold starts on cPanel/Passenger often need 60–90s; give more attempts.
+          for attempt in 1 2 3 4 5 6 7 8; do
+            sleep 15
+            code="$(curl -sS -o /tmp/xoar-live.html -D /tmp/xoar-live-headers.txt -w '%{http_code}' --max-time 30 \
               -A "${BROWSER_UA}" \
               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
               -H "Accept-Language: en,ar;q=0.9" \
@@ -251,6 +252,10 @@ jobs:
             if [ "${code}" = "200" ] || [ "${code}" = "301" ] || [ "${code}" = "302" ] || [ "${code}" = "308" ]; then
               echo "Live site healthy after Passenger restart (HTTP ${code}, attempt ${attempt})."
               exit 0
+            fi
+            # 503 during boot is expected — keep waiting.
+            if [ "${code}" = "503" ] || [ "${code}" = "502" ] || [ "${code}" = "000" ] || [ "${code}" = "err" ]; then
+              echo "Still warming up (HTTP ${code}); retrying..."
             fi
           done
 
@@ -287,15 +292,38 @@ jobs:
 
       - name: Tail server logs (best effort)
         if: failure()
+        continue-on-error: true
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          set -euo pipefail
-          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o BatchMode=yes"
-          HOST="${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}"
+          # Must never fail the job — diagnostics only.
+          set +e
+          if [ -z "${SSH_PRIVATE_KEY:-}" ] || [ -z "${SSH_HOST:-}" ] || [ -z "${SSH_USERNAME:-}" ]; then
+            echo "::warning::SSH secrets unavailable; skipping remote log tail."
+            exit 0
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${SSH_PORT:-22}" "${SSH_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          SSH_OPTS="-i ~/.ssh/id_ed25519 -p ${SSH_PORT:-22} -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=15"
+          HOST="${SSH_USERNAME}@${SSH_HOST}"
+
+          if ! ssh $SSH_OPTS "$HOST" "echo SSH_OK"; then
+            echo "::warning::Could not SSH for log tail (Permission denied or host unreachable). Deploy failure reason is above, not this step."
+            exit 0
+          fi
 
           ssh $SSH_OPTS "$HOST" "TERM=dumb bash -c '
             set +e
             echo \"== server diagnostics (best effort) ==\"
-            echo \"whoami=$(whoami)\"; echo \"pwd=$(pwd)\"; echo \"home=$HOME\"
+            echo \"whoami=\$(whoami)\"; echo \"pwd=\$(pwd)\"; echo \"home=\$HOME\"
             echo \"DEPLOY_PATH=${DEPLOY_PATH}\"
             echo
             echo \"-- ls: \$HOME/logs --\"
@@ -338,7 +366,8 @@ jobs:
                 tail -n 160 \"\$f\" 2>/dev/null || true
               fi
             done
-          '"
+          '" || echo "::warning::Remote log tail command failed (ignored)."
+          exit 0
 
       - name: Verify remote files
         run: |
