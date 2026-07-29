@@ -7,7 +7,8 @@ type LenisLike = {
 };
 
 let lenisInstance: LenisLike | null = null;
-let scrollTopTimers: ReturnType<typeof setTimeout>[] = [];
+/** DOM timer ids (number). Avoid `ReturnType<typeof setTimeout>` — Node typings use `Timeout`. */
+let scrollTopTimers: number[] = [];
 
 export function setLenisInstance(instance: LenisLike | null): void {
   lenisInstance = instance;
