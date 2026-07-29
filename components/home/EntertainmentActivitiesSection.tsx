@@ -48,6 +48,7 @@ export function EntertainmentActivitiesSection({
             <div className="flex w-full flex-col gap-2 sm:w-auto">
               <Link
                 href={activitiesPath}
+                scroll={false}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-5 py-2.5 text-sm font-medium text-violet-100 transition hover:border-violet-400/50 hover:bg-violet-500/20 sm:w-auto"
               >
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600/40" aria-hidden>

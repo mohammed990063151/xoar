@@ -11,6 +11,7 @@ import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import { ActivityCardMediaSlider } from "@/components/ui/ActivityCardMediaSlider";
 import type { ActivityCardMediaSlide } from "@/components/ui/ActivityCardMediaSlider";
 import { ActivityCardMediaOverlays } from "@/components/features/ActivityCardMediaOverlays";
+import { ActivityOfferPeriod } from "@/components/features/ActivityOfferPeriod";
 import { BookingCountdown } from "@/components/features/BookingCountdown";
 import type { ActivityCardSocialProofData } from "@/types/activity-card-social";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -39,6 +40,8 @@ export interface ActivityCardData {
   readonly rating?: number;
   readonly reviewsCount?: number;
   readonly socialProofCard?: ActivityCardSocialProofData | null;
+  readonly offerPeriod?: string;
+  readonly offerPeriodActive?: boolean;
   readonly showWishlist?: boolean;
   readonly cardHighlight?: {
     label: string;
@@ -133,7 +136,11 @@ export function ActivityCard({
       ? activity.socialProofCard.rating
       : null;
   const monthlyBookings = proofOn ? (activity.socialProofCard?.monthlyBookings ?? 0) : 0;
-  const offerPeriod = proofOn ? activity.socialProofCard?.offerPeriod?.trim() : "";
+  const offerPeriod =
+    activity.offerPeriod?.trim() ||
+    (proofOn ? activity.socialProofCard?.offerPeriod?.trim() : "") ||
+    "";
+  const offerPeriodActive = Boolean(activity.offerPeriodActive);
   const periodHint =
     highlightHintResolved?.trim() && highlightHintResolved.trim() !== offerPeriod
       ? highlightHintResolved.trim()
@@ -239,9 +246,18 @@ export function ActivityCard({
                       </span>
                     ) : null}
                     {periodLabel ? (
-                      <span className={cn(statChipClass, "border-amber-400/30 text-amber-100")}>
-                        {periodLabel}
-                      </span>
+                      offerPeriod ? (
+                        <ActivityOfferPeriod
+                          locale={locale}
+                          offerPeriod={offerPeriod}
+                          active={offerPeriodActive}
+                          variant="card"
+                        />
+                      ) : (
+                        <span className={cn(statChipClass, "border-amber-400/30 text-amber-100")}>
+                          {periodLabel}
+                        </span>
+                      )
                     ) : null}
                   </div>
                 ) : null}
@@ -257,7 +273,7 @@ export function ActivityCard({
             </span>
           ) : null}
 
-          <Link href={path}>
+          <Link href={path} scroll={false}>
             <h3 className="line-clamp-1 text-sm font-bold leading-snug text-white transition group-hover:text-purple-200 sm:text-base">
               {activity.title}
             </h3>
@@ -301,7 +317,7 @@ export function ActivityCard({
               {bookCta}
             </button>
           ) : (
-            <Link href={ctaPath} className={cn(bookButtonClass, "mt-1")}>
+            <Link href={ctaPath} scroll={false} className={cn(bookButtonClass, "mt-1")}>
               {bookCta}
             </Link>
           )}

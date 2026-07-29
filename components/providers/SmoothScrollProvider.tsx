@@ -1,9 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { setLenisInstance } from "@/lib/scroll-to";
+import {
+  cancelScheduledScrollToTop,
+  scheduleScrollToTop,
+  setLenisInstance,
+} from "@/lib/scroll-to";
 
 export interface LenisScrollState {
   readonly scrollY: number;
@@ -44,10 +49,32 @@ interface SmoothScrollProviderProps {
 export function SmoothScrollProvider({
   children,
 }: SmoothScrollProviderProps): React.ReactElement {
+  const pathname = usePathname();
+  const previousPathname = useRef<string | null>(null);
   const [scrollState, setScrollState] = useState<LenisScrollState>({
     scrollY: 0,
     direction: 0,
   });
+
+  useEffect(() => {
+    const isNavigation =
+      previousPathname.current !== null && previousPathname.current !== pathname;
+    previousPathname.current = pathname;
+
+    if (!isNavigation || window.location.hash.length > 1) {
+      return;
+    }
+
+    scheduleScrollToTop();
+    const refreshId = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+
+    return () => {
+      window.clearTimeout(refreshId);
+      cancelScheduledScrollToTop();
+    };
+  }, [pathname]);
 
   useEffect(() => {
     const preferNativeScroll =

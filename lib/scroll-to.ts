@@ -3,9 +3,11 @@ type LenisLike = {
     target: number | string | HTMLElement,
     options?: { offset?: number; immediate?: boolean; duration?: number },
   ) => void;
+  scroll?: number;
 };
 
 let lenisInstance: LenisLike | null = null;
+let scrollTopTimers: ReturnType<typeof setTimeout>[] = [];
 
 export function setLenisInstance(instance: LenisLike | null): void {
   lenisInstance = instance;
@@ -13,6 +15,59 @@ export function setLenisInstance(instance: LenisLike | null): void {
 
 export function getLenisInstance(): LenisLike | null {
   return lenisInstance;
+}
+
+export function enableManualScrollRestoration(): void {
+  if (typeof window === "undefined") return;
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
+}
+
+/** Scroll the viewport to the top (works with Lenis and native scroll). */
+export function scrollToTop(options?: { immediate?: boolean }): void {
+  if (typeof window === "undefined") return;
+
+  const immediate = options?.immediate ?? true;
+  const lenis = getLenisInstance();
+
+  if (lenis) {
+    lenis.scrollTo(0, { immediate });
+    if (typeof lenis.scroll === "number" && lenis.scroll > 0 && immediate) {
+      lenis.scrollTo(0, { immediate: true });
+    }
+  }
+
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: immediate ? "auto" : "smooth",
+  });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
+/** Force top-of-page after route changes (retries beat Lenis / late layout). */
+export function scheduleScrollToTop(): void {
+  if (typeof window === "undefined") return;
+
+  scrollTopTimers.forEach(clearTimeout);
+  scrollTopTimers = [];
+
+  scrollToTop({ immediate: true });
+
+  for (const ms of [0, 16, 50, 100, 200, 400, 600, 900]) {
+    scrollTopTimers.push(
+      window.setTimeout(() => {
+        scrollToTop({ immediate: true });
+      }, ms),
+    );
+  }
+}
+
+export function cancelScheduledScrollToTop(): void {
+  scrollTopTimers.forEach(clearTimeout);
+  scrollTopTimers = [];
 }
 
 const HEADER_OFFSET = -100;

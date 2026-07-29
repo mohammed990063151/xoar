@@ -957,3 +957,167 @@ export async function getBlogPostBySlug(
   const content = await getBlogPageContent(locale);
   return content.posts.find((post) => post.slug === slug) ?? null;
 }
+
+export interface NationalDayOffering {
+  title: string;
+  description: string;
+  image: string;
+}
+
+export interface NationalDayPageContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  cta: string;
+  ctaSecondary: string;
+  offeringsTitle: string;
+  offeringsIntro: string;
+  offerings: NationalDayOffering[];
+  galleryTitle: string;
+  galleryIntro: string;
+  formEyebrow: string;
+  formTitle: string;
+  formIntro: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferredDate: string;
+  location: string;
+  guestsCount: string;
+  interest: string;
+  message: string;
+  submit: string;
+  sending: string;
+  successTitle: string;
+  success: string;
+  sendAnother: string;
+  images: string[];
+}
+
+const FALLBACK_NATIONAL_DAY_IMAGES = [
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&q=80",
+  "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200&q=80",
+  "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&q=80",
+  "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=80",
+  "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=1200&q=80",
+  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200&q=80",
+];
+
+function normalizeNationalDayOfferings(
+  raw: unknown,
+  fallback: NationalDayOffering[],
+): NationalDayOffering[] {
+  if (!raw) return fallback;
+
+  const entries = Array.isArray(raw)
+    ? raw
+    : typeof raw === "object"
+      ? Object.entries(raw as Record<string, unknown>)
+          .sort(([a], [b]) => Number(a) - Number(b))
+          .map(([, item]) => item)
+      : [];
+
+  if (entries.length === 0) return fallback;
+
+  return entries.map((item, index) => {
+    if (!item || typeof item !== "object") {
+      return fallback[index] ?? { title: "", description: "", image: "" };
+    }
+    const obj = item as Record<string, unknown>;
+    const imageRaw = nonEmpty(obj.image) ?? fallback[index]?.image ?? "";
+    return {
+      title: nonEmpty(obj.title) ?? fallback[index]?.title ?? "",
+      description:
+        nonEmpty(obj.description) ??
+        nonEmpty(obj.desc) ??
+        fallback[index]?.description ??
+        "",
+      image: imageRaw ? normalizeStorageImageUrl(imageRaw) : fallback[index]?.image ?? "",
+    };
+  });
+}
+
+function fallbackNationalDay(dict: Dictionary): NationalDayPageContent {
+  const page = dict.pages.nationalDay;
+  const offerings = (page.offerings ?? []).map((item) => ({
+    title: item.title,
+    description: item.desc,
+    image: item.image,
+  }));
+
+  return {
+    eyebrow: page.eyebrow,
+    title: page.title,
+    intro: page.intro,
+    cta: page.cta,
+    ctaSecondary: page.ctaSecondary,
+    offeringsTitle: page.offeringsTitle,
+    offeringsIntro: page.offeringsIntro,
+    offerings,
+    galleryTitle: page.galleryTitle,
+    galleryIntro: page.galleryIntro,
+    formEyebrow: page.formEyebrow,
+    formTitle: page.formTitle,
+    formIntro: page.formIntro,
+    name: page.name,
+    email: page.email,
+    phone: page.phone,
+    preferredDate: page.preferredDate,
+    location: page.location,
+    guestsCount: page.guestsCount,
+    interest: page.interest,
+    message: page.message,
+    submit: page.submit,
+    sending: page.sending,
+    successTitle: page.successTitle,
+    success: page.success,
+    sendAnother: page.sendAnother,
+    images: FALLBACK_NATIONAL_DAY_IMAGES,
+  };
+}
+
+function mergeNationalDay(apiContent: PageApiContent, dict: Dictionary): NationalDayPageContent {
+  const fallback = fallbackNationalDay(dict);
+  const images = mapImages(apiContent.images);
+
+  return {
+    eyebrow: nonEmpty(apiContent.eyebrow) ?? fallback.eyebrow,
+    title: nonEmpty(apiContent.title) ?? fallback.title,
+    intro: nonEmpty(apiContent.intro) ?? fallback.intro,
+    cta: nonEmpty(apiContent.cta) ?? fallback.cta,
+    ctaSecondary: nonEmpty(apiContent.ctaSecondary) ?? fallback.ctaSecondary,
+    offeringsTitle: nonEmpty(apiContent.offeringsTitle) ?? fallback.offeringsTitle,
+    offeringsIntro: nonEmpty(apiContent.offeringsIntro) ?? fallback.offeringsIntro,
+    offerings: normalizeNationalDayOfferings(apiContent.offerings, fallback.offerings),
+    galleryTitle: nonEmpty(apiContent.galleryTitle) ?? fallback.galleryTitle,
+    galleryIntro: nonEmpty(apiContent.galleryIntro) ?? fallback.galleryIntro,
+    formEyebrow: nonEmpty(apiContent.formEyebrow) ?? fallback.formEyebrow,
+    formTitle: nonEmpty(apiContent.formTitle) ?? fallback.formTitle,
+    formIntro: nonEmpty(apiContent.formIntro) ?? fallback.formIntro,
+    name: nonEmpty(apiContent.name) ?? fallback.name,
+    email: nonEmpty(apiContent.email) ?? fallback.email,
+    phone: nonEmpty(apiContent.phone) ?? fallback.phone,
+    preferredDate: nonEmpty(apiContent.preferredDate) ?? fallback.preferredDate,
+    location: nonEmpty(apiContent.location) ?? fallback.location,
+    guestsCount: nonEmpty(apiContent.guestsCount) ?? fallback.guestsCount,
+    interest: nonEmpty(apiContent.interest) ?? fallback.interest,
+    message: nonEmpty(apiContent.message) ?? fallback.message,
+    submit: nonEmpty(apiContent.submit) ?? fallback.submit,
+    sending: nonEmpty(apiContent.sending) ?? fallback.sending,
+    successTitle: nonEmpty(apiContent.successTitle) ?? fallback.successTitle,
+    success: nonEmpty(apiContent.success) ?? fallback.success,
+    sendAnother: nonEmpty(apiContent.sendAnother) ?? fallback.sendAnother,
+    images: images.length > 0 ? images : fallback.images,
+  };
+}
+
+export async function getNationalDayPageContent(
+  locale: Locale,
+): Promise<NationalDayPageContent> {
+  const dict = getDictionary(locale);
+  const fallback = fallbackNationalDay(dict);
+  const api = await fetchPageApi(locale, "national-day");
+  if (!api) return fallback;
+
+  return mergeNationalDay(api, dict);
+}

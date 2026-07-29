@@ -60,6 +60,8 @@ export function normalizeActivityFromApi(raw: Activity): Activity {
     original_price: raw.original_price ?? ext.originalPrice ?? raw.originalPrice ?? raw.price,
     activeCoupon: raw.activeCoupon ?? (raw as Activity & { active_coupon?: Activity["activeCoupon"] }).active_coupon,
     countdown: raw.countdown ?? undefined,
+    offerPeriod: raw.offerPeriod ?? undefined,
+    offerPeriodActive: raw.offerPeriodActive ?? undefined,
     gallery_urls: raw.gallery_urls ?? raw.gallery ?? ext.galleryUrls,
     gallery: raw.gallery ?? raw.gallery_urls ?? ext.galleryUrls,
   };
@@ -185,6 +187,8 @@ export function toActivityCardData(activity: Activity): ActivityCardData {
     rating: activity.rating,
     reviewsCount: activity.reviews_count ?? ext.reviewsCount,
     socialProofCard: activity.socialProofCard ?? undefined,
+    offerPeriod: activity.offerPeriod ?? activity.socialProofCard?.offerPeriod ?? undefined,
+    offerPeriodActive: activity.offerPeriodActive ?? undefined,
     showWishlist: activity.showWishlist ?? activity.socialProofCard?.wishlistEnabled ?? true,
     cardHighlight: activity.cardHighlight
       ? {

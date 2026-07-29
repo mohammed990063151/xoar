@@ -5,17 +5,19 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HeaderAccountLink } from "@/components/layout/HeaderAccountLink";
 import { HeaderCta } from "@/components/layout/HeaderCta";
-import { XoraLogo } from "@/components/brand/XoraLogo";
+import { SiteLogo } from "@/components/brand/SiteLogo";
 import { cn } from "@/lib/cn";
 import { siteContainer } from "@/lib/layout";
 import { useHeaderPinned } from "@/hooks/useHeaderPinned";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath, resolveHref } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
+import type { SiteSettings } from "@/services/contentService";
 
 interface HeaderProps {
   readonly locale: Locale;
   readonly nav: Dictionary["nav"];
+  readonly settings?: SiteSettings;
 }
 
 const navKeys = [
@@ -25,6 +27,7 @@ const navKeys = [
   { href: "/works", key: "works" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/national-day", key: "nationalDay" as const },
   { href: "/partners", key: "partners" as const },
   { href: "/blog", key: "blog" as const },
   { href: "/careers", key: "careers" as const },
@@ -63,7 +66,7 @@ function NavTextLink({
     <Link
       href={href}
       prefetch={prefetchRoutes}
-      scroll={!isExactPage}
+      scroll={false}
       onClick={(e) => {
         if (isExactPage) e.preventDefault();
       }}
@@ -87,6 +90,7 @@ function NavTextLink({
 export function Header({
   locale,
   nav,
+  settings,
 }: HeaderProps): React.ReactElement {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -131,9 +135,13 @@ export function Header({
         <Link
           href={localizedPath(locale, "/")}
           className="min-w-0 shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500/80"
-          aria-label="xora"
+          aria-label={settings?.companyName?.trim() || "xora"}
         >
-          <XoraLogo size="md" />
+          <SiteLogo
+            logoUrl={settings?.logo}
+            alt={settings?.companyName?.trim() || "xora"}
+            size="md"
+          />
         </Link>
 
         <nav className="hidden min-w-0 items-center gap-4 lg:flex xl:gap-6" aria-label="Main">
@@ -226,7 +234,7 @@ export function Header({
                     key={href}
                     href={resolved}
                     prefetch={prefetchRoutes}
-                    scroll={!isExactPage}
+                    scroll={false}
                     onClick={(e) => {
                       if (isExactPage) e.preventDefault();
                       setOpen(false);

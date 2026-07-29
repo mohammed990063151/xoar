@@ -5,6 +5,7 @@ import { ActivitiesFilters, type ActivitiesFilterState } from "@/components/acti
 import { ActivityCardGrid } from "@/components/activities/ActivityCardGrid";
 import { normalizeActivityFromApi } from "@/lib/activity";
 import { bookingLabels } from "@/lib/booking-labels";
+import { scheduleScrollToTop } from "@/lib/scroll-to";
 import type { ActivitiesListingContent } from "@/lib/site-page";
 import { activitiesService } from "@/services/activitiesService";
 import {
@@ -65,6 +66,13 @@ export function ActivitiesDiscover({
     category: "",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.hash.length > 1) {
+      return;
+    }
+    scheduleScrollToTop();
+  }, []);
 
   const categories = useMemo(() => {
     const set = new Set<string>();

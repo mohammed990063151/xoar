@@ -56,6 +56,7 @@ export type ServiceDetail = ServiceListItem & {
 export type SiteSettings = {
   companyName?: string;
   tagline?: string;
+  logo?: string;
   website?: string;
   address?: string;
   city?: string;
@@ -117,6 +118,7 @@ function mergePages(
     careers: { ...dictPages.careers, ...apiPages.careers },
     blog: { ...dictPages.blog, ...apiPages.blog },
     requestEvent: { ...dictPages.requestEvent, ...apiPages.requestEvent },
+    nationalDay: { ...dictPages.nationalDay, ...apiPages.nationalDay },
     contact: { ...dictPages.contact, ...apiPages.contact },
   };
 }

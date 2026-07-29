@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { DeferredClientWidgets } from "@/components/layout/DeferredClientWidgets";
 import { LocaleAttributes } from "@/components/providers/LocaleAttributes";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
+import { ScrollToTopOnNavigate } from "@/components/providers/ScrollToTopOnNavigate";
 import { BookingModalProvider } from "@/components/providers/BookingModalProvider";
 import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
@@ -79,11 +80,12 @@ export default async function LocaleLayout({
   return (
     <LocaleAttributes locale={locale}>
       <SmoothScrollProvider>
+        <ScrollToTopOnNavigate />
         <BookingModalProvider locale={locale} labels={dict.inquiryForm}>
           <div
             className={`${locale === "ar" ? tajawal.variable : outfit.variable} ${fontClass} flex min-h-screen min-w-0 flex-col overflow-x-clip`}
           >
-            <Header locale={locale} nav={dict.nav} />
+            <Header locale={locale} nav={dict.nav} settings={dict.settings} />
             <main className="flex-1 min-w-0 overflow-x-clip pb-[5.5rem] sm:pb-[4.5rem]">{children}</main>
             <Footer
               locale={locale}

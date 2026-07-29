@@ -15,6 +15,7 @@ const staticPaths = [
   "/careers",
   "/contact",
   "/request-event",
+  "/national-day",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -102,6 +102,8 @@ export interface Activity {
     endsAt?: string | null;
     leadHours?: number;
   } | null;
+  offerPeriod?: string | null;
+  offerPeriodActive?: boolean;
   showWishlist?: boolean;
   provider_id?: number;
   provider?: { id: number; name: string };

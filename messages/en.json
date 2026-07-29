@@ -7,6 +7,7 @@
     "works": "Our work",
     "events": "Our events",
     "activities": "Entertainment",
+    "nationalDay": "National Day",
     "partners": "Partners",
     "blog": "Xora Blog",
     "careers": "Careers",
@@ -426,6 +427,65 @@
       "sending": "Sending…",
       "successTitle": "Request submitted",
       "success": "Thank you — our team will review your request and contact you soon.",
+      "sendAnother": "Submit another request"
+    },
+    "nationalDay": {
+      "eyebrow": "Saudi National Day",
+      "title": "Celebrations worthy of the Kingdom",
+      "intro": "Xora builds National Day atmospheres end to end — LED screens, pro sound, gifts, beverages, and interactive games that spark national pride.",
+      "cta": "Request your celebration",
+      "ctaSecondary": "Explore what we offer",
+      "offeringsTitle": "What we bring to the celebration",
+      "offeringsIntro": "A complete package ready for guests and energy — pick what you need or request the full experience.",
+      "offerings": [
+        {
+          "title": "Display screens",
+          "desc": "LED walls and giant screens for shows and visual identity that cut through the crowd.",
+          "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80"
+        },
+        {
+          "title": "Sound systems",
+          "desc": "Professional speakers and balanced audio for anthems, speeches, and live performances.",
+          "image": "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&q=80"
+        },
+        {
+          "title": "Keepsake gifts",
+          "desc": "Thoughtful giveaways with a national touch that guests remember.",
+          "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=900&q=80"
+        },
+        {
+          "title": "Drinks & hospitality",
+          "desc": "Cold and hot beverage stations styled for festive National Day energy.",
+          "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=900&q=80"
+        },
+        {
+          "title": "Interactive games",
+          "desc": "Game corners and light challenges that keep families and kids engaged.",
+          "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80"
+        },
+        {
+          "title": "Decor & lighting",
+          "desc": "Green-and-gold styling, theatrical lighting, and visuals that bring National Day to life.",
+          "image": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=900&q=80"
+        }
+      ],
+      "galleryTitle": "Celebration atmosphere",
+      "galleryIntro": "Highlights from festive events — replace with your project photos from the admin panel.",
+      "formEyebrow": "Ready for your event",
+      "formTitle": "Request a National Day celebration",
+      "formIntro": "Tell us the venue, date, and what you need — the Xora team replies within one business day.",
+      "name": "Full name",
+      "email": "Email address",
+      "phone": "Phone number",
+      "preferredDate": "Celebration date",
+      "location": "Location / city",
+      "guestsCount": "Approx. guests",
+      "interest": "Services needed",
+      "message": "Additional details",
+      "submit": "Submit request",
+      "sending": "Sending…",
+      "successTitle": "Request received",
+      "success": "Thank you — our team will review your National Day celebration request and contact you soon.",
       "sendAnother": "Submit another request"
     },
     "contact": {

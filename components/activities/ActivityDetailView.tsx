@@ -7,6 +7,7 @@ import {
   type BookingScheduleSelection,
 } from "@/components/activities/booking/ActivityBookingPanel";
 import { ActivitySocialProof } from "@/components/features/ActivitySocialProof";
+import { ActivityOfferPeriod } from "@/components/features/ActivityOfferPeriod";
 import { BookingCountdown } from "@/components/features/BookingCountdown";
 import { AddToCalendarButton } from "@/components/features/AddToCalendarButton";
 import { GroupBookingPanel } from "@/components/features/GroupBookingPanel";
@@ -69,6 +70,12 @@ export function ActivityDetailView({
     activity.terms_conditions ?? activity.termsConditions ?? activity.policies;
   const organizerBio = activity.organizer_bio ?? activity.organizerBio ?? "";
   const endsAt = activityEndsAt(activity);
+  const offerPeriod =
+    activity.offerPeriod?.trim() ||
+    activity.socialProofCard?.offerPeriod?.trim() ||
+    "";
+  const offerPeriodActive = Boolean(activity.offerPeriodActive);
+  const countdownLive = isEnabled("countdown") && Boolean(activity.countdown?.show);
 
   const latitude = activity.latitude ?? (activity as Activity & { lat?: number }).lat;
   const longitude = activity.longitude ?? (activity as Activity & { lng?: number }).lng;
@@ -133,7 +140,7 @@ export function ActivityDetailView({
       />
 
       <nav className="relative mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-        <Link href={localizedPath(locale, "/activities")} className="hover:text-white">
+        <Link href={localizedPath(locale, "/activities")} scroll={false} className="hover:text-white">
           {locale === "ar" ? "الأنشطة الترفيهية" : "Entertainment activities"}
         </Link>
         <span aria-hidden>/</span>
@@ -272,6 +279,14 @@ export function ActivityDetailView({
                   </button>
                 </div>
               </div>
+            ) : null}
+            {offerPeriod ? (
+              <ActivityOfferPeriod
+                locale={locale}
+                offerPeriod={offerPeriod}
+                active={offerPeriodActive}
+                variant="detail"
+              />
             ) : null}
             {activity.price || activity.activeCoupon ? (
               <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-3 min-[400px]:col-span-2 sm:col-span-1">
@@ -430,15 +445,23 @@ export function ActivityDetailView({
         </div>
 
         <aside className="scroll-mt-24 space-y-4 lg:sticky lg:top-24 lg:self-start">
+          {offerPeriod ? (
+            <ActivityOfferPeriod
+              locale={locale}
+              offerPeriod={offerPeriod}
+              active={offerPeriodActive}
+              variant="sidebar"
+            />
+          ) : null}
+          <BookingCountdown
+            endsAt={activity.countdown?.show ? activity.countdown.endsAt : null}
+            enabled={countdownLive}
+            locale={locale}
+          />
           <ActivitySocialProof
             locale={locale}
             data={activity.socialProof}
             enabled={isEnabled("social_proof")}
-          />
-          <BookingCountdown
-            endsAt={activity.countdown?.show ? activity.countdown.endsAt : null}
-            enabled={isEnabled("countdown") && Boolean(activity.countdown?.show)}
-            locale={locale}
           />
           <AddToCalendarButton
             activity={activity}
@@ -483,6 +506,8 @@ export function ActivityDetailView({
                 locale={locale}
                 activity={toActivityCardData(item)}
                 bookCta={labels.bookNow}
+                showSocialProof={isEnabled("social_proof")}
+                showCountdown={isEnabled("countdown")}
               />
             ))}
           </div>

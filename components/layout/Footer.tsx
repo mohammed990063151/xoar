@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { XoraLogo } from "@/components/brand/XoraLogo";
+import { SiteLogo } from "@/components/brand/SiteLogo";
 import { MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/ContactChannelIcons";
 import { getFooterSocialLinks, SocialIconLink } from "@/components/ui/SocialIconLink";
 import type { Locale } from "@/lib/i18n";
@@ -28,6 +28,7 @@ const navLinks = [
   { href: "/works", key: "works" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/national-day", key: "nationalDay" as const },
   { href: "/partners", key: "partners" as const },
   { href: "/blog", key: "blog" as const },
   { href: "/careers", key: "careers" as const },
@@ -44,41 +45,72 @@ function footerNavLabel(
   return nav[key];
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.07, delayChildren: 0.04 },
-  },
-};
-
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-function FooterHeading({
+function SectionTitle({
   children,
-  accentTowardStart,
+  ar,
 }: {
   readonly children: React.ReactNode;
-  readonly accentTowardStart: boolean;
+  readonly ar: boolean;
 }): React.ReactElement {
   return (
     <h3 className="flex items-center gap-3">
       <span
         className={cn(
-          "h-px w-10 shrink-0",
-          accentTowardStart
-            ? "bg-gradient-to-l from-violet-500/70 to-transparent"
-            : "bg-gradient-to-r from-violet-500/70 to-transparent",
+          "h-px w-8 shrink-0 bg-gradient-to-r from-violet-500/70 to-transparent",
+          ar && "bg-gradient-to-l",
         )}
         aria-hidden
       />
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-purple-200/90">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-violet-200/90">
         {children}
       </span>
     </h3>
+  );
+}
+
+function ContactCard({
+  href,
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  readonly href: string;
+  readonly label: string;
+  readonly value: string;
+  readonly icon: React.ReactNode;
+  readonly accent: string;
+}): React.ReactElement {
+  return (
+    <a
+      href={href}
+      className={cn(
+        "group flex min-h-[4.5rem] items-center gap-3 rounded-2xl border border-white/8 bg-slate-950/50 px-4 py-3 transition",
+        "hover:border-white/15 hover:bg-slate-900/70",
+        accent,
+      )}
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/35">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1 text-start">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          {label}
+        </span>
+        <span
+          dir="ltr"
+          className="mt-1 block truncate text-sm font-medium text-slate-100 group-hover:text-white"
+          style={{ unicodeBidi: "plaintext" }}
+        >
+          {value}
+        </span>
+      </span>
+    </a>
   );
 }
 
@@ -89,7 +121,8 @@ export function Footer({
   settings,
 }: FooterProps): React.ReactElement {
   const ar = locale === "ar";
-  const accentTowardStart = ar;
+  const companyName = settings?.companyName?.trim() || "xora";
+  const tagline = settings?.tagline?.trim() || (ar ? "تجارب فعاليات لا تُنسى" : "Unforgettable event experiences");
   const email = settings?.email?.trim() || footer.email;
   const phoneRaw = settings?.phone?.trim() || footer.phone;
   const phoneDisplay = formatPhoneDisplay(phoneRaw) || phoneRaw;
@@ -99,31 +132,23 @@ export function Footer({
   const socialLinks = getFooterSocialLinks(settings?.social, footerSocial);
 
   return (
-    <footer className="relative mt-20 border-t border-white/10 bg-[#020617]">
+    <footer className="relative mt-20 border-t border-white/8 bg-[#020617]">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent opacity-80"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/45 to-transparent"
         aria-hidden
       />
-      <motion.div
-        className="pointer-events-none absolute start-1/4 top-8 h-40 w-40 -translate-x-1/2 rounded-full bg-violet-600/10 blur-[90px]"
-        animate={{ opacity: [0.3, 0.55, 0.3] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        aria-hidden
-      />
-      <motion.div
-        className="pointer-events-none absolute end-1/4 bottom-24 h-48 w-48 rounded-full bg-cyan-500/8 blur-[100px]"
-        animate={{ opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_70%_80%_at_50%_0%,rgba(99,102,241,0.12),transparent)]"
         aria-hidden
       />
 
-      <div className={cn(siteContainer, "relative py-12 sm:py-14")}>
+      <div className={cn(siteContainer, "relative py-12 sm:py-16")}>
         <motion.div
-          className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/50 shadow-[0_24px_64px_rgba(0,0,0,0.45)] backdrop-blur-sm sm:rounded-3xl"
-          variants={container}
+          className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-slate-950/90 to-slate-950/50 shadow-[0_28px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-6%" }}
+          variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
         >
           <div className="grid gap-0 lg:grid-cols-12">
             {/* Brand */}
@@ -133,15 +158,26 @@ export function Footer({
             >
               <Link
                 href={localizedPath(locale, "/")}
+                scroll={false}
                 className="inline-block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500/80"
-                aria-label="xora"
+                aria-label={companyName}
               >
-                <XoraLogo size="lg" />
+                <SiteLogo
+                  logoUrl={settings?.logo}
+                  alt={companyName}
+                  size="xl"
+                />
               </Link>
-              <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">{footer.about}</p>
+              <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
+                {footer.about}
+              </p>
+              {tagline ? (
+                <p className="mt-3 text-xs font-medium text-violet-300/80">{tagline}</p>
+              ) : null}
               <Link
                 href={localizedPath(locale, "/contact")}
-                className="mt-6 inline-flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold text-purple-100 transition hover:border-purple-400/60 hover:bg-purple-500/20 hover:text-white"
+                scroll={false}
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-5 py-2.5 text-xs font-semibold text-violet-100 transition hover:border-violet-300/50 hover:bg-violet-500/20 hover:text-white"
               >
                 {nav.contact}
               </Link>
@@ -152,12 +188,13 @@ export function Footer({
               variants={fadeUp}
               className="border-b border-white/8 px-6 py-8 sm:px-8 lg:col-span-3 lg:border-b-0 lg:border-e lg:py-10"
             >
-              <FooterHeading accentTowardStart={accentTowardStart}>{footer.quickLinks}</FooterHeading>
+              <SectionTitle ar={ar}>{footer.quickLinks}</SectionTitle>
               <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
                 {navLinks.map(({ href, key }) => (
                   <li key={href}>
                     <Link
                       href={localizedPath(locale, href)}
+                      scroll={false}
                       className="text-slate-400 transition hover:text-cyan-300"
                     >
                       {footerNavLabel(locale, key, nav)}
@@ -169,64 +206,40 @@ export function Footer({
 
             {/* Contact + social */}
             <motion.div variants={fadeUp} className="px-6 py-8 sm:px-8 lg:col-span-5 lg:py-10">
-              <FooterHeading accentTowardStart={accentTowardStart}>{footer.contactTitle}</FooterHeading>
+              <SectionTitle ar={ar}>{footer.contactTitle}</SectionTitle>
 
-              <div className="mt-5 space-y-2">
-                <a
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <ContactCard
                   href={`mailto:${email}`}
-                  className="group flex items-center gap-3 rounded-xl border border-white/8 bg-black/30 px-3 py-2.5 transition hover:border-cyan-500/30 hover:bg-cyan-500/5"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-500/25 bg-cyan-500/10 text-cyan-300">
-                    <MailIcon className="h-[18px] w-[18px]" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                      {ar ? "البريد" : "Email"}
-                    </span>
-                    <span
-                      dir="ltr"
-                      className="mt-0.5 block truncate text-sm font-medium text-slate-100 group-hover:text-cyan-200"
-                    >
-                      {email}
-                    </span>
-                  </span>
-                </a>
-
+                  label={ar ? "البريد الإلكتروني" : "Email"}
+                  value={email}
+                  accent="hover:border-cyan-500/25 hover:bg-cyan-500/5"
+                  icon={<MailIcon className="h-[18px] w-[18px] text-cyan-300" />}
+                />
                 {phoneDisplay ? (
-                  <a
-                    href={phoneHref}
-                    className="group flex items-center gap-3 rounded-xl border border-white/8 bg-black/30 px-3 py-2.5 transition hover:border-violet-500/30 hover:bg-violet-500/5"
-                    dir="ltr"
-                    style={{ unicodeBidi: "isolate" }}
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-violet-500/25 bg-violet-500/10 text-violet-300">
-                      <PhoneIcon className="h-[18px] w-[18px]" />
-                    </span>
-                    <span className="min-w-0 flex-1 text-start">
-                      <span className="block text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                        {ar ? "الجوال" : "Phone"}
-                      </span>
-                      <span className="mt-0.5 block text-sm font-medium text-slate-100 group-hover:text-violet-200">
-                        {phoneDisplay}
-                      </span>
-                    </span>
-                  </a>
+                  <ContactCard
+                    href={phoneHref ?? "#"}
+                    label={ar ? "الجوال" : "Phone"}
+                    value={phoneDisplay}
+                    accent="hover:border-violet-500/25 hover:bg-violet-500/5"
+                    icon={<PhoneIcon className="h-[18px] w-[18px] text-violet-300" />}
+                  />
                 ) : null}
               </div>
 
-              <div className="mt-6 border-t border-white/8 pt-5">
+              <div className="mt-7 border-t border-white/8 pt-6">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {footer.follow}
                 </p>
-                <div className="mt-3 grid w-full max-w-[min(100%,18rem)] grid-cols-5 gap-2 sm:max-w-xs">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   <motion.a
                     href={waHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={footer.whatsapp ?? (ar ? "واتساب" : "WhatsApp")}
                     title={footer.whatsapp ?? (ar ? "واتساب" : "WhatsApp")}
-                    className="flex aspect-square items-center justify-center rounded-xl border border-emerald-500/35 bg-emerald-500/12 text-emerald-300 transition hover:border-emerald-400/60 hover:bg-emerald-500/22 hover:text-white"
-                    whileHover={{ scale: 1.05 }}
+                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-500/35 bg-emerald-500/12 text-emerald-300 transition hover:border-emerald-400/55 hover:bg-emerald-500/22 hover:text-white"
+                    whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
                   >
                     <WhatsAppIcon className="h-5 w-5" />
@@ -235,8 +248,7 @@ export function Footer({
                   {socialLinks.map(({ key, href, label, active }) => (
                     <motion.div
                       key={key}
-                      className="flex aspect-square items-stretch justify-stretch"
-                      whileHover={active ? { scale: 1.05 } : undefined}
+                      whileHover={active ? { scale: 1.04 } : undefined}
                       whileTap={active ? { scale: 0.97 } : undefined}
                     >
                       <SocialIconLink
@@ -244,7 +256,7 @@ export function Footer({
                         label={label}
                         icon={key}
                         inactive={!active}
-                        className="!h-full !w-full !rounded-xl"
+                        className="!h-11 !w-11 !rounded-xl"
                       />
                     </motion.div>
                   ))}
@@ -254,13 +266,11 @@ export function Footer({
           </div>
         </motion.div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-6 text-center text-xs text-slate-500 sm:flex-row sm:text-start">
+        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/8 pt-6 text-center text-xs text-slate-500 sm:flex-row sm:text-start">
           <p>
-            © {new Date().getFullYear()} xora. {footer.rights}
+            © {new Date().getFullYear()} {companyName}. {footer.rights}
           </p>
-          <p className="text-slate-600">
-            {ar ? "تجارب فعاليات لا تُنسى" : "Unforgettable event experiences"}
-          </p>
+          <p className="text-slate-600">{tagline}</p>
         </div>
       </div>
     </footer>
