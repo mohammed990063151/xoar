@@ -45,12 +45,11 @@ export async function generateMetadata({
     description: dict.hero.subtitle,
     icons: {
       icon: [
-        { url: "/favicon.png", type: "image/png", sizes: "32x32" },
-        { url: "/icon.png", type: "image/png", sizes: "32x32" },
-        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: "/favicon.png?v=20260811", type: "image/png", sizes: "32x32" },
+        { url: "/icon.png?v=20260811", type: "image/png", sizes: "32x32" },
       ],
-      shortcut: [{ url: "/favicon.png", type: "image/png" }],
-      apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+      shortcut: [{ url: "/favicon.png?v=20260811", type: "image/png" }],
+      apple: [{ url: "/apple-icon.png?v=20260811", type: "image/png", sizes: "180x180" }],
     },
     alternates: {
       languages: {
