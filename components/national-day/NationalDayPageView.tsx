@@ -11,14 +11,15 @@ import { isStorageImage, useUnoptimizedImage } from "@/lib/image-url";
 import {
   gridCards3,
   pageBottom,
-  pageEyebrow,
-  sectionHeading,
   sectionSpacingTight,
   siteContainer,
 } from "@/lib/layout";
 import type { Locale } from "@/lib/i18n";
 import type { NationalDayPageContent } from "@/lib/site-page";
 import { submitInquiry } from "@/services/inquiryService";
+
+const ndSectionHeading =
+  "text-[clamp(1.25rem,4vw,1.875rem)] font-bold tracking-tight sm:text-3xl";
 
 interface NationalDayPageViewProps {
   readonly locale: Locale;
@@ -27,7 +28,7 @@ interface NationalDayPageViewProps {
 }
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-emerald-400/60 focus:shadow-[0_0_0_3px_rgba(52,211,153,0.12)]";
+  "nd-form-field mt-1.5 w-full rounded-xl border px-4 py-3 outline-none transition focus:border-emerald-400/60 focus:shadow-[0_0_0_3px_rgba(52,211,153,0.12)]";
 
 function CoverImage({
   src,
@@ -172,9 +173,9 @@ export function NationalDayPageView({
   }
 
   return (
-    <div className={cn(pageBottom, "relative overflow-hidden")}>
+    <div className={cn(pageBottom, "national-day-page relative overflow-hidden")}>
       {/* Hero */}
-      <section className="relative min-h-[min(92vh,880px)] overflow-hidden">
+      <section className="nd-hero relative min-h-[min(92vh,880px)] overflow-hidden">
         {heroImage ? (
           <CoverImage
             src={heroImage}
@@ -186,7 +187,7 @@ export function NationalDayPageView({
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-slate-950 to-slate-950" />
         )}
         <div
-          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.55)_0%,rgba(2,6,23,0.72)_45%,rgba(2,6,23,0.94)_100%)]"
+          className="nd-hero-overlay absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.55)_0%,rgba(2,6,23,0.72)_45%,rgba(2,6,23,0.94)_100%)]"
           aria-hidden
         />
         <div
@@ -208,28 +209,30 @@ export function NationalDayPageView({
 
         <div className={cn(siteContainer, "relative flex min-h-[min(92vh,880px)] flex-col justify-end pb-16 pt-28 sm:pb-20 sm:pt-32")}>
           <SlideInEdge from="bottom">
-            <p className="text-sm font-semibold tracking-[0.28em] text-emerald-300/95 sm:text-base">
+            <p className="nd-hero-brand text-sm font-semibold tracking-[0.28em] sm:text-base">
               {brandName}
             </p>
-            <p className={cn(pageEyebrow, "mt-4 !text-amber-300/90")}>{content.eyebrow}</p>
-            <h1 className="mt-3 max-w-4xl text-[clamp(2rem,7vw,4.25rem)] font-bold leading-[1.08] tracking-tight text-white">
+            <p className="nd-hero-eyebrow mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-xs sm:tracking-[0.24em]">
+              {content.eyebrow}
+            </p>
+            <h1 className="nd-hero-title mt-3 max-w-4xl text-[clamp(2rem,7vw,4.25rem)] font-bold leading-[1.08] tracking-tight">
               {content.title}
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-200/90 sm:text-lg">
+            <p className="nd-hero-intro mt-5 max-w-2xl text-base leading-relaxed sm:text-lg">
               {content.intro}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={scrollToForm}
-                className="rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(16,185,129,0.35)] transition hover:from-emerald-400 hover:to-emerald-500"
+                className="nd-hero-cta rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 text-sm font-semibold shadow-[0_12px_40px_rgba(16,185,129,0.35)] transition hover:from-emerald-400 hover:to-emerald-500"
               >
                 {content.cta}
               </button>
               <button
                 type="button"
                 onClick={scrollToOfferings}
-                className="rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:border-emerald-300/40 hover:bg-white/10"
+                className="nd-hero-secondary rounded-full border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold backdrop-blur-sm transition hover:border-emerald-300/50 hover:bg-white/15"
               >
                 {content.ctaSecondary}
               </button>
@@ -242,11 +245,13 @@ export function NationalDayPageView({
       <section ref={offeringsRef} className={cn(siteContainer, sectionSpacingTight)}>
         <ScrollReveal>
           <div className="mx-auto max-w-3xl text-center">
-            <p className={cn(pageEyebrow, "!text-emerald-400/90")}>
+            <p className="nd-section-accent text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-xs sm:tracking-[0.24em]">
               {ar ? "باقة الاحتفال" : "Celebration package"}
             </p>
-            <h2 className={cn(sectionHeading, "mt-3")}>{content.offeringsTitle}</h2>
-            <p className="mt-4 text-base leading-relaxed text-slate-400 sm:text-lg">
+            <h2 className={cn("nd-section-title mt-3", ndSectionHeading)}>
+              {content.offeringsTitle}
+            </h2>
+            <p className="nd-section-muted mt-4 text-base leading-relaxed sm:text-lg">
               {content.offeringsIntro}
             </p>
           </div>
@@ -264,10 +269,10 @@ export function NationalDayPageView({
                     scrollToForm();
                   }}
                   className={cn(
-                    "group relative w-full overflow-hidden rounded-2xl border text-start transition duration-300",
+                    "nd-offering-card group relative w-full overflow-hidden rounded-2xl border text-start transition duration-300",
                     selected
-                      ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_20px_50px_rgba(16,185,129,0.18)]"
-                      : "border-white/10 bg-slate-950/60 hover:border-emerald-400/30 hover:bg-slate-900/80",
+                      ? "nd-offering-selected shadow-[0_20px_50px_rgba(16,185,129,0.18)]"
+                      : "hover:border-emerald-400/40",
                   )}
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
@@ -282,9 +287,9 @@ export function NationalDayPageView({
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
                     <span
                       className={cn(
-                        "absolute end-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
+                        "nd-offering-badge absolute end-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
                         selected
-                          ? "bg-emerald-400 text-slate-950"
+                          ? "nd-offering-badge--selected bg-emerald-400 text-slate-950"
                           : "bg-black/50 text-emerald-200 backdrop-blur-sm",
                       )}
                     >
@@ -297,9 +302,9 @@ export function NationalDayPageView({
                           : "Add to request"}
                     </span>
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
+                  <div className="nd-offering-body p-5">
+                    <h3 className="nd-offering-title text-lg font-semibold">{item.title}</h3>
+                    <p className="nd-offering-desc mt-2 text-sm leading-relaxed">{item.description}</p>
                   </div>
                 </button>
               </ScrollReveal>
@@ -313,8 +318,10 @@ export function NationalDayPageView({
         <section className={cn(siteContainer, "py-10 sm:py-14")}>
           <ScrollReveal>
             <div className="mx-auto max-w-3xl text-center">
-              <h2 className={sectionHeading}>{content.galleryTitle}</h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-400">{content.galleryIntro}</p>
+              <h2 className={cn("nd-section-title", ndSectionHeading)}>
+                {content.galleryTitle}
+              </h2>
+              <p className="nd-section-muted mt-4 text-base leading-relaxed">{content.galleryIntro}</p>
             </div>
           </ScrollReveal>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
@@ -362,11 +369,15 @@ export function NationalDayPageView({
         />
         <SlideInEdge from="bottom" className="relative mx-auto max-w-3xl">
           <div className="text-center">
-            <p className={cn(pageEyebrow, "!text-emerald-400/90")}>{content.formEyebrow}</p>
-            <h2 className={cn(sectionHeading, "mt-3")}>{content.formTitle}</h2>
-            <p className="mt-4 text-base leading-relaxed text-slate-400">{content.formIntro}</p>
+            <p className="nd-section-accent text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-xs sm:tracking-[0.24em]">
+              {content.formEyebrow}
+            </p>
+            <h2 className={cn("nd-section-title mt-3", ndSectionHeading)}>
+              {content.formTitle}
+            </h2>
+            <p className="nd-section-muted mt-4 text-base leading-relaxed">{content.formIntro}</p>
             {selectedInterests.length > 0 ? (
-              <p className="mt-3 text-sm text-emerald-300/90">
+              <p className="nd-section-accent mt-3 text-sm">
                 {ar ? "الخدمات المختارة: " : "Selected: "}
                 {selectedInterests.join(ar ? "، " : ", ")}
               </p>
@@ -377,16 +388,16 @@ export function NationalDayPageView({
             {sent ? (
               <motion.div
                 key="success"
-                className="mt-10 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-6 py-10 text-center"
+                className="nd-success-box mt-10 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-6 py-10 text-center"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
               >
-                <p className="text-lg font-semibold text-emerald-100">{content.successTitle}</p>
-                <p className="mt-2 text-sm leading-relaxed text-emerald-100/85">{content.success}</p>
+                <p className="nd-success-title text-lg font-semibold">{content.successTitle}</p>
+                <p className="nd-success-text mt-2 text-sm leading-relaxed">{content.success}</p>
                 <button
                   type="button"
-                  className="mt-6 rounded-full border border-emerald-400/35 px-5 py-2.5 text-sm font-medium text-emerald-100 transition hover:bg-emerald-500/15"
+                  className="nd-success-title mt-6 rounded-full border border-emerald-400/35 px-5 py-2.5 text-sm font-medium transition hover:bg-emerald-500/15"
                   onClick={() => setSent(false)}
                 >
                   {content.sendAnother}
@@ -396,14 +407,14 @@ export function NationalDayPageView({
               <motion.form
                 key="form"
                 onSubmit={handleSubmit}
-                className="mt-10 rounded-2xl border border-white/10 bg-slate-950/75 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-sm sm:p-8"
+                className="nd-form mt-10 rounded-2xl border p-6 backdrop-blur-sm sm:p-8"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
               >
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="nd-name" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-name" className="nd-form-label text-sm font-medium">
                       {content.name}
                     </label>
                     <input
@@ -417,7 +428,7 @@ export function NationalDayPageView({
                     />
                   </div>
                   <div>
-                    <label htmlFor="nd-email" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-email" className="nd-form-label text-sm font-medium">
                       {content.email}
                     </label>
                     <input
@@ -431,7 +442,7 @@ export function NationalDayPageView({
                     />
                   </div>
                   <div>
-                    <label htmlFor="nd-phone" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-phone" className="nd-form-label text-sm font-medium">
                       {content.phone}
                     </label>
                     <input
@@ -444,7 +455,7 @@ export function NationalDayPageView({
                     />
                   </div>
                   <div>
-                    <label htmlFor="nd-location" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-location" className="nd-form-label text-sm font-medium">
                       {content.location}
                     </label>
                     <input
@@ -456,7 +467,7 @@ export function NationalDayPageView({
                     />
                   </div>
                   <div>
-                    <label htmlFor="nd-guests" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-guests" className="nd-form-label text-sm font-medium">
                       {content.guestsCount}
                     </label>
                     <input
@@ -469,7 +480,7 @@ export function NationalDayPageView({
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label htmlFor="nd-interest" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-interest" className="nd-form-label text-sm font-medium">
                       {content.interest}
                     </label>
                     <input
@@ -493,7 +504,7 @@ export function NationalDayPageView({
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label htmlFor="nd-message" className="text-sm font-medium text-slate-200">
+                    <label htmlFor="nd-message" className="nd-form-label text-sm font-medium">
                       {content.message}
                     </label>
                     <textarea
@@ -515,7 +526,7 @@ export function NationalDayPageView({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-6 w-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(16,185,129,0.3)] transition hover:from-emerald-400 hover:to-teal-400 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="nd-form-submit mt-6 w-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3.5 text-sm font-semibold shadow-[0_14px_40px_rgba(16,185,129,0.3)] transition hover:from-emerald-400 hover:to-teal-400 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   {loading ? content.sending : content.submit}
                 </button>

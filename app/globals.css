@@ -6,6 +6,8 @@
   --bg-panel: rgba(15, 23, 42, 0.72);
   --blue: #3b82f6;
   --purple: #a855f7;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
   --muted: #94a3b8;
   --border-glow: rgba(168, 85, 247, 0.5);
 }
@@ -43,9 +45,53 @@ body {
   background: radial-gradient(1000px 700px at 85% -5%, rgba(168, 85, 247, 0.18), transparent),
     radial-gradient(800px 500px at 5% 30%, rgba(59, 130, 246, 0.12), transparent),
     var(--bg-deep);
-  color: #f8fafc;
+  color: var(--text);
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+html[data-theme="light"] {
+  --bg-deep: #f8fafc;
+  --bg-panel: rgba(255, 255, 255, 0.78);
+  --text: #0f172a;
+  --text-muted: #475569;
+  --muted: #64748b;
+  --border-glow: rgba(168, 85, 247, 0.28);
+}
+
+html[data-theme="light"] body {
+  background: radial-gradient(
+      1000px 700px at 85% -5%,
+      rgba(168, 85, 247, 0.12),
+      transparent
+    ),
+    radial-gradient(800px 500px at 5% 30%, rgba(59, 130, 246, 0.10), transparent),
+    var(--bg-deep);
+}
+
+/* Light theme: override common dark text classes from Tailwind */
+html[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .text-slate-300 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .text-slate-200 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .border-white\/15 {
+  border-color: rgba(15, 23, 42, 0.14) !important;
 }
 
 body::-webkit-scrollbar,
@@ -240,6 +286,81 @@ section {
   border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
+html[data-theme="light"] .glass {
+  background: rgba(248, 250, 252, 0.78);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] header.mobile-menu-open.glass {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* ─── MOBILE NAV: readable in both themes ───────────────────────────────────── */
+
+.mobile-nav-panel {
+  background: rgba(15, 23, 42, 0.97);
+}
+
+html[data-theme="light"] .mobile-nav-panel {
+  background: #ffffff !important;
+  border-top-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .mobile-nav-divider {
+  background-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Default (dark): keep light text — override global light-theme text flips when panel is dark */
+.mobile-nav-panel .mobile-nav-link {
+  color: #f1f5f9 !important;
+}
+
+.mobile-nav-panel .mobile-nav-link--active {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+.mobile-nav-panel .mobile-nav-link--cta {
+  color: #e9d5ff !important;
+}
+
+/* Light theme: dark text on white panel */
+html[data-theme="light"] .mobile-nav-panel .mobile-nav-link {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .mobile-nav-panel .mobile-nav-link:hover {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="light"] .mobile-nav-panel .mobile-nav-link--active {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .mobile-nav-panel .mobile-nav-link--cta {
+  background-color: rgba(124, 58, 237, 0.1) !important;
+  border-color: rgba(124, 58, 237, 0.35) !important;
+  color: #5b21b6 !important;
+}
+
+html[data-theme="light"] .mobile-nav-panel a:not(.mobile-nav-link--active) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .mobile-nav-panel a.mobile-nav-link--active {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .mobile-nav-panel a.border-cyan-400\/35,
+html[data-theme="light"] .mobile-nav-panel a.border-cyan-400\/50 {
+  background-color: rgba(6, 182, 212, 0.12) !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
+  color: #0e7490 !important;
+}
+
 .card-neon {
   box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.35), 0 0 28px rgba(59, 130, 246, 0.25),
     0 0 48px rgba(168, 85, 247, 0.15);
@@ -361,6 +482,15 @@ svg {
   z-index: 1;
 }
 
+/* Light theme overrides for Leaflet map containers/popups */
+html[data-theme="light"] .activity-map-canvas {
+  background: #f8fafc;
+}
+
+html[data-theme="light"] .activity-map-canvas .leaflet-container {
+  background: #f8fafc;
+}
+
 .activity-map-canvas .leaflet-pane,
 .activity-map-canvas .leaflet-top,
 .activity-map-canvas .leaflet-bottom {
@@ -384,6 +514,13 @@ svg {
   background: #0f172a;
 }
 
+html[data-theme="light"] .activity-map-pin {
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 0.12),
+    0 6px 20px rgba(2, 6, 23, 0.12);
+  background: #f8fafc;
+}
+
 .activity-map-pin img {
   width: 100%;
   height: 100%;
@@ -398,6 +535,12 @@ svg {
   background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
   border: 1px solid rgba(34, 211, 238, 0.45);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="light"] .activity-map-popup-wrap .leaflet-popup-content-wrapper {
+  background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 100%);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  box-shadow: 0 16px 48px rgba(2, 6, 23, 0.12);
 }
 
 .activity-map-popup-wrap .leaflet-popup-content {
@@ -420,6 +563,12 @@ svg {
   z-index: 5;
 }
 
+html[data-theme="light"] .activity-map-popup-wrap .leaflet-popup-close-button {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+}
+
 .activity-map-popup-wrap .leaflet-popup-close-button:hover {
   background: rgba(239, 68, 68, 0.35) !important;
   color: #fff !important;
@@ -427,6 +576,11 @@ svg {
 
 .activity-map-popup-wrap .leaflet-popup-tip {
   background: #0f172a;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+html[data-theme="light"] .activity-map-popup-wrap .leaflet-popup-tip {
+  background: #ffffff;
   border: 1px solid rgba(34, 211, 238, 0.25);
 }
 
@@ -467,6 +621,10 @@ svg {
   line-height: 1.35;
 }
 
+html[data-theme="light"] .activity-map-popup-title {
+  color: #0f172a;
+}
+
 .activity-map-popup-loc {
   display: flex;
   align-items: center;
@@ -476,6 +634,1013 @@ svg {
   color: #cbd5e1;
   margin: 0 0 12px;
 }
+
+html[data-theme="light"] .activity-map-popup-loc {
+  color: #475569;
+}
+
+/* Light theme logo: ensure visible contrast (logo image is tuned for dark). */
+html[data-theme="light"] .xora-logo img {
+  filter: brightness(0) saturate(100%) contrast(1.05);
+}
+
+/* ─── LIGHT THEME: COMPREHENSIVE OVERRIDES ─────────────────────────────────── */
+
+/* Additional text color fixes */
+html[data-theme="light"] .text-slate-100 {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .text-slate-500 {
+  color: #475569 !important;
+}
+html[data-theme="light"] .text-slate-600 {
+  color: #334155 !important;
+}
+html[data-theme="light"] .text-violet-200,
+html[data-theme="light"] .text-violet-300 {
+  color: #6d28d9 !important;
+}
+html[data-theme="light"] .text-cyan-300,
+html[data-theme="light"] .text-cyan-400 {
+  color: #0891b2 !important;
+}
+html[data-theme="light"] .text-emerald-300,
+html[data-theme="light"] .text-emerald-400 {
+  color: #059669 !important;
+}
+html[data-theme="light"] .text-amber-300,
+html[data-theme="light"] .text-amber-400 {
+  color: #d97706 !important;
+}
+
+/* Dark background cards/panels → light cards */
+html[data-theme="light"] .bg-slate-950\/50,
+html[data-theme="light"] .bg-slate-950\/90,
+html[data-theme="light"] .bg-slate-900\/70,
+html[data-theme="light"] .bg-slate-900\/50 {
+  background-color: rgba(241, 245, 249, 0.85) !important;
+}
+html[data-theme="light"] .bg-slate-900 {
+  background-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .bg-slate-800 {
+  background-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .bg-black\/35,
+html[data-theme="light"] .bg-black\/40,
+html[data-theme="light"] .bg-black\/50,
+html[data-theme="light"] .bg-black\/60 {
+  background-color: rgba(241, 245, 249, 0.75) !important;
+}
+
+/* Footer background */
+html[data-theme="light"] footer.relative {
+  background: #f1f5f9 !important;
+  border-top-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Footer card (the rounded card inside footer) */
+html[data-theme="light"] footer .rounded-3xl {
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.9) 100%) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.06) !important;
+}
+
+/* Footer dividers / borders */
+html[data-theme="light"] .border-white\/8 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+html[data-theme="light"] .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+html[data-theme="light"] .border-white\/15 {
+  border-color: rgba(15, 23, 42, 0.14) !important;
+}
+html[data-theme="light"] .border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.18) !important;
+}
+
+/* Contact form fields */
+html[data-theme="light"] .bg-black\/40,
+html[data-theme="light"] input.bg-black\/40,
+html[data-theme="light"] textarea.bg-black\/40 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+}
+
+/* Generic form elements */
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+}
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* gradient-border inner (used in team cards and activity detail) */
+html[data-theme="light"] .gradient-border > .inner {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* gradient-border glow container */
+html[data-theme="light"] .gradient-border {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(59, 130, 246, 0.25)) !important;
+}
+
+/* Service cards / Happening cards / Event cards — generic dark card pattern */
+html[data-theme="light"] .rounded-2xl.border.border-white\/8,
+html[data-theme="light"] .rounded-2xl.border-white\/8,
+html[data-theme="light"] .rounded-3xl.border-white\/10 {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* About page value cards */
+html[data-theme="light"] .ring-cyan-400\/20 {
+  --tw-ring-color: rgba(6, 182, 212, 0.25) !important;
+}
+
+/* Booking panel / sidebar dark backgrounds */
+html[data-theme="light"] [class*="bg-slate-"] {
+  --tw-bg-opacity: 1;
+}
+
+/* Activity booking panel & date picker */
+html[data-theme="light"] .rounded-xl.border.border-white\/10,
+html[data-theme="light"] .rounded-xl.border-white\/10 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* CTA / bottom band dark sections */
+html[data-theme="light"] .bg-gradient-to-b.from-slate-950\/90,
+html[data-theme="light"] section[class*="bg-slate"] {
+  background: transparent !important;
+}
+
+/* Dot grid in light mode */
+html[data-theme="light"] .dot-grid {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+}
+
+/* "What's included" dark cards in activity detail */
+html[data-theme="light"] .rounded-xl.bg-white\/5 {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+html[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+html[data-theme="light"] .bg-white\/8 {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Booking modal / overlays */
+html[data-theme="light"] .bg-slate-950 {
+  background-color: #f8fafc !important;
+}
+
+/* About team member card image placeholder */
+html[data-theme="light"] .bg-slate-900.aspect-\[4\/5\],
+html[data-theme="light"] .bg-slate-900.aspect-\[3\/4\] {
+  background-color: #e2e8f0 !important;
+}
+
+/* Footer copyright bottom strip */
+html[data-theme="light"] .border-t.border-white\/8 {
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Section dividers / subtle separators */
+html[data-theme="light"] .divide-white\/10 > * + * {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* Badges / tags on cards */
+html[data-theme="light"] .bg-black\/50,
+html[data-theme="light"] .bg-black\/60 {
+  background-color: rgba(241, 245, 249, 0.88) !important;
+}
+
+/* Services page cards with bg-slate background */
+html[data-theme="light"] .rounded-2xl.bg-slate-900\/60,
+html[data-theme="light"] .rounded-2xl.bg-slate-900\/40,
+html[data-theme="light"] .rounded-2xl.bg-slate-800\/60 {
+  background-color: rgba(241, 245, 249, 0.88) !important;
+}
+
+/* Date picker calendar days */
+html[data-theme="light"] .rounded-lg.bg-slate-800\/60,
+html[data-theme="light"] .rounded-lg.bg-slate-900\/50 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* ContactCard in footer */
+html[data-theme="light"] a.group.flex.rounded-2xl {
+  background-color: rgba(241, 245, 249, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+html[data-theme="light"] a.group.flex.rounded-2xl:hover {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+}
+
+/* ─── HERO SECTION: light theme — keep dark overlay so text stays readable ──── */
+
+/* Stronger overlay gradient in light mode */
+html[data-theme="light"] .hero-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(2, 6, 23, 1) 0%,
+    rgba(2, 6, 23, 0.85) 35%,
+    rgba(2, 6, 23, 0.65) 65%,
+    rgba(2, 6, 23, 0.4) 100%
+  ) !important;
+}
+
+/* Extra solid overlay layer — only visible in light mode */
+html[data-theme="light"] .hero-overlay-light {
+  display: block !important;
+  background: rgba(2, 6, 23, 0.5) !important;
+}
+
+/* ── Hero: ALL text must stay white — it sits on a dark photo overlay ───────── */
+html[data-theme="light"] .hero-section,
+html[data-theme="light"] .hero-section * {
+  color: #ffffff !important;
+}
+/* Gradient text: keep transparent so background-clip shows the gradient */
+html[data-theme="light"] .hero-section .gradient-text {
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+/* Subtle secondary text */
+html[data-theme="light"] .hero-section .text-slate-200,
+html[data-theme="light"] .hero-section p {
+  color: #e2e8f0 !important;
+}
+html[data-theme="light"] .hero-section .text-cyan-100\/90 {
+  color: #cffafe !important;
+}
+/* Muted badge pill border */
+html[data-theme="light"] .hero-section .border-white\/15 {
+  border-color: rgba(255,255,255,0.22) !important;
+}
+html[data-theme="light"] .hero-section .bg-black\/40 {
+  background-color: rgba(0,0,0,0.45) !important;
+}
+
+/* ─── FOOTER SOCIAL ICONS: light theme ─────────────────────────────────────── */
+
+html[data-theme="light"] footer .rounded-2xl.border.py-3 {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
+}
+html[data-theme="light"] footer .border-emerald-500\/30 { border-color: rgba(16,185,129,0.35) !important; background-color: rgba(236,253,245,0.85) !important; }
+html[data-theme="light"] footer .border-pink-500\/30    { border-color: rgba(236,72,153,0.3)  !important; background-color: rgba(253,242,248,0.85) !important; }
+html[data-theme="light"] footer .border-slate-400\/25   { border-color: rgba(100,116,139,0.3) !important; background-color: rgba(241,245,249,0.85) !important; }
+html[data-theme="light"] footer .border-blue-500\/30    { border-color: rgba(59,130,246,0.3)  !important; background-color: rgba(239,246,255,0.85) !important; }
+html[data-theme="light"] footer .border-yellow-400\/30  { border-color: rgba(234,179,8,0.35)  !important; background-color: rgba(254,252,232,0.85) !important; }
+
+html[data-theme="light"] footer .text-emerald-300 { color: #059669 !important; }
+html[data-theme="light"] footer .text-pink-300    { color: #db2777 !important; }
+html[data-theme="light"] footer .text-slate-200   { color: #334155 !important; }
+html[data-theme="light"] footer .text-blue-300    { color: #2563eb !important; }
+html[data-theme="light"] footer .text-yellow-300  { color: #ca8a04 !important; }
+
+/* ─── NATIONAL DAY PAGE ───────────────────────────────────────────────────────
+   Use html[data-theme] + .national-day-page so specificity beats global
+   light flips like html[data-theme="light"] .text-white (0,2,1). */
+
+.national-day-page {
+  --nd-hero-brand: #6ee7b7;
+  --nd-hero-eyebrow: #fbbf24;
+  --nd-hero-title: #ffffff;
+  --nd-hero-intro: #f1f5f9;
+  --nd-hero-btn-text: #ffffff;
+  --nd-section-title: #f8fafc;
+  --nd-section-muted: #94a3b8;
+  --nd-section-accent: #34d399;
+  --nd-card-bg: rgba(15, 23, 42, 0.72);
+  --nd-card-border: rgba(255, 255, 255, 0.12);
+  --nd-card-title: #f8fafc;
+  --nd-card-desc: #cbd5e1;
+  --nd-form-bg: rgba(15, 23, 42, 0.88);
+  --nd-form-border: rgba(255, 255, 255, 0.12);
+  --nd-form-label: #e2e8f0;
+  --nd-form-field-bg: rgba(0, 0, 0, 0.4);
+  --nd-form-field-text: #f8fafc;
+  --nd-form-field-border: rgba(255, 255, 255, 0.14);
+  --nd-form-placeholder: #94a3b8;
+  --nd-success-title: #d1fae5;
+  --nd-success-text: rgba(209, 250, 229, 0.9);
+}
+
+html[data-theme="light"] .national-day-page {
+  --nd-hero-brand: #a7f3d0;
+  --nd-hero-eyebrow: #fcd34d;
+  --nd-hero-title: #ffffff;
+  --nd-hero-intro: #f8fafc;
+  --nd-hero-btn-text: #ffffff;
+  --nd-section-title: #0f172a;
+  --nd-section-muted: #475569;
+  --nd-section-accent: #059669;
+  --nd-card-bg: #ffffff;
+  --nd-card-border: rgba(15, 23, 42, 0.12);
+  --nd-card-title: #0f172a;
+  --nd-card-desc: #475569;
+  --nd-form-bg: #ffffff;
+  --nd-form-border: rgba(16, 185, 129, 0.28);
+  --nd-form-label: #0f172a;
+  --nd-form-field-bg: #f1f5f9;
+  --nd-form-field-text: #0f172a;
+  --nd-form-field-border: rgba(15, 23, 42, 0.18);
+  --nd-form-placeholder: #94a3b8;
+  --nd-success-title: #065f46;
+  --nd-success-text: #047857;
+}
+
+/* Hero stays dark in BOTH themes — keep light text, deepen overlay in light */
+html[data-theme="light"] .national-day-page .nd-hero-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(2, 6, 23, 0.68) 0%,
+    rgba(2, 6, 23, 0.84) 45%,
+    rgba(2, 6, 23, 0.98) 100%
+  ) !important;
+}
+
+html .national-day-page .nd-hero-brand,
+html[data-theme="light"] .national-day-page .nd-hero-brand {
+  color: var(--nd-hero-brand) !important;
+}
+
+html .national-day-page .nd-hero-eyebrow,
+html[data-theme="light"] .national-day-page .nd-hero-eyebrow {
+  color: var(--nd-hero-eyebrow) !important;
+}
+
+html .national-day-page .nd-hero-title,
+html[data-theme="light"] .national-day-page .nd-hero-title {
+  color: var(--nd-hero-title) !important;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.75);
+}
+
+html .national-day-page .nd-hero-intro,
+html[data-theme="light"] .national-day-page .nd-hero-intro {
+  color: var(--nd-hero-intro) !important;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+
+html .national-day-page .nd-hero-secondary,
+html[data-theme="light"] .national-day-page .nd-hero-secondary {
+  color: var(--nd-hero-btn-text) !important;
+}
+
+html .national-day-page .nd-hero-cta,
+html[data-theme="light"] .national-day-page .nd-hero-cta,
+html .national-day-page .nd-form-submit,
+html[data-theme="light"] .national-day-page .nd-form-submit {
+  color: #ffffff !important;
+}
+
+html .national-day-page .nd-section-title,
+html[data-theme="light"] .national-day-page .nd-section-title {
+  color: var(--nd-section-title) !important;
+}
+
+html .national-day-page .nd-section-muted,
+html[data-theme="light"] .national-day-page .nd-section-muted {
+  color: var(--nd-section-muted) !important;
+}
+
+html .national-day-page .nd-section-accent,
+html[data-theme="light"] .national-day-page .nd-section-accent {
+  color: var(--nd-section-accent) !important;
+}
+
+html .national-day-page .nd-offering-card,
+html[data-theme="light"] .national-day-page .nd-offering-card {
+  background: var(--nd-card-bg) !important;
+  border-color: var(--nd-card-border) !important;
+}
+
+html[data-theme="light"] .national-day-page .nd-offering-card {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .national-day-page .nd-offering-card.nd-offering-selected {
+  background: #ecfdf5 !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+html .national-day-page .nd-offering-body,
+html[data-theme="light"] .national-day-page .nd-offering-body {
+  background: transparent !important;
+}
+
+html .national-day-page .nd-offering-title,
+html[data-theme="light"] .national-day-page .nd-offering-title {
+  color: var(--nd-card-title) !important;
+}
+
+html .national-day-page .nd-offering-desc,
+html[data-theme="light"] .national-day-page .nd-offering-desc {
+  color: var(--nd-card-desc) !important;
+}
+
+html .national-day-page .nd-form,
+html[data-theme="light"] .national-day-page .nd-form {
+  background: var(--nd-form-bg) !important;
+  border-color: var(--nd-form-border) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="light"] .national-day-page .nd-form {
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+html .national-day-page .nd-form-label,
+html[data-theme="light"] .national-day-page .nd-form-label {
+  color: var(--nd-form-label) !important;
+}
+
+html .national-day-page .nd-form-field,
+html[data-theme="light"] .national-day-page .nd-form-field,
+html[data-theme="light"] .national-day-page input.nd-form-field,
+html[data-theme="light"] .national-day-page textarea.nd-form-field {
+  background: var(--nd-form-field-bg) !important;
+  color: var(--nd-form-field-text) !important;
+  border-color: var(--nd-form-field-border) !important;
+}
+
+html .national-day-page .nd-form-field::placeholder,
+html[data-theme="light"] .national-day-page .nd-form-field::placeholder {
+  color: var(--nd-form-placeholder) !important;
+}
+
+html .national-day-page .nd-success-title,
+html[data-theme="light"] .national-day-page .nd-success-title {
+  color: var(--nd-success-title) !important;
+}
+
+html .national-day-page .nd-success-text,
+html[data-theme="light"] .national-day-page .nd-success-text {
+  color: var(--nd-success-text) !important;
+}
+
+html[data-theme="light"] .national-day-page .nd-success-box {
+  background: #ecfdf5 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Keep image badges readable on photo overlays in light mode */
+html[data-theme="light"] .national-day-page .nd-offering-badge {
+  background: rgba(0, 0, 0, 0.62) !important;
+  color: #a7f3d0 !important;
+}
+
+html[data-theme="light"] .national-day-page .nd-offering-badge--selected {
+  background: #34d399 !important;
+  color: #0f172a !important;
+}
+
+/* ─── PARTNERS PAGE: light theme (modal + CTA) ──────────────────────────────── */
+
+.partners-cta-title {
+  color: #ffffff;
+}
+
+.partners-cta-text {
+  color: #94a3b8;
+}
+
+.partners-cta-btn {
+  color: #ffffff;
+}
+
+html[data-theme="light"] .partners-cta {
+  background: #ffffff !important;
+  border-color: rgba(8, 145, 178, 0.22) !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .partners-cta > .pointer-events-none {
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(34, 211, 238, 0.12),
+    transparent 60%
+  ) !important;
+}
+
+html[data-theme="light"] .partners-cta-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .partners-cta-text {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .partners-cta-btn {
+  color: #0e7490 !important;
+  background: rgba(6, 182, 212, 0.1) !important;
+  border-color: rgba(8, 145, 178, 0.35) !important;
+}
+
+html[data-theme="light"] .partners-cta-btn:hover {
+  background: rgba(6, 182, 212, 0.18) !important;
+  border-color: rgba(8, 145, 178, 0.5) !important;
+}
+
+html[data-theme="light"] .partners-apply-modal {
+  background: #ffffff !important;
+  border-color: rgba(8, 145, 178, 0.22) !important;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18) !important;
+}
+
+html[data-theme="light"] .partners-apply-modal > .pointer-events-none {
+  background: radial-gradient(
+    ellipse at top,
+    rgba(34, 211, 238, 0.14),
+    transparent 70%
+  ) !important;
+}
+
+html[data-theme="light"] .partners-apply-modal header {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .partners-modal-eyebrow {
+  color: #0891b2 !important;
+}
+
+html[data-theme="light"] .partners-modal-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .partners-modal-muted,
+html[data-theme="light"] .partners-modal-benefits-title {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .partners-modal-label {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .partners-modal-benefits {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .partners-modal-close {
+  color: #334155 !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  background: transparent !important;
+}
+
+html[data-theme="light"] .partners-modal-close:hover {
+  background: rgba(15, 23, 42, 0.04) !important;
+}
+
+html[data-theme="light"] .partners-apply-modal .partners-modal-field,
+html[data-theme="light"] .partners-apply-modal input.partners-modal-field,
+html[data-theme="light"] .partners-apply-modal textarea.partners-modal-field,
+html[data-theme="light"] .partners-apply-modal select.partners-modal-field {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+}
+
+html[data-theme="light"] .partners-apply-modal .partners-modal-field::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] .partners-modal-success {
+  background: #ecfdf5 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+html[data-theme="light"] .partners-modal-success-title {
+  color: #065f46 !important;
+}
+
+html[data-theme="light"] .partners-modal-success-text {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .partners-apply-modal .border-t {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* ─── SERVICES PAGE: light theme ────────────────────────────────────────────── */
+
+html[data-theme="light"] .services-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="light"] .services-card .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .services-card .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .services-card .text-slate-500 {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .services-card .text-cyan-300 {
+  color: #0891b2 !important;
+}
+
+html[data-theme="light"] .services-step {
+  background: rgba(241, 245, 249, 0.95) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .services-closing-text {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .services-cta {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .services-cta * {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .services-hero-placeholder {
+  background: linear-gradient(135deg, #ede9fe, #ecfeff) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .services-hero-placeholder .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .services-hero-placeholder .text-cyan-300 {
+  color: #0e7490 !important;
+}
+
+/* ─── PROMO BANNER: light theme — strengthen overlay & keep text white ──────── */
+
+html[data-theme="light"] .promo-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0.2) 100%
+  ) !important;
+}
+
+html[data-theme="light"] .promo-title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.9), 0 1px 4px rgba(0,0,0,0.8) !important;
+}
+
+html[data-theme="light"] .promo-date {
+  color: rgba(255,255,255,0.95) !important;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.9) !important;
+}
+
+/* ─── ACCORDION GALLERY CAPTION (below image): light theme ─────────────────── */
+
+html[data-theme="light"] .gallery-caption {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .gallery-caption h3 {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+html[data-theme="light"] .gallery-caption .text-cyan-400\/90 {
+  color: #0891b2 !important;
+}
+html[data-theme="light"] .gallery-caption .text-slate-400 {
+  color: #475569 !important;
+}
+html[data-theme="light"] .gallery-caption .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Also fix the date/eyebrow text ON the image (inside gradient overlay) */
+html[data-theme="light"] .border-white\/10.bg-slate-950\/90 {
+  background-color: rgba(15, 23, 42, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ─── ACHIEVEMENTS STATS: light theme ───────────────────────────────────────── */
+
+html[data-theme="light"] .achievements-stat {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06) !important;
+}
+html[data-theme="light"] .achievements-stat .text-slate-300 {
+  color: #334155 !important;
+}
+html[data-theme="light"] .achievements-stat .text-violet-300  { color: #7c3aed !important; }
+html[data-theme="light"] .achievements-stat .text-cyan-300    { color: #0891b2 !important; }
+html[data-theme="light"] .achievements-stat .text-emerald-300 { color: #059669 !important; }
+html[data-theme="light"] .achievements-stat .text-amber-300   { color: #d97706 !important; }
+
+/* Vision strip */
+html[data-theme="light"] .rounded-3xl.bg-gradient-to-br {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(241,245,249,0.9)) !important;
+  border-color: rgba(15,23,42,0.08) !important;
+}
+html[data-theme="light"] .rounded-3xl.bg-gradient-to-br .text-slate-300 {
+  color: #334155 !important;
+}
+
+/* ─── WORKS SHOWCASE (Events section on home): light theme ──────────────────── */
+
+/* Filter buttons inactive */
+html[data-theme="light"] .works-filter-btn {
+  border-color: rgba(15, 23, 42, 0.16) !important;
+  background-color: rgba(241, 245, 249, 0.88) !important;
+  color: #1e293b !important;
+}
+html[data-theme="light"] .works-filter-btn:hover {
+  border-color: rgba(6, 182, 212, 0.45) !important;
+  color: #0e7490 !important;
+}
+
+/* "عرض كل الأعمال" button */
+html[data-theme="light"] .works-view-all {
+  background-color: rgba(241, 245, 249, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.16) !important;
+  color: #1e293b !important;
+}
+html[data-theme="light"] .works-view-all:hover {
+  background-color: rgba(6, 182, 212, 0.08) !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
+  color: #0e7490 !important;
+}
+
+/* Empty state */
+html[data-theme="light"] .border-dashed.border-white\/15 {
+  border-color: rgba(15, 23, 42, 0.18) !important;
+  background-color: rgba(241, 245, 249, 0.7) !important;
+}
+
+/* ─── PARTNERS MARQUEE: light theme ──────────────────────────────────────────── */
+
+html[data-theme="light"] .rounded-2xl.border-white\/10.bg-slate-900\/50 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+html[data-theme="light"] .rounded-2xl.border-white\/10.bg-slate-900\/50 .text-slate-200,
+html[data-theme="light"] .rounded-2xl.border-white\/10.bg-slate-900\/50 .text-slate-300 {
+  color: #1e293b !important;
+}
+html[data-theme="light"] .rounded-2xl.border-white\/10.bg-slate-900\/50 .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* ─── ACTIVITY DETAIL: info pill cards ────────────────────────────────────── */
+
+/* Location pill (rose) */
+html[data-theme="light"] .border-rose-500\/20 {
+  background-color: rgba(255, 241, 242, 0.9) !important;
+  border-color: rgba(244, 63, 94, 0.25) !important;
+}
+html[data-theme="light"] .text-rose-200\/70 {
+  color: #9f1239 !important;
+}
+html[data-theme="light"] .bg-rose-500\/15 {
+  background-color: rgba(244, 63, 94, 0.12) !important;
+}
+
+/* Category pill (violet) */
+html[data-theme="light"] .border-violet-500\/25 {
+  background-color: rgba(245, 243, 255, 0.9) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+html[data-theme="light"] .text-violet-300\/80 {
+  color: #5b21b6 !important;
+}
+html[data-theme="light"] .text-violet-100 {
+  color: #3b0764 !important;
+}
+html[data-theme="light"] .bg-violet-500\/20 {
+  background-color: rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Map pill (emerald) */
+html[data-theme="light"] .border-emerald-500\/25 {
+  background-color: rgba(236, 253, 245, 0.9) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+html[data-theme="light"] .text-emerald-300\/80 {
+  color: #065f46 !important;
+}
+html[data-theme="light"] .text-emerald-100 {
+  color: #064e3b !important;
+}
+html[data-theme="light"] .bg-emerald-500\/20 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+}
+
+/* Price pill (cyan) */
+html[data-theme="light"] .border-cyan-500\/30 {
+  background-color: rgba(236, 254, 255, 0.9) !important;
+  border-color: rgba(6, 182, 212, 0.3) !important;
+}
+html[data-theme="light"] .text-cyan-100 {
+  color: #164e63 !important;
+}
+html[data-theme="light"] .bg-cyan-500\/20 {
+  background-color: rgba(6, 182, 212, 0.12) !important;
+}
+
+/* Duration pill (neutral white/5) */
+html[data-theme="light"] .border-white\/10.bg-white\/\[0\.03\],
+html[data-theme="light"] .bg-white\/\[0\.03\] {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+}
+html[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(15, 23, 42, 0.07) !important;
+}
+
+/* Offer period pill */
+html[data-theme="light"] .border-amber-500\/25,
+html[data-theme="light"] .border-amber-500\/30 {
+  background-color: rgba(255, 251, 235, 0.9) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+html[data-theme="light"] .text-amber-100 {
+  color: #78350f !important;
+}
+html[data-theme="light"] .text-amber-200 {
+  color: #92400e !important;
+}
+html[data-theme="light"] .bg-amber-500\/20 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+}
+
+/* ─── BOOKING PANEL: override dark gradient background ─────────────────────── */
+html[data-theme="light"] .booking-panel {
+  background: linear-gradient(180deg,
+    rgba(248, 250, 252, 0.98) 0%,
+    rgba(241, 245, 249, 0.96) 100%) !important;
+  border-color: rgba(139, 92, 246, 0.25) !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Booking panel self/gift buttons */
+html[data-theme="light"] .rounded-xl.border.border-cyan-400\/50 {
+  background-color: rgba(236, 254, 255, 0.92) !important;
+  border-color: rgba(6, 182, 212, 0.5) !important;
+}
+
+/* Booking mode button (inactive) */
+html[data-theme="light"] .rounded-xl.border.bg-black\/30 {
+  background-color: rgba(241, 245, 249, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Inside booking panel: all text overrides */
+html[data-theme="light"] .booking-panel .text-white {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .booking-panel .text-slate-400 {
+  color: #475569 !important;
+}
+html[data-theme="light"] .booking-panel .text-slate-300 {
+  color: #334155 !important;
+}
+html[data-theme="light"] .booking-panel .text-slate-500 {
+  color: #64748b !important;
+}
+html[data-theme="light"] .booking-panel .text-cyan-400\/90 {
+  color: #0e7490 !important;
+}
+html[data-theme="light"] .booking-panel .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+html[data-theme="light"] .booking-panel .border-white\/10.bg-black\/30 {
+  background-color: rgba(241, 245, 249, 0.85) !important;
+}
+html[data-theme="light"] .booking-panel .bg-white\/\[0\.02\] {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+}
+html[data-theme="light"] .booking-panel input,
+html[data-theme="light"] .booking-panel textarea,
+html[data-theme="light"] .booking-panel select {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+/* "الحجز الآن" CTA button in activity card */
+html[data-theme="light"] .bg-gradient-to-l.from-violet-600.to-cyan-500 {
+  /* keep gradient, just ensure text stays white */
+}
+
+/* Activity card bottom price strip — always dark so price text stays readable on photos */
+html[data-theme="light"] .activity-card-price-strip {
+  background: linear-gradient(to top, rgba(10, 15, 30, 0.92) 60%, transparent) !important;
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* stat chips on card images — keep dark background + white text for readability on photos */
+html[data-theme="light"] .bg-black\/55 {
+  background-color: rgba(10, 15, 30, 0.75) !important;
+}
+html[data-theme="light"] .bg-black\/55 * {
+  color: #f1f5f9 !important;
+}
+html[data-theme="light"] .bg-black\/55.text-amber-200,
+html[data-theme="light"] .bg-black\/55 .text-amber-200 {
+  color: #fcd34d !important;
+}
+
+/* price & rating text inside the strip — keep white/light for readability on dark overlay */
+html[data-theme="light"] .activity-card-price-strip * {
+  color: #f1f5f9 !important;
+}
+html[data-theme="light"] .activity-card-price-strip .text-cyan-300 {
+  color: #22d3ee !important;
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.6));
+}
+html[data-theme="light"] .activity-card-price-strip .text-amber-200 {
+  color: #fcd34d !important;
+}
+html[data-theme="light"] .activity-card-price-strip .text-emerald-200 {
+  color: #6ee7b7 !important;
+}
+html[data-theme="light"] .activity-card-price-strip .text-slate-500 {
+  color: #cbd5e1 !important;
+}
+html[data-theme="light"] .activity-card-price-strip .line-through {
+  color: #94a3b8 !important;
+}
+
+/* In light mode outside the card strip (booking panel / detail page) — price in deep cyan */
+html[data-theme="light"] .booking-panel .text-cyan-300,
+html[data-theme="light"] .text-cyan-300 {
+  color: #0e7490 !important;
+  filter: none;
+}
+
+/* Star rating & price on cards */
+html[data-theme="light"] .text-amber-300 {
+  color: #d97706 !important;
+}
+
+/* Activity card info section (below image) */
+html[data-theme="light"] .gradient-border > .inner .text-white {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .gradient-border > .inner .text-slate-400 {
+  color: #475569 !important;
+}
+html[data-theme="light"] .gradient-border > .inner .text-purple-400 {
+  color: #7c3aed !important;
+}
+html[data-theme="light"] .gradient-border > .inner .text-red-300 {
+  color: #b91c1c !important;
+}
+html[data-theme="light"] .gradient-border > .inner .border-red-400\/35 {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+html[data-theme="light"] .gradient-border > .inner .bg-red-950\/50 {
+  background-color: rgba(254, 226, 226, 0.85) !important;
+}
+
+/* "هذا الأسبوع" badge */
+html[data-theme="light"] .text-emerald-200 {
+  color: #065f46 !important;
+}
+html[data-theme="light"] .bg-emerald-500\/15 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+}
+html[data-theme="light"] .border-emerald-500\/30 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Violet info boxes (login prompt in booking) */
+html[data-theme="light"] .bg-violet-500\/10 {
+  background-color: rgba(245, 243, 255, 0.85) !important;
+}
+html[data-theme="light"] .border-violet-500\/25 {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+html[data-theme="light"] .text-violet-100 {
+  color: #3b0764 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 
 .activity-map-popup-pin {
   flex-shrink: 0;

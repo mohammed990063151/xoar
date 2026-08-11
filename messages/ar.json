@@ -29,7 +29,7 @@
         "id": "yoga",
         "title": "يوجا وعافية",
         "description": "جلسات يوجا للشركات والمجتمعات مع مدربين معتمدين، سجاد، موسيقى هادئة، ومسارات صعوبة متعددة.",
-        "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "الرياض",
         "date": "20 مايو 2026",
@@ -39,7 +39,7 @@
         "id": "hiking",
         "title": "مشي وهيكنج",
         "description": "مسارات آمنة في الطبيعة مع مرشدين، نقاط تموين، وتصوير جوّي اختياري لتخليد الرحلة.",
-        "image": "https://images.unsplash.com/photo-1551632811-561732d1e306?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "أبها",
         "date": "22 مايو 2026",
@@ -49,7 +49,7 @@
         "id": "interactive",
         "title": "ألعاب تفاعلية",
         "description": "ألعاب تفاعلية وVR خفيف وتجارب أركان للفعاليات الكبرى والعائلية.",
-        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "جدة",
         "date": "18 مايو 2026",
@@ -59,7 +59,7 @@
         "id": "shows",
         "title": "عروض حية",
         "description": "عروض موسيقية ورقص وإضاءة متزامنة مع هوية الفعالية.",
-        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "الرياض",
         "date": "25 مايو 2026",
@@ -69,7 +69,7 @@
         "id": "family",
         "title": "أنشطة للعائلة",
         "description": "رسم وجوه وألعاب وورش بسيطة تبقي الأطفال منشغلين بأمان.",
-        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "الرياض",
         "date": "15 مايو 2026",
@@ -85,7 +85,7 @@
     "primaryCta": "استكشف الأنشطة الترفيهية",
     "eventRequestCta": "طلب فعالية",
     "secondaryCta": "مشاهدة أعمالنا",
-    "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=960&q=70&auto=format"
+    "videoPoster": "https://images.unsplash.com/photo-1674822858255-fcc093a1ef43?auto=format&fit=crop&w=960&q=85"
   },
   "heroGallery": {
     "eyebrow": "لمحات من أعمالنا",
@@ -139,22 +139,22 @@
       {
         "title": "سينما خارجية",
         "desc": "عرض تحت السماء مع صوت وإضاءة يعزّز أجواء التجمع.",
-        "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=85"
       },
       {
         "title": "أنشطة للعائلة",
         "desc": "رسم وجوه وألعاب وورش بسيطة تبقي الأطفال منشغلين بأمان.",
-        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=85"
       },
       {
         "title": "عروض حيّة",
         "desc": "إيقاع، إضاءة، وتفاعل مباشر يحوّل المسرح إلى محور الحدث.",
-        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85"
       },
       {
         "title": "مناطق ألعاب",
         "desc": "تجارب أركيد وتحديات بصرية ترفع الطاقة بين الحضور.",
-        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=85"
       }
     ]
   },
@@ -445,32 +445,32 @@
         {
           "title": "شاشات العرض",
           "desc": "جدران LED وشاشات عملاقة لبث العروض والهويّة البصرية بوضوح وسط الحشود.",
-          "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "أنظمة الصوت",
           "desc": "مكبرات احترافية وتوزيع صوتي متوازن للأناشيد والكلمات والعروض الحية.",
-          "image": "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "هدايا تذكارية",
           "desc": "توزيعات وهدايا بلمسة وطنية تضيف ذكرى جميلة لكل ضيف.",
-          "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "مشروبات وضيافة",
           "desc": "محطات مشروبات باردة وساخنة بتصميم يلائم أجواء الاحتفال.",
-          "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "ألعاب تفاعلية",
           "desc": "أركان ألعاب وتحديات خفيفة تُبقي العائلات والأطفال في تفاعل مستمر.",
-          "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "تزيين وإضاءة",
           "desc": "ديكور أخضر وذهبي، إضاءة مسرحية، ولمسات بصرية تُحيي روح اليوم الوطني.",
-          "image": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=900&q=85"
         }
       ],
       "galleryTitle": "لمحات من أجواء الاحتفال",
@@ -506,7 +506,8 @@
       "sendAnother": "إرسال رسالة أخرى",
       "channelsTitle": "قنوات التواصل المباشرة",
       "whyTitle": "لماذا تتواصل معنا؟",
-      "formTitle": "نموذج التواصل"
+      "formTitle": "نموذج التواصل",
+      "mapTitle": "موقعنا على الخريطة"
     }
   }
 }

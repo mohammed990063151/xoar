@@ -454,6 +454,9 @@ function normalizeServiceItems(raw: unknown, fallback: ServiceItem[]): ServiceLi
   };
 
   if (Array.isArray(raw)) {
+    if (raw.length === 0) {
+      return fallback.map((item, index) => mapItem(item, index));
+    }
     return raw.map(mapItem);
   }
 
@@ -498,10 +501,15 @@ function mergeServices(
   }
 
   const images = mapImages(apiContent.images);
-  const listItems =
+  const listFromBundle =
     items.length > 0
       ? normalizeServiceItems(items, fallback.items)
       : normalizeServiceItems(apiContent.items, fallback.items);
+
+  const listItems =
+    listFromBundle.filter((item) => item.title.trim().length > 0).length > 0
+      ? listFromBundle.filter((item) => item.title.trim().length > 0)
+      : fallback.items;
 
   return {
     eyebrow: nonEmpty(apiContent.eyebrow) ?? fallback.eyebrow,

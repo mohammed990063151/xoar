@@ -146,7 +146,7 @@ export function HomePromoBanner({
         </motion.div>
       </AnimatePresence>
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/10" />
+      <div className="promo-overlay pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/10" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-black/50 via-transparent to-transparent rtl:bg-gradient-to-r" />
 
       <div className="pointer-events-none absolute start-4 top-4 z-20 flex items-center gap-2 sm:start-5 sm:top-5">
@@ -161,11 +161,11 @@ export function HomePromoBanner({
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-4 pb-4 pt-20 text-center sm:items-end sm:px-8 sm:pb-7 sm:pt-16 sm:text-end">
-        <h2 className="max-w-[min(100%,20rem)] text-[clamp(0.95rem,4.2vw,1.65rem)] font-bold leading-snug text-white text-balance sm:max-w-xl">
+        <h2 className="promo-title max-w-[min(100%,20rem)] text-[clamp(0.95rem,4.2vw,1.65rem)] font-bold leading-snug text-white text-balance sm:max-w-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
           {current.title}
         </h2>
         {current.subtitle ? (
-          <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-white/90 sm:mt-2 sm:justify-end sm:text-sm">
+          <p className="promo-date mt-1.5 flex items-center justify-center gap-2 text-xs text-white/90 sm:mt-2 sm:justify-end sm:text-sm drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
             <CalendarIcon />
             <span>{current.subtitle}</span>
           </p>

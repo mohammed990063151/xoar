@@ -78,7 +78,7 @@ function IconSnapchat(): React.ReactElement {
   );
 }
 
-const icons: Record<SocialKey, () => React.ReactElement> = {
+export const icons: Record<SocialKey, () => React.ReactElement> = {
   instagram: IconInstagram,
   x: IconX,
   linkedin: IconLinkedIn,

@@ -214,7 +214,7 @@ export function ActivityCard({
           />
 
           {hasPrice || hasPriceStats ? (
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-gradient-to-t from-[#05050c] to-[#05050c]/85 px-3 py-2 backdrop-blur-sm">
+            <div className="activity-card-price-strip pointer-events-none absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-gradient-to-t from-[#05050c] to-[#05050c]/85 px-3 py-2 backdrop-blur-sm">
               <div className="flex items-end gap-2">
                 {hasPrice ? (
                   <div className="flex min-w-0 flex-col gap-1">

@@ -386,7 +386,7 @@ export function AccordionImageGallery({
           <motion.div
             key={focusedIndex}
             className={cn(
-              "mt-4 min-h-[4.5rem]",
+              "mt-4 min-h-[4.5rem] gallery-caption",
               isCream ? "text-slate-800" : "text-white",
             )}
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}

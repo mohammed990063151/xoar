@@ -3,6 +3,7 @@ import {
   GoogleTagManager,
   GoogleTagManagerNoscript,
 } from "@/components/analytics/GoogleTagManager";
+import { ThemeInit } from "@/components/providers/ThemeInit";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,8 +35,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.ReactElement {
   return (
-    <html lang="ar" suppressHydrationWarning>
+    <html lang="ar" data-theme="dark" suppressHydrationWarning>
       <body className="min-h-screen min-w-0 overflow-x-clip antialiased">
+        <ThemeInit />
         <GoogleTagManager />
         <GoogleTagManagerNoscript />
         {children}

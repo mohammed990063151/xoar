@@ -29,7 +29,7 @@
         "id": "yoga",
         "title": "Yoga & wellness",
         "description": "Corporate and community yoga with certified instructors, mats, calm music, and multi-level flows.",
-        "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "Riyadh",
         "date": "May 20, 2026",
@@ -39,7 +39,7 @@
         "id": "hiking",
         "title": "Hiking & trails",
         "description": "Safe outdoor trails with guides, hydration points, and optional aerial capture.",
-        "image": "https://images.unsplash.com/photo-1551632811-561732d1e306?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "Abha",
         "date": "May 22, 2026",
@@ -49,7 +49,7 @@
         "id": "interactive",
         "title": "Interactive games",
         "description": "Interactive games, light VR, and booth-style activations for large or family events.",
-        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "Jeddah",
         "date": "May 18, 2026",
@@ -59,7 +59,7 @@
         "id": "shows",
         "title": "Live shows",
         "description": "Music, dance, and lighting synchronized with your event identity.",
-        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "Riyadh",
         "date": "May 25, 2026",
@@ -69,7 +69,7 @@
         "id": "family",
         "title": "Family activities",
         "description": "Face paint, games, and simple workshops that keep kids engaged safely.",
-        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80",
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=85",
         "organizer": "Xora",
         "location": "Riyadh",
         "date": "May 15, 2026",
@@ -85,7 +85,7 @@
     "primaryCta": "Explore entertainment activities",
     "eventRequestCta": "Request an event",
     "secondaryCta": "Watch our work",
-    "videoPoster": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=960&q=70&auto=format"
+    "videoPoster": "https://images.unsplash.com/photo-1674822858255-fcc093a1ef43?auto=format&fit=crop&w=960&q=85"
   },
   "heroGallery": {
     "eyebrow": "Highlights",
@@ -139,22 +139,22 @@
       {
         "title": "Outdoor cinema",
         "desc": "Open-air screenings with immersive sound and lighting.",
-        "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=85"
       },
       {
         "title": "Family moments",
         "desc": "Face paint, games, and workshops that keep kids engaged safely.",
-        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=85"
       },
       {
         "title": "Live performances",
         "desc": "Stage energy, lighting, and crowd moments that anchor the night.",
-        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85"
       },
       {
         "title": "Arcade zones",
         "desc": "Playful challenges and arcade-style experiences for high energy.",
-        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80"
+        "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=85"
       }
     ]
   },
@@ -445,32 +445,32 @@
         {
           "title": "Display screens",
           "desc": "LED walls and giant screens for shows and visual identity that cut through the crowd.",
-          "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "Sound systems",
           "desc": "Professional speakers and balanced audio for anthems, speeches, and live performances.",
-          "image": "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "Keepsake gifts",
           "desc": "Thoughtful giveaways with a national touch that guests remember.",
-          "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "Drinks & hospitality",
           "desc": "Cold and hot beverage stations styled for festive National Day energy.",
-          "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "Interactive games",
           "desc": "Game corners and light challenges that keep families and kids engaged.",
-          "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=85"
         },
         {
           "title": "Decor & lighting",
           "desc": "Green-and-gold styling, theatrical lighting, and visuals that bring National Day to life.",
-          "image": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=900&q=80"
+          "image": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=900&q=85"
         }
       ],
       "galleryTitle": "Celebration atmosphere",
@@ -506,7 +506,8 @@
       "sendAnother": "Send another message",
       "channelsTitle": "Direct contact channels",
       "whyTitle": "Why reach out?",
-      "formTitle": "Contact form"
+      "formTitle": "Contact form",
+      "mapTitle": "Find us on the map"
     }
   }
 }

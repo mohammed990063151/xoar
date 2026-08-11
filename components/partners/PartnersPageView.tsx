@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
 import type { PartnerItem, PartnersPageContent } from "@/lib/site-page";
 import { PartnerApplyModal } from "@/components/partners/PartnerApplyModal";
+import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 import {
   pageBottom,
   pageEyebrow,
@@ -15,7 +16,6 @@ import {
   pageHeroSection,
   pageIntro,
   pageTitle,
-  sectionHeading,
   siteContainer,
 } from "@/lib/layout";
 
@@ -48,21 +48,21 @@ function PartnerLogoCard({
       />
       <div
         className={cn(
-          "relative flex w-full items-center justify-center",
-          featured ? "h-28 sm:h-32" : "h-20 sm:h-24",
+          "relative mx-auto w-full",
+          featured ? "h-28 max-w-[12rem] sm:h-32 sm:max-w-[14rem]" : "h-20 max-w-[10rem] sm:h-24",
         )}
       >
         {partner.logo ? (
           <Image
             src={partner.logo}
             alt={partner.name}
-            width={160}
-            height={80}
-            className="max-h-full w-auto max-w-[85%] object-contain transition duration-500 group-hover:scale-110"
+            fill
+            sizes={featured ? "224px" : "160px"}
+            className="object-contain object-center transition duration-500 group-hover:scale-110"
             unoptimized={isStorageImage(partner.logo)}
           />
         ) : (
-          <span className="text-sm font-bold text-slate-300">{partner.name}</span>
+          <span className="flex h-full items-center justify-center text-sm font-bold text-slate-300">{partner.name}</span>
         )}
       </div>
       <p className="relative mt-3 text-center text-xs font-medium text-slate-500 transition group-hover:text-cyan-200/90">
@@ -101,6 +101,7 @@ export function PartnersPageView({
   content,
 }: PartnersPageViewProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
+  const light = useDocumentTheme() === "light";
   const ar = locale === "ar";
   const partners = content.partners;
   const [applyOpen, setApplyOpen] = useState(false);
@@ -189,25 +190,49 @@ export function PartnersPageView({
       <section className="pb-16 sm:pb-20">
         <div className={siteContainer}>
           <motion.div
-            className="relative overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-[#071525] px-6 py-10 text-center sm:px-10 sm:py-14"
+            className={cn(
+              "relative overflow-hidden rounded-[2rem] px-6 py-10 text-center sm:px-10 sm:py-14",
+              light
+                ? "border border-cyan-600/25 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
+                : "border border-cyan-400/20",
+            )}
+            style={{ backgroundColor: light ? "#ffffff" : "#071525" }}
             initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
             <div
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.16),transparent_60%)]"
+              className={
+                light
+                  ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_60%)]"
+                  : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.16),transparent_60%)]"
+              }
               aria-hidden
             />
             <div className="relative">
-              <h2 className={sectionHeading}>{content.closing.title}</h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
+              <h2
+                className="text-[clamp(1.25rem,4vw,1.875rem)] font-bold tracking-tight sm:text-3xl"
+                style={light ? { color: "#0f172a" } : { color: "#ffffff" }}
+              >
+                {content.closing.title}
+              </h2>
+              <p
+                className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed sm:text-base"
+                style={light ? { color: "#475569" } : { color: "#94a3b8" }}
+              >
                 {content.closing.text}
               </p>
               <button
                 type="button"
                 onClick={() => setApplyOpen(true)}
-                className="mt-6 inline-flex items-center justify-center rounded-full border border-cyan-400/40 bg-cyan-500/10 px-6 py-3 text-sm font-semibold text-white transition hover:border-cyan-300/60 hover:bg-cyan-500/20"
+                className={cn(
+                  "mt-6 inline-flex items-center justify-center rounded-full border px-6 py-3 text-sm font-semibold transition",
+                  light
+                    ? "border-cyan-600/40 bg-cyan-50 hover:border-cyan-600/60 hover:bg-cyan-100"
+                    : "border-cyan-400/40 bg-cyan-500/10 hover:border-cyan-300/60 hover:bg-cyan-500/20",
+                )}
+                style={light ? { color: "#0e7490" } : { color: "#ffffff" }}
               >
                 {ar ? "قدّم طلب الشراكة" : "Apply to partner"}
               </button>

@@ -9,6 +9,7 @@ import { cn } from "@/lib/cn";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { parseApiError } from "@/lib/parse-api-error";
 import { formProfileDefaults, saveFormProfile } from "@/lib/form-profile-cookie";
+import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 
 interface PartnerApplyModalProps {
   readonly open: boolean;
@@ -30,6 +31,7 @@ export function PartnerApplyModal({
   onClose,
 }: PartnerApplyModalProps): React.ReactElement {
   const ar = locale === "ar";
+  const light = useDocumentTheme() === "light";
   const reduceMotion = useReducedMotion();
   const titleId = useId();
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -138,6 +140,14 @@ export function PartnerApplyModal({
       ? savedDefaults.city
       : "الرياض");
 
+  const inputClass = light
+    ? "w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-cyan-500/60 disabled:opacity-60"
+    : "w-full rounded-xl border border-white/10 bg-[#0a1a2e] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-400/50 disabled:opacity-60";
+
+  const closeBtnClass = light
+    ? "rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+    : "rounded-full border border-white/15 px-3 py-1.5 text-sm text-slate-300 hover:bg-white/5";
+
   return (
     <AnimatePresence>
       {open ? (
@@ -149,7 +159,11 @@ export function PartnerApplyModal({
         >
           <button
             type="button"
-            className="absolute inset-0 bg-[#06101f]/80 backdrop-blur-md"
+            className={
+              light
+                ? "absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+                : "absolute inset-0 bg-[#06101f]/80 backdrop-blur-md"
+            }
             aria-label={ar ? "إغلاق" : "Close"}
             onClick={onClose}
           />
@@ -157,47 +171,88 @@ export function PartnerApplyModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border border-cyan-400/20 bg-[#071525] shadow-[0_-20px_80px_rgba(0,0,0,0.55)] sm:rounded-3xl"
+            className={cn(
+              "relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl sm:rounded-3xl",
+              light
+                ? "border border-cyan-600/20 shadow-[0_24px_80px_rgba(15,23,42,0.18)]"
+                : "border border-cyan-400/20 shadow-[0_-20px_80px_rgba(0,0,0,0.55)]",
+            )}
+            style={{ backgroundColor: light ? "#ffffff" : "#071525" }}
             initial={reduceMotion ? false : { y: 48, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={reduceMotion ? undefined : { y: 32, opacity: 0 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
           >
             <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.18),transparent_70%)]"
+              className={
+                light
+                  ? "pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.12),transparent_70%)]"
+                  : "pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.18),transparent_70%)]"
+              }
               aria-hidden
             />
 
-            <header className="relative flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
+            <header
+              className={cn(
+                "relative flex items-start justify-between gap-4 px-5 py-4 sm:px-6",
+                light ? "border-b border-slate-200" : "border-b border-white/10",
+              )}
+            >
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300/90">
+                <p
+                  className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+                  style={light ? { color: "#0e7490" } : { color: "rgba(103,232,249,0.9)" }}
+                >
                   Xoar Partners
                 </p>
-                <h2 id={titleId} className="mt-1 text-xl font-bold text-white sm:text-2xl">
+                <h2
+                  id={titleId}
+                  className={cn(
+                    "mt-1 text-xl font-bold sm:text-2xl",
+                    light ? "text-slate-900" : "text-white",
+                  )}
+                  style={light ? { color: "#0f172a" } : { color: "#ffffff" }}
+                >
                   {ar ? "انضم لشبكة شركاء إكزورا" : "Join the Xoar partner network"}
                 </h2>
-                <p className="mt-1 text-xs text-slate-500">
+                <p
+                  className="mt-1 text-xs"
+                  style={light ? { color: "#64748b" } : { color: "#64748b" }}
+                >
                   {ar
                     ? "طلب شراكة مستقل — لا يتطلب تسجيل دخول العميل."
                     : "Partner request only — no customer login required."}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-full border border-white/15 px-3 py-1.5 text-sm text-slate-300 hover:bg-white/5"
-              >
+              <button type="button" onClick={onClose} className={closeBtnClass}>
                 {ar ? "إغلاق" : "Close"}
               </button>
             </header>
 
             <div className="relative overflow-y-auto px-5 py-5 sm:px-6">
               {done ? (
-                <div className="space-y-3 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-5 text-center">
-                  <p className="text-base font-semibold text-emerald-100">
+                <div
+                  className={cn(
+                    "space-y-3 rounded-2xl border px-4 py-5 text-center",
+                    light
+                      ? "border-emerald-300 bg-emerald-50"
+                      : "border-emerald-400/30 bg-emerald-500/10",
+                  )}
+                >
+                  <p
+                    className={cn(
+                      "text-base font-semibold",
+                      light ? "text-emerald-800" : "text-emerald-100",
+                    )}
+                  >
                     {ar ? "تم إرسال طلب الشراكة" : "Partner request sent"}
                   </p>
-                  <p className="text-sm text-emerald-100/80">
+                  <p
+                    className={cn(
+                      "text-sm",
+                      light ? "text-emerald-700" : "text-emerald-100/80",
+                    )}
+                  >
                     {ar
                       ? "سيراجع فريق إكزورا طلبك ويتواصل معك عبر البريد أو الجوال."
                       : "The Xoar team will review and contact you. This does not sign you in as a customer."}
@@ -205,7 +260,7 @@ export function PartnerApplyModal({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="mt-2 rounded-full border border-white/15 px-5 py-2.5 text-sm text-slate-200"
+                    className={cn(closeBtnClass, "mt-2 px-5 py-2.5")}
                   >
                     {ar ? "حسناً" : "Done"}
                   </button>
@@ -216,7 +271,7 @@ export function PartnerApplyModal({
                   className="space-y-4"
                   onSubmit={(e) => void handleSubmit(e)}
                 >
-                  <Field label={ar ? "اسم النشاط / العلامة التجارية" : "Business / brand name"}>
+                  <Field light={light} label={ar ? "اسم النشاط / العلامة التجارية" : "Business / brand name"}>
                     <input
                       name="partner_business_name"
                       required
@@ -226,7 +281,7 @@ export function PartnerApplyModal({
                     />
                   </Field>
 
-                  <Field label={ar ? "البريد الإلكتروني للتواصل" : "Contact email"}>
+                  <Field light={light} label={ar ? "البريد الإلكتروني للتواصل" : "Contact email"}>
                     <input
                       name="email"
                       type="email"
@@ -238,7 +293,7 @@ export function PartnerApplyModal({
                   </Field>
 
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label={ar ? "نوع الخدمة" : "Service type"}>
+                    <Field light={light} label={ar ? "نوع الخدمة" : "Service type"}>
                       <select name="partner_activity_type" defaultValue="both" className={inputClass}>
                         {ACTIVITY_TYPES.map((t) => (
                           <option key={t.value} value={t.value}>
@@ -247,7 +302,7 @@ export function PartnerApplyModal({
                         ))}
                       </select>
                     </Field>
-                    <Field label={ar ? "المدينة" : "City"}>
+                    <Field light={light} label={ar ? "المدينة" : "City"}>
                       <select
                         name="city"
                         required
@@ -263,7 +318,7 @@ export function PartnerApplyModal({
                     </Field>
                   </div>
 
-                  <Field label={ar ? "رقم الجوال للتواصل" : "Contact phone"}>
+                  <Field light={light} label={ar ? "رقم الجوال للتواصل" : "Contact phone"}>
                     <input
                       name="phone"
                       type="tel"
@@ -273,7 +328,7 @@ export function PartnerApplyModal({
                     />
                   </Field>
 
-                  <Field label={ar ? "صف نشاطك وخبرتك" : "Describe your activity"}>
+                  <Field light={light} label={ar ? "صف نشاطك وخبرتك" : "Describe your activity"}>
                     <textarea
                       name="partner_request_message"
                       required
@@ -288,7 +343,14 @@ export function PartnerApplyModal({
                   </Field>
 
                   {error ? (
-                    <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-100">
+                    <p
+                      className={cn(
+                        "rounded-xl border px-3 py-2 text-sm",
+                        light
+                          ? "border-rose-300 bg-rose-50 text-rose-700"
+                          : "border-rose-500/30 bg-rose-500/10 text-rose-100",
+                      )}
+                    >
                       {error}
                     </p>
                   ) : null}
@@ -310,7 +372,11 @@ export function PartnerApplyModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="rounded-full border border-white/15 px-5 py-3 text-sm text-slate-300 hover:bg-white/5"
+                      className={cn(
+                        light
+                          ? "rounded-full border border-slate-200 px-5 py-3 text-sm text-slate-700 hover:bg-slate-100"
+                          : "rounded-full border border-white/15 px-5 py-3 text-sm text-slate-300 hover:bg-white/5",
+                      )}
                     >
                       {ar ? "إلغاء" : "Cancel"}
                     </button>
@@ -318,11 +384,22 @@ export function PartnerApplyModal({
                 </form>
               )}
 
-              <div className="mt-6 border-t border-white/10 pt-5">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <div
+                className={cn(
+                  "mt-6 pt-5",
+                  light ? "border-t border-slate-200" : "border-t border-white/10",
+                )}
+              >
+                <p
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={light ? { color: "#64748b" } : { color: "#64748b" }}
+                >
                   {ar ? "مزايا الشريك المعتمد" : "Partner benefits"}
                 </p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-400">
+                <ul
+                  className="mt-3 space-y-2 text-sm"
+                  style={light ? { color: "#475569" } : { color: "#94a3b8" }}
+                >
                   <li>{ar ? "إضافة أنشطتك وعرضها للزوار" : "Add and showcase your activities"}</li>
                   <li>{ar ? "طلب فعاليات خاصة عبر المنصة" : "Request special events on the platform"}</li>
                   <li>{ar ? "إشعارات فورية عند الحجوزات" : "Instant booking notifications"}</li>
@@ -338,18 +415,22 @@ export function PartnerApplyModal({
 
 function Field({
   label,
+  light,
   children,
 }: {
   readonly label: string;
+  readonly light: boolean;
   readonly children: React.ReactNode;
 }): React.ReactElement {
   return (
     <label className="block space-y-1.5">
-      <span className="text-xs font-medium text-slate-400">{label}</span>
+      <span
+        className="text-xs font-medium"
+        style={light ? { color: "#334155" } : { color: "#94a3b8" }}
+      >
+        {label}
+      </span>
       {children}
     </label>
   );
 }
-
-const inputClass =
-  "w-full rounded-xl border border-white/10 bg-[#0a1a2e] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-400/50 disabled:opacity-60";

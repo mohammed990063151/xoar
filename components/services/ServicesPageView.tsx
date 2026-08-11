@@ -2,23 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
-import { ServiceCard } from "@/components/ui/ServiceCard";
 import type { ServicesPageContent, ServiceListItem } from "@/lib/site-page";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { isStorageImage } from "@/lib/image-url";
+import { cn } from "@/lib/cn";
 import {
-  gridCards3,
   pageBottom,
   pageEyebrow,
   pageHeroInner,
   pageHeroSection,
   pageIntro,
   pageTitle,
-  scrollRow,
   sectionBlock,
-  sectionHeading,
   siteContainerNarrow,
 } from "@/lib/layout";
 
@@ -70,6 +68,29 @@ const SERVICE_ICONS: Record<string, React.ReactElement> = {
 
 const ICON_FALLBACKS = Object.values(SERVICE_ICONS);
 
+const ACCENTS = [
+  {
+    icon: "from-cyan-500/25 to-blue-600/20 text-cyan-300 ring-cyan-400/30",
+    bar: "from-cyan-400 to-blue-500",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(6,182,212,0.18)]",
+  },
+  {
+    icon: "from-violet-500/25 to-purple-600/20 text-violet-300 ring-violet-400/30",
+    bar: "from-violet-400 to-purple-500",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(139,92,246,0.18)]",
+  },
+  {
+    icon: "from-emerald-500/25 to-teal-600/20 text-emerald-300 ring-emerald-400/30",
+    bar: "from-emerald-400 to-teal-500",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(16,185,129,0.18)]",
+  },
+  {
+    icon: "from-amber-500/25 to-orange-600/20 text-amber-300 ring-amber-400/30",
+    bar: "from-amber-400 to-orange-500",
+    glow: "group-hover:shadow-[0_20px_50px_rgba(245,158,11,0.18)]",
+  },
+];
+
 const STEP_LABELS = {
   ar: ["التخطيط", "التنفيذ", "ما بعد الحدث"],
   en: ["Planning", "Delivery", "Post-event"],
@@ -82,36 +103,106 @@ function serviceIcon(item: ServiceListItem, index: number): React.ReactElement {
   return ICON_FALLBACKS[index % ICON_FALLBACKS.length];
 }
 
+function ServiceTile({
+  locale,
+  item,
+  index,
+  detailCta,
+}: {
+  readonly locale: Locale;
+  readonly item: ServiceListItem;
+  readonly index: number;
+  readonly detailCta: string;
+}): React.ReactElement {
+  const accent = ACCENTS[index % ACCENTS.length];
+  const href = localizedPath(locale, item.slug ? `/services/${item.slug}` : "/contact");
+  const description = item.body || item.description;
+
+  return (
+    <motion.article
+      className={cn(
+        "services-card group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950/50 p-6 backdrop-blur-sm transition-all duration-500 sm:p-7",
+        accent.glow,
+      )}
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ delay: index * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -6 }}
+    >
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r opacity-80",
+          accent.bar,
+        )}
+        aria-hidden
+      />
+
+      <div className="flex items-start justify-between gap-3">
+        <span
+          className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ring-1",
+            accent.icon,
+          )}
+        >
+          {serviceIcon(item, index)}
+        </span>
+        <span className="text-xs font-bold tabular-nums text-slate-500">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+
+      <h3 className="mt-5 text-xl font-bold text-white sm:text-2xl">{item.title}</h3>
+      <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400 sm:text-base">
+        {description}
+      </p>
+
+      <Link
+        href={href}
+        className="mt-6 inline-flex w-fit items-center gap-2 text-sm font-semibold text-cyan-300 transition group-hover:gap-3 group-hover:text-cyan-200"
+      >
+        {detailCta}
+        <span aria-hidden className="rtl:rotate-180">
+          →
+        </span>
+      </Link>
+    </motion.article>
+  );
+}
+
 export function ServicesPageView({
   locale,
   content,
   contactCta,
 }: ServicesPageViewProps): React.ReactElement {
+  const ar = locale === "ar";
   const contactPath = localizedPath(locale, "/contact");
   const steps = STEP_LABELS[locale];
-  const detailCta = content.detailCta || (locale === "ar" ? "التفاصيل" : "Details");
+  const detailCta = content.detailCta || (ar ? "التفاصيل" : "Details");
+  const items = content.items.filter((item) => item.title.trim().length > 0);
 
   return (
-    <div className={pageBottom}>
+    <div className={cn(pageBottom, "services-page")}>
+      {/* Hero */}
       <section className={pageHeroSection}>
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(59,130,246,0.18),transparent),radial-gradient(ellipse_50%_40%_at_90%_80%,rgba(168,85,247,0.1),transparent)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(59,130,246,0.18),transparent),radial-gradient(ellipse_50%_40%_at_90%_80%,rgba(168,85,247,0.12),transparent)]"
           aria-hidden
         />
         <div className={pageHeroInner}>
           <div className="grid items-center gap-8 md:gap-10 lg:grid-cols-2 lg:gap-14">
             <ScrollReveal className="min-w-0">
               {content.eyebrow ? <p className={pageEyebrow}>{content.eyebrow}</p> : null}
-              <h1 className={pageTitle}>{content.title}</h1>
+              <h1 className={cn(pageTitle, "gradient-text")}>{content.title}</h1>
               <p className={pageIntro}>{content.intro}</p>
 
-              <ol className={`${scrollRow} mt-6 sm:mt-8 sm:flex-wrap`}>
+              <ol className="mt-6 flex flex-wrap gap-2 sm:mt-8">
                 {steps.map((label, index) => (
                   <li
                     key={label}
-                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300"
+                    className="services-step flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200"
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-600/30 text-xs font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 text-[11px] font-bold text-white">
                       {index + 1}
                     </span>
                     {label}
@@ -122,7 +213,7 @@ export function ServicesPageView({
 
             <ScrollReveal>
               {content.heroImage ? (
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
                   <Image
                     src={content.heroImage}
                     alt=""
@@ -133,15 +224,26 @@ export function ServicesPageView({
                     unoptimized={isStorageImage(content.heroImage)}
                   />
                   <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020617]/60 to-transparent"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020617]/55 to-transparent"
                     aria-hidden
                   />
                 </div>
               ) : (
-                <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center text-sm text-slate-500">
-                  {locale === "ar"
-                    ? "ارفع صورة من لوحة التحكم → صفحات الموقع → خدماتنا"
-                    : "Upload a hero image from Dashboard → Site pages → Services"}
+                <div className="services-hero-placeholder relative flex aspect-[4/3] flex-col items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-violet-950/80 via-slate-950 to-cyan-950/60 p-8 text-center">
+                  <div
+                    className="pointer-events-none absolute -end-10 -top-10 h-40 w-40 rounded-full bg-violet-500/30 blur-3xl"
+                    aria-hidden
+                  />
+                  <div
+                    className="pointer-events-none absolute -start-8 bottom-0 h-36 w-36 rounded-full bg-cyan-500/25 blur-3xl"
+                    aria-hidden
+                  />
+                  <p className="relative text-4xl font-black tracking-tight text-white sm:text-5xl">
+                    {ar ? "من الفكرة" : "From idea"}
+                  </p>
+                  <p className="relative mt-2 text-lg font-semibold text-cyan-300 sm:text-xl">
+                    {ar ? "إلى تجربة لا تُنسى" : "to an unforgettable experience"}
+                  </p>
                 </div>
               )}
             </ScrollReveal>
@@ -149,48 +251,59 @@ export function ServicesPageView({
         </div>
       </section>
 
+      {/* Services grid */}
       <section className={sectionBlock}>
         <ScrollReveal>
-          <div className="text-center">
-            <p className={pageEyebrow}>{locale === "ar" ? "حلول متكاملة" : "End-to-end solutions"}</p>
-            <h2 className={`mt-3 ${sectionHeading}`}>
-              {locale === "ar" ? "خدماتنا الأساسية" : "Core services"}
+          <div className="mx-auto max-w-2xl text-center">
+            <p className={pageEyebrow}>{ar ? "حلول متكاملة" : "End-to-end solutions"}</p>
+            <h2 className="mt-3 text-[clamp(1.35rem,4vw,2rem)] font-bold tracking-tight text-white sm:text-3xl">
+              {ar ? "خدماتنا الأساسية" : "Core services"}
             </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
+              {ar
+                ? "نغطي كل مرحلة من دورة الفعالية باحترافية وتقنية وهوية بصرية قوية."
+                : "We cover every stage of the event lifecycle with craft, tech, and strong visual identity."}
+            </p>
           </div>
         </ScrollReveal>
 
-        <ul className={`${gridCards3} mt-8 sm:mt-10`}>
-          {content.items.map((item, index) => (
-            <ScrollReveal key={item.slug || `${item.title}-${index}`}>
-              <li className="h-full">
-                <ServiceCard
+        {items.length > 0 ? (
+          <ul className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-2 xl:gap-6">
+            {items.map((item, index) => (
+              <li key={item.slug || `${item.title}-${index}`} className="h-full">
+                <ServiceTile
                   locale={locale}
-                  title={item.title}
-                  description={item.body || item.description}
-                  href={item.slug ? `/services/${item.slug}` : "/contact"}
-                  cta={detailCta}
-                  imageSrc={item.image}
-                  icon={serviceIcon(item, index)}
-                  indexLabel={String(index + 1).padStart(2, "0")}
+                  item={item}
+                  index={index}
+                  detailCta={detailCta}
                 />
               </li>
-            </ScrollReveal>
-          ))}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-10 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-12 text-center text-slate-400">
+            {ar ? "لا توجد خدمات معروضة حالياً." : "No services to show yet."}
+          </p>
+        )}
       </section>
 
-      <section className="border-t border-white/5 bg-white/[0.02] py-12 sm:py-16 lg:py-20">
-        <div className={`${siteContainerNarrow} text-center`}>
+      {/* Closing CTA */}
+      <section className="services-closing relative border-t border-white/5 py-14 sm:py-20">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(139,92,246,0.12),transparent)]"
+          aria-hidden
+        />
+        <div className={cn(siteContainerNarrow, "relative text-center")}>
           <ScrollReveal>
-            <p className="text-base leading-relaxed text-slate-300 sm:text-lg">
+            <p className="services-closing-text mx-auto max-w-2xl text-lg font-medium leading-relaxed text-slate-200 sm:text-xl">
               {content.closingText ||
-                (locale === "ar"
+                (ar
                   ? "نرافقك في كل مرحلة — من الفكرة إلى التسليم."
                   : "We support you at every stage — from idea to delivery.")}
             </p>
             <Link
               href={contactPath}
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-8 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.35)] transition hover:brightness-110"
+              className="services-cta mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-blue-600 via-blue-500 to-purple-600 px-8 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(59,130,246,0.35)] transition hover:brightness-110"
             >
               {contactCta}
               <span className="text-lg rtl:rotate-180" aria-hidden>

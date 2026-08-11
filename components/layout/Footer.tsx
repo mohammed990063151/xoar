@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { SiteLogo } from "@/components/brand/SiteLogo";
 import { MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/ContactChannelIcons";
-import { getFooterSocialLinks, SocialIconLink } from "@/components/ui/SocialIconLink";
+import { getFooterSocialLinks, icons, SocialIconLink } from "@/components/ui/SocialIconLink";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
@@ -231,35 +231,100 @@ export function Footer({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {footer.follow}
                 </p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="mt-3 grid grid-cols-5 gap-2">
+                  {/* WhatsApp */}
                   <motion.a
                     href={waHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={footer.whatsapp ?? (ar ? "واتساب" : "WhatsApp")}
                     title={footer.whatsapp ?? (ar ? "واتساب" : "WhatsApp")}
-                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-500/35 bg-emerald-500/12 text-emerald-300 transition hover:border-emerald-400/55 hover:bg-emerald-500/22 hover:text-white"
-                    whileHover={{ scale: 1.04 }}
+                    className="group flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 py-3 text-emerald-300 transition-all duration-300 hover:border-emerald-400/60 hover:bg-emerald-500/25 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                    whileHover={{ y: -3, scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
-                    <WhatsAppIcon className="h-5 w-5" />
+                    <WhatsAppIcon className="h-6 w-6" />
+                    <span className="text-[9px] font-semibold uppercase tracking-wide opacity-70 group-hover:opacity-100">WA</span>
                   </motion.a>
 
-                  {socialLinks.map(({ key, href, label, active }) => (
-                    <motion.div
-                      key={key}
-                      whileHover={active ? { scale: 1.04 } : undefined}
-                      whileTap={active ? { scale: 0.97 } : undefined}
-                    >
-                      <SocialIconLink
+                  {socialLinks.map(({ key, href, label, active }) => {
+                    const colorMap: Record<string, { border: string; bg: string; text: string; hover: string; glow: string; short: string }> = {
+                      instagram: {
+                        border: "border-pink-500/30",
+                        bg: "bg-gradient-to-br from-purple-600/15 via-pink-500/15 to-orange-400/10",
+                        text: "text-pink-300",
+                        hover: "hover:border-pink-400/60 hover:from-purple-600/30 hover:via-pink-500/30 hover:to-orange-400/20 hover:text-white",
+                        glow: "hover:shadow-[0_0_20px_rgba(236,72,153,0.35)]",
+                        short: "IG",
+                      },
+                      x: {
+                        border: "border-slate-400/25",
+                        bg: "bg-slate-800/40",
+                        text: "text-slate-200",
+                        hover: "hover:border-white/50 hover:bg-slate-700/70 hover:text-white",
+                        glow: "hover:shadow-[0_0_20px_rgba(148,163,184,0.25)]",
+                        short: "X",
+                      },
+                      facebook: {
+                        border: "border-blue-500/30",
+                        bg: "bg-blue-600/10",
+                        text: "text-blue-300",
+                        hover: "hover:border-blue-400/60 hover:bg-blue-600/25 hover:text-white",
+                        glow: "hover:shadow-[0_0_20px_rgba(59,130,246,0.35)]",
+                        short: "FB",
+                      },
+                      snapchat: {
+                        border: "border-yellow-400/30",
+                        bg: "bg-yellow-500/10",
+                        text: "text-yellow-300",
+                        hover: "hover:border-yellow-300/60 hover:bg-yellow-500/25 hover:text-yellow-50",
+                        glow: "hover:shadow-[0_0_20px_rgba(250,204,21,0.35)]",
+                        short: "SC",
+                      },
+                    };
+                    const c = colorMap[key] ?? {
+                      border: "border-white/15", bg: "bg-white/5", text: "text-slate-300",
+                      hover: "hover:border-violet-400/50 hover:bg-violet-500/15 hover:text-white",
+                      glow: "", short: key.slice(0, 2).toUpperCase(),
+                    };
+                    const Icon = icons[key];
+
+                    if (!active || !href) {
+                      return (
+                        <div
+                          key={key}
+                          className={cn(
+                            "flex flex-col items-center justify-center gap-1.5 rounded-2xl border py-3 opacity-30 cursor-default",
+                            c.border, c.bg, c.text,
+                          )}
+                          title={label}
+                        >
+                          <Icon className="h-6 w-6" />
+                          <span className="text-[9px] font-semibold uppercase tracking-wide">{c.short}</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <motion.a
+                        key={key}
                         href={href}
-                        label={label}
-                        icon={key}
-                        inactive={!active}
-                        className="!h-11 !w-11 !rounded-xl"
-                      />
-                    </motion.div>
-                  ))}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={label}
+                        title={label}
+                        className={cn(
+                          "group flex flex-col items-center justify-center gap-1.5 rounded-2xl border py-3 transition-all duration-300",
+                          c.border, c.bg, c.text, c.hover, c.glow,
+                        )}
+                        whileHover={{ y: -3, scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        <Icon className="h-6 w-6" />
+                        <span className="text-[9px] font-semibold uppercase tracking-wide opacity-70 group-hover:opacity-100">{c.short}</span>
+                      </motion.a>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>

@@ -245,7 +245,7 @@ export function HeroSection({
       ];
 
   return (
-    <section className="relative min-h-[min(100svh,640px)] overflow-hidden rounded-b-2xl border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem] lg:min-h-[85vh]">
+    <section className="hero-section relative min-h-[min(100svh,640px)] overflow-hidden rounded-b-2xl border-b border-white/5 sm:min-h-[82vh] sm:rounded-b-[2.5rem] lg:min-h-[85vh]">
       {!reduceMotion
         ? orbs.map((orb) => (
             <motion.div
@@ -267,7 +267,8 @@ export function HeroSection({
           posterSrc={posterSrc}
           mountVideo={mountVideo}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/65 to-[#020617]/35" />
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/65 to-[#020617]/35" />
+        <div className="hero-overlay-light absolute inset-0 hidden bg-[#020617]/55" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/25 via-transparent to-purple-950/35" />
       </div>
 

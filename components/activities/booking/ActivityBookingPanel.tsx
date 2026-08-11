@@ -502,7 +502,7 @@ export function ActivityBookingPanel({
   return (
     <div
       id="book"
-      className="scroll-mt-24 rounded-3xl border border-violet-500/20 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950 p-4 shadow-2xl shadow-black/40 ring-1 ring-white/5 sm:p-6"
+      className="booking-panel scroll-mt-24 rounded-3xl border border-violet-500/20 bg-gradient-to-b from-slate-900/95 via-slate-950/98 to-slate-950 p-4 shadow-2xl shadow-black/40 ring-1 ring-white/5 sm:p-6"
     >
       <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">

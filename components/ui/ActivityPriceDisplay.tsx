@@ -40,7 +40,7 @@ export function ActivityPriceDisplay({
   }
 
   const ar = locale === "ar";
-  const priceClass = size === "sm" ? "text-sm font-bold" : "text-base font-bold";
+  const priceClass = size === "sm" ? "text-sm font-bold" : "text-xl font-extrabold";
   const compareClass = size === "sm" ? "text-[11px]" : "text-sm";
 
   return (
@@ -52,7 +52,7 @@ export function ActivityPriceDisplay({
           </span>
         ) : null}
         {hasPrice ? (
-          <span className={cn(priceClass, "tracking-tight text-white")}>
+          <span className={cn(priceClass, "tracking-tight text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]")}>
             {formatSarPrice(price, locale)}
           </span>
         ) : null}

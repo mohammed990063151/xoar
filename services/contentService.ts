@@ -61,6 +61,9 @@ export type SiteSettings = {
   address?: string;
   city?: string;
   country?: string;
+  mapLatitude?: string;
+  mapLongitude?: string;
+  mapLabel?: string;
   phone?: string;
   supportPhone?: string;
   email?: string;

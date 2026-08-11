@@ -46,17 +46,19 @@ export function youtubeEmbedUrl(url: string): string {
 
 export function youtubeThumbnailUrl(url: string): string | null {
   const id = youtubeVideoId(url);
-  return id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : null;
+  // hqdefault is more reliably present than mqdefault for older/edge videos.
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
 }
 
-/** Fallback chain when mqdefault is missing (deleted/private videos). */
+/** Fallback chain when the preferred thumbnail is missing (deleted/private videos). */
 export function youtubeThumbnailFallbacks(url: string): readonly string[] {
   const id = youtubeVideoId(url);
   if (!id) return [];
 
   return [
-    `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
     `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+    `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+    `https://i.ytimg.com/vi/${id}/sddefault.jpg`,
     `https://i.ytimg.com/vi/${id}/default.jpg`,
   ];
 }

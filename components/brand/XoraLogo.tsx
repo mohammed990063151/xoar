@@ -28,7 +28,7 @@ export function XoraLogo({
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center",
+        "xora-logo relative inline-flex shrink-0 items-center justify-center",
         sizeClass[size],
         maxW[size],
         className,
