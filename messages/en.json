@@ -1,5 +1,5 @@
 {
-  "brand": { "name": "xora", "tagline": "Unforgettable event experiences" },
+  "brand": { "name": "Xora", "tagline": "Saudi-rooted events and entertainment" },
   "nav": {
     "home": "Home",
     "about": "About",
@@ -208,19 +208,19 @@
     "vision": "Proud to contribute to Saudi Vision 2030"
   },
   "footer": {
-    "about": "We design and deliver conferences, exhibitions, celebrations, and recreation with a modern pulse and human touch.",
+    "about": "We design and deliver conferences, exhibitions, and entertainment activities across Saudi Arabia — from hiking and yoga to corporate events and private celebrations.",
     "quickLinks": "Quick links",
     "contactTitle": "Contact",
-    "email": "hello@xora.events",
-    "phone": "+966 56 367 2097",
+    "email": "sales@xoraevents.com",
+    "phone": "+966 55 607 5566",
     "follow": "Follow us on",
     "whatsapp": "WhatsApp",
     "rights": "All rights reserved.",
     "social": {
-      "instagram": "https://www.instagram.com/",
-      "x": "https://x.com/",
-      "facebook": "https://www.facebook.com/",
-      "snapchat": "https://www.snapchat.com/"
+      "instagram": "https://www.instagram.com/xoraevents",
+      "x": "https://x.com/xoraevents",
+      "facebook": "https://www.facebook.com/xoraevents",
+      "snapchat": "https://www.snapchat.com/add/xoraevents"
     }
   },
   "inquiryFab": {
@@ -243,61 +243,65 @@
   },
   "pages": {
     "about": {
-      "eyebrow": "Meet Xora",
-      "title": "About us",
-      "intro": "A Saudi team delivering end-to-end event experiences — from concept to the last moment on site.",
-      "p1": "Xora is a Saudi team focused on designing and running events, conferences, and recreation. We blend creativity, technology, and disciplined operations.",
-      "p2": "We partner with public and private organizations to deliver consistent guest journeys — from the first visual touchpoint to the final moment on site.",
+      "eyebrow": "Get to know us",
+      "title": "Xora Events",
+      "intro": "We are the Xora team — specialists in live experiences, events, and entertainment activities across Saudi Arabia. Success is not only scale; it is precise detail and smooth on-the-ground delivery for every guest.",
+      "p1": "Xora Events grew from a passion for experiences that feel alive. We plan and deliver major conferences and exhibitions, outdoor recreation such as yoga sessions, hiking trails, and cycling adventures around Riyadh and beyond, plus private celebrations — birthdays, weddings, and family gatherings — with creative direction and refined taste.",
+      "p2": "As we expand across the Kingdom, we stay focused on Vision 2030 quality-of-life goals: professional planning, creative production, and memorable moments that guests remember. From corporate team-building in Diriyah to National Day activations and weekend entertainment bookings, every project is run with care for the smallest detail.",
       "mission": {
         "title": "Our mission",
-        "text": "Turn client goals into clear, engaging, measurable guest experiences — without operational friction."
+        "text": "Every event deserves its best stage. Through careful planning and creative execution, we turn ideas into moments that stay with people — conferences, recreation days, and private celebrations alike."
       },
       "vision": {
         "title": "Our vision",
-        "text": "To be the region’s first choice for events — global operations standards with unforgettable visual identity."
+        "text": "To be the preferred Saudi brand for inventing entertainment experiences and exceptional events that raise quality of life and leave a lasting imprint."
       },
       "values": [
         {
-          "title": "Quality",
-          "description": "High standards in planning, delivery, and on-site quality control."
-        },
-        {
-          "title": "Transparency",
-          "description": "Clear communication, realistic timelines, and ongoing client updates."
+          "title": "Passion",
+          "description": "Passion drives every experience we build — from trail mornings to evening galas — so guests feel the energy, not just a schedule."
         },
         {
           "title": "Innovation",
-          "description": "Technology and activations tailored to your audience and event goals."
+          "description": "We break the usual format with fresh ideas for entertainment, interactive zones, and event technology suited to Saudi audiences."
         },
         {
-          "title": "Obsession with detail",
-          "description": "Every touchpoint — lighting to guest reception — is designed with care."
+          "title": "Detail & precision",
+          "description": "Small details make the big difference: timing, guest flow, safety on trails, and polish on stage."
+        },
+        {
+          "title": "Reliability",
+          "description": "Clear partnerships, transparent delivery, and dependable operations you can trust for flagship or private events."
         }
       ],
       "team": {
-        "eyebrow": "Our team",
-        "title": "The minds behind Xora",
-        "subtitle": "A specialized male team turning every idea into a vivid live experience.",
+        "eyebrow": "Xora people",
+        "title": "Our team",
+        "subtitle": "Operators, creatives, and technologists who turn conference halls, outdoor trails, and celebration venues into stories guests retell.",
         "members": [
           {
-            "name": "Mohammed Al-Harbi",
-            "role": "Chief Executive",
+            "name": "Mohammed Yaish",
+            "role": "Operations Director",
+            "description": "Leads on-site delivery for conferences, recreation days, and private events — with full focus on the small details that create the best moments.",
             "image": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=1400&q=95&fit=crop&crop=faces"
           },
           {
-            "name": "Khalid Al-Dosari",
-            "role": "Operations Director",
+            "name": "Ayman Abdel Salam",
+            "role": "Creative Director",
+            "description": "Shapes the artistic direction of every experience — turning creative briefs into cohesive visual journeys for entertainment and corporate events.",
             "image": "https://images.unsplash.com/photo-1519085368733-050f042f9652?w=1400&q=95&fit=crop&crop=faces"
           },
           {
-            "name": "Faisal Al-Ghamdi",
-            "role": "Head of Production",
-            "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=95&fit=crop&crop=faces"
+            "name": "Ashraf Faraj",
+            "role": "AI & Digital Marketing Director",
+            "description": "Over 20 years across Gulf markets building growth strategies, content, and campaigns — now applying AI and data to promote Xora Events activities and fill seats.",
+            "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=1400&q=95&fit=crop&crop=faces"
           },
           {
-            "name": "Abdullah Al-Qahtani",
-            "role": "Technology & Innovation",
-            "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=1400&q=95&fit=crop&crop=faces"
+            "name": "Sami Al-Sayed",
+            "role": "Technical Director",
+            "description": "Owns production and technical run-of-show so every entertainment activity and conference looks and runs at its best from first cue to last.",
+            "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=95&fit=crop&crop=faces"
           }
         ]
       }
