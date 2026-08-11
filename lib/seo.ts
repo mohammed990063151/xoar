@@ -38,7 +38,7 @@ export function buildPageMetadata(
   const description = seo.meta_description;
   const ogTitle = seo.og_title || title;
   const ogDescription = seo.og_description || description;
-  const ogImage = seo.og_image ? absoluteUrl(seo.og_image.startsWith("http") ? seo.og_image : seo.og_image) : absoluteUrl("/icon.svg");
+  const ogImage = seo.og_image ? absoluteUrl(seo.og_image.startsWith("http") ? seo.og_image : seo.og_image) : absoluteUrl("/icon.png");
 
   const robots = {
     index: !seo.noindex,
