@@ -51,22 +51,46 @@ body {
 }
 
 html[data-theme="light"] {
-  --bg-deep: #f8fafc;
-  --bg-panel: rgba(255, 255, 255, 0.78);
+  --bg-deep: #f4f7fb;
+  --bg-panel: rgba(255, 255, 255, 0.92);
   --text: #0f172a;
   --text-muted: #475569;
   --muted: #64748b;
-  --border-glow: rgba(168, 85, 247, 0.28);
+  --border-glow: rgba(139, 92, 246, 0.35);
 }
 
 html[data-theme="light"] body {
-  background: radial-gradient(
-      1000px 700px at 85% -5%,
-      rgba(168, 85, 247, 0.12),
-      transparent
-    ),
-    radial-gradient(800px 500px at 5% 30%, rgba(59, 130, 246, 0.10), transparent),
-    var(--bg-deep);
+  background:
+    radial-gradient(1100px 760px at 92% -10%, rgba(139, 92, 246, 0.22), transparent 55%),
+    radial-gradient(900px 620px at 5% 15%, rgba(14, 165, 233, 0.18), transparent 52%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+html[data-theme="light"] .about-hero-light {
+  opacity: 1 !important;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(255, 255, 255, 0.55), transparent 50%),
+    radial-gradient(ellipse 80% 65% at 90% 20%, rgba(124, 58, 237, 0.55), transparent 48%),
+    radial-gradient(ellipse 70% 60% at 5% 80%, rgba(2, 132, 199, 0.5), transparent 48%);
+}
+
+html[data-theme="light"] .about-hero > .pointer-events-none:first-of-type {
+  background:
+    radial-gradient(ellipse 95% 75% at 50% -20%, rgba(109, 40, 217, 0.4), transparent 48%),
+    radial-gradient(ellipse 75% 65% at 8% 95%, rgba(3, 105, 161, 0.35), transparent 48%) !important;
+}
+
+html[data-theme="light"] .about-team-section {
+  background-color: #f8fafc !important;
+}
+
+/* Card edge glow stays visible against white; stronger on hover */
+html[data-theme="light"] .about-team-card {
+  isolation: isolate;
+}
+
+html[data-theme="light"] .about-team-card:hover .about-team-card-surface {
+  box-shadow: var(--team-card-shadow-hover) !important;
 }
 
 /* Light theme: override common dark text classes from Tailwind */
@@ -1604,6 +1628,18 @@ html[data-theme="light"] .gradient-border > .inner .text-white {
 }
 html[data-theme="light"] .gradient-border > .inner .text-slate-400 {
   color: #475569 !important;
+}
+
+/* About team: name/role sit on dark photo — keep light text even inside gradient-border */
+html[data-theme="light"] .about-team-overlay,
+html[data-theme="light"] .about-team-overlay * {
+  color: #ffffff !important;
+}
+html[data-theme="light"] .about-team-overlay p {
+  color: #67e8f9 !important;
+}
+html[data-theme="light"] .about-team-overlay h3 {
+  color: #ffffff !important;
 }
 html[data-theme="light"] .gradient-border > .inner .text-purple-400 {
   color: #7c3aed !important;

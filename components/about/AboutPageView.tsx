@@ -114,10 +114,14 @@ export function AboutPageView({
   const hasImages = content.images.length > 0;
 
   return (
-    <div className={pageBottom}>
-      <section className={pageHeroSection}>
+    <div className={cn(pageBottom, "about-page relative")}>
+      <section className={cn(pageHeroSection, "about-hero")}>
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(168,85,247,0.22),transparent),radial-gradient(ellipse_60%_50%_at_10%_80%,rgba(59,130,246,0.12),transparent)]"
+          aria-hidden
+        />
+        <div
+          className="about-hero-light pointer-events-none absolute inset-0 opacity-0"
           aria-hidden
         />
         <div className={pageHeroInner}>
