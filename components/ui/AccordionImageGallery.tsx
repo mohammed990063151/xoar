@@ -23,6 +23,8 @@ export interface AccordionImageGalleryProps {
   readonly className?: string;
   /** Promo video as the last accordion panel (no separate gallery tab). */
   readonly videoUrl?: string | null;
+  /** Optional phone-only promo video. If empty, mobile shows images instead of the desktop video. */
+  readonly mobileVideoUrl?: string | null;
 }
 
 const AUTOPLAY_MS = 5000;
@@ -40,6 +42,7 @@ export function AccordionImageGallery({
   autoplay = true,
   className,
   videoUrl,
+  mobileVideoUrl,
 }: AccordionImageGalleryProps): React.ReactElement | null {
   const reduceMotion = useReducedMotion();
   const [internalIndex, setInternalIndex] = useState(0);
@@ -59,24 +62,44 @@ export function AccordionImageGallery({
   const focusedIndex = hoveredIndex ?? activeIndex;
   const safeVideo =
     videoUrl && String(videoUrl).trim() !== "" ? String(videoUrl).trim() : null;
-  const count = images.length + (safeVideo ? 1 : 0);
+  const safeMobileVideo =
+    mobileVideoUrl && String(mobileVideoUrl).trim() !== ""
+      ? String(mobileVideoUrl).trim()
+      : null;
   const imageCount = images.length;
+  const desktopCount = imageCount + (safeVideo ? 1 : 0);
+  const mobileCount = imageCount + (safeMobileVideo ? 1 : 0);
+  const [mobileIndex, setMobileIndex] = useState(0);
 
   useEffect(() => {
-    if (activeIndex >= count && count > 0) {
+    if (activeIndex >= desktopCount && desktopCount > 0) {
       setActive(0);
     }
-  }, [activeIndex, count, setActive]);
+  }, [activeIndex, desktopCount, setActive]);
 
   useEffect(() => {
-    if (reduceMotion || paused || !autoplay || count <= 1) return;
+    if (mobileIndex >= mobileCount && mobileCount > 0) {
+      setMobileIndex(0);
+    }
+  }, [mobileIndex, mobileCount]);
+
+  useEffect(() => {
+    if (reduceMotion || paused || !autoplay || desktopCount <= 1) return;
     const timer = window.setInterval(() => {
-      setActive((activeIndex + 1) % count);
+      setActive((activeIndex + 1) % desktopCount);
     }, AUTOPLAY_MS);
     return () => window.clearInterval(timer);
-  }, [reduceMotion, paused, autoplay, count, activeIndex, setActive]);
+  }, [reduceMotion, paused, autoplay, desktopCount, activeIndex, setActive]);
 
-  if (count === 0) return null;
+  useEffect(() => {
+    if (reduceMotion || paused || !autoplay || mobileCount <= 1) return;
+    const timer = window.setInterval(() => {
+      setMobileIndex((current) => (current + 1) % mobileCount);
+    }, AUTOPLAY_MS);
+    return () => window.clearInterval(timer);
+  }, [reduceMotion, paused, autoplay, mobileCount]);
+
+  if (desktopCount === 0 && mobileCount === 0) return null;
 
   const labels = {
     image: locale === "ar" ? "صورة" : "Image",
@@ -86,7 +109,7 @@ export function AccordionImageGallery({
 
   const isCream = variant === "cream";
 
-  if (images.length === 0 && safeVideo) {
+  if (images.length === 0 && (safeVideo || safeMobileVideo)) {
     return (
       <div
         className={cn(
@@ -96,24 +119,44 @@ export function AccordionImageGallery({
         )}
       >
         <div className="relative aspect-[16/10] w-full min-h-[220px] sm:min-h-[320px]">
-          {isYoutubeUrl(safeVideo) ? (
-            <YoutubeEmbed videoUrl={safeVideo} title={title} className="h-full w-full" />
-          ) : (
-            <video
-              src={safeVideo}
-              className="h-full w-full object-cover"
-              controls
-              playsInline
-              preload="metadata"
-              title={title}
-            />
-          )}
+          <div className="absolute inset-0 sm:hidden">
+            {safeMobileVideo ? (
+              isYoutubeUrl(safeMobileVideo) ? (
+                <YoutubeEmbed videoUrl={safeMobileVideo} title={title} className="h-full w-full" />
+              ) : (
+                <video
+                  src={safeMobileVideo}
+                  className="h-full w-full object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  title={title}
+                />
+              )
+            ) : null}
+          </div>
+          <div className="absolute inset-0 hidden sm:block">
+            {safeVideo ? (
+              isYoutubeUrl(safeVideo) ? (
+                <YoutubeEmbed videoUrl={safeVideo} title={title} className="h-full w-full" />
+              ) : (
+                <video
+                  src={safeVideo}
+                  className="h-full w-full object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  title={title}
+                />
+              )
+            ) : null}
+          </div>
         </div>
       </div>
     );
   }
 
-  if (count === 1 && images.length === 1) {
+  if (desktopCount === 1 && mobileCount === 1 && images.length === 1) {
     const src = images[0];
     return (
       <div
@@ -173,13 +216,13 @@ export function AccordionImageGallery({
         )}
       >
         <div className="relative aspect-[4/3] min-h-[200px] w-full">
-          {safeVideo && activeIndex === imageCount ? (
+          {safeMobileVideo && mobileIndex === imageCount ? (
             <div className="absolute inset-0 bg-black">
-              {isYoutubeUrl(safeVideo) ? (
-                <YoutubeEmbed videoUrl={safeVideo} title={title} className="h-full w-full" />
+              {isYoutubeUrl(safeMobileVideo) ? (
+                <YoutubeEmbed videoUrl={safeMobileVideo} title={title} className="h-full w-full" />
               ) : (
                 <video
-                  src={safeVideo}
+                  src={safeMobileVideo}
                   className="h-full w-full object-cover"
                   controls
                   playsInline
@@ -190,24 +233,24 @@ export function AccordionImageGallery({
             </div>
           ) : (
             <Image
-              src={images[activeIndex] ?? images[0]}
+              src={images[mobileIndex] ?? images[0]}
               alt=""
               fill
               className="object-cover"
               sizes="100vw"
-              priority={activeIndex === 0}
-              unoptimized={useUnoptimizedImage(images[activeIndex] ?? images[0])}
+              priority={mobileIndex === 0}
+              unoptimized={useUnoptimizedImage(images[mobileIndex] ?? images[0])}
             />
           )}
           <div
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
             aria-hidden
           />
-          {count > 1 ? (
+          {mobileCount > 1 ? (
             <>
               <button
                 type="button"
-                onClick={() => setActive(activeIndex - 1)}
+                onClick={() => setMobileIndex((current) => (current - 1 + mobileCount) % mobileCount)}
                 className="absolute start-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/95 text-sm font-semibold text-black shadow"
                 aria-label={locale === "ar" ? "السابقة" : "Previous"}
               >
@@ -215,24 +258,24 @@ export function AccordionImageGallery({
               </button>
               <button
                 type="button"
-                onClick={() => setActive(activeIndex + 1)}
+                onClick={() => setMobileIndex((current) => (current + 1) % mobileCount)}
                 className="absolute end-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/95 text-sm font-semibold text-black shadow"
                 aria-label={locale === "ar" ? "التالية" : "Next"}
               >
                 ›
               </button>
               <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-1.5">
-                {Array.from({ length: count }, (_, i) => (
+                {Array.from({ length: mobileCount }, (_, i) => (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => setActive(i)}
+                    onClick={() => setMobileIndex(i)}
                     className={cn(
                       "h-1.5 rounded-full transition-all",
-                      i === activeIndex ? "w-5 bg-white" : "w-1.5 bg-white/40",
+                      i === mobileIndex ? "w-5 bg-white" : "w-1.5 bg-white/40",
                     )}
                     aria-label={`${labels.image} ${i + 1}`}
-                    aria-current={i === activeIndex ? "true" : undefined}
+                    aria-current={i === mobileIndex ? "true" : undefined}
                   />
                 ))}
               </div>
@@ -261,7 +304,7 @@ export function AccordionImageGallery({
               onMouseEnter={() => setHoveredIndex(index)}
               onFocus={() => setHoveredIndex(index)}
               onBlur={() => setHoveredIndex(null)}
-              aria-label={`${labels.image} ${index + 1} ${labels.of} ${count}`}
+              aria-label={`${labels.image} ${index + 1} ${labels.of} ${desktopCount}`}
               aria-current={index === activeIndex ? "true" : undefined}
               className={cn(
                 "relative shrink-0 overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
@@ -386,7 +429,7 @@ export function AccordionImageGallery({
           <motion.div
             key={focusedIndex}
             className={cn(
-              "mt-4 min-h-[4.5rem] gallery-caption",
+              "mt-4 hidden min-h-[4.5rem] gallery-caption sm:block",
               isCream ? "text-slate-800" : "text-white",
             )}
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
@@ -413,22 +456,22 @@ export function AccordionImageGallery({
               </p>
             ) : null}
             <p className={cn("mt-2 text-xs", isCream ? "text-slate-500" : "text-slate-500")}>
-              {focusedIndex + 1} / {count}
+              {focusedIndex + 1} / {desktopCount}
             </p>
           </motion.div>
         </AnimatePresence>
       ) : null}
 
-      {count > 1 && !reduceMotion ? (
+      {desktopCount > 1 && !reduceMotion ? (
         <div
           className={cn(
-            "mt-3 h-0.5 overflow-hidden rounded-full",
+            "mt-3 hidden h-0.5 overflow-hidden rounded-full sm:block",
             isCream ? "bg-black/8" : "bg-white/10",
           )}
         >
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-violet-500 to-fuchsia-500"
-            animate={{ width: `${((focusedIndex + 1) / count) * 100}%` }}
+            animate={{ width: `${((focusedIndex + 1) / desktopCount) * 100}%` }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           />
         </div>

@@ -8,5 +8,5 @@ export default async function ActivityBookRedirectPage({
 }): Promise<never> {
   const { locale: loc, slug } = await params;
   if (!isLocale(loc)) notFound();
-  redirect(`${localizedPath(loc, `/activities/${slug}`)}#book`);
+  redirect(localizedPath(loc, `/activities/${slug}`));
 }

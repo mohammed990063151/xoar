@@ -47,6 +47,26 @@ function shouldSkipHeroVideo(): boolean {
   return saveData || slowNetwork;
 }
 
+/** Phone uses only the mobile hero video; otherwise the poster image. Never reuse desktop video. */
+function useViewportHeroVideo(
+  desktopUrl: string | undefined,
+  mobileUrl: string | undefined,
+): string | undefined {
+  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setViewport(mq.matches ? "mobile" : "desktop");
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  if (viewport === "mobile") return mobileUrl;
+  if (viewport === "desktop") return desktopUrl;
+  return undefined;
+}
+
 /** Defer mounting the video element until the page has painted and is idle. */
 function useDeferredHeroVideo(
   videoSrc: string | undefined,
@@ -232,7 +252,9 @@ export function HeroSection({
   hero,
 }: HeroSectionProps): React.ReactElement {
   const reduceMotion = useReducedMotion();
-  const videoSrc = hero.videoUrl?.trim() || undefined;
+  const desktopVideo = hero.videoUrl?.trim() || undefined;
+  const mobileVideo = hero.videoUrlMobile?.trim() || undefined;
+  const videoSrc = useViewportHeroVideo(desktopVideo, mobileVideo);
   const mountVideo = useDeferredHeroVideo(videoSrc, reduceMotion);
   const posterSrc =
     optimizePosterUrl(hero.videoPoster?.trim()) ?? HERO_POSTER_FALLBACK;

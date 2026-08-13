@@ -23,6 +23,7 @@ import {
   activityAllImages,
   activityEndsAt,
   activityGalleryUrls,
+  activityPromoVideoMobileUrl,
   activityPromoVideoUrl,
   activityShortLabel,
   toActivityCardData,
@@ -60,6 +61,7 @@ export function ActivityDetailView({
   );
   const galleryImages = activityAllImages(activity);
   const promoVideo = activityPromoVideoUrl(activity);
+  const promoVideoMobile = activityPromoVideoMobileUrl(activity);
   const organizer = activity.organizer ?? activity.provider?.name ?? "Xora";
   const categoryLabel = activityShortLabel(activity);
   const categoryIcon = activityCategoryIcon(activity.slug);
@@ -128,8 +130,11 @@ export function ActivityDetailView({
     galleryImages.length > 0 ? galleryImages : activityGalleryUrls(activity);
 
   useEffect(() => {
-    if (typeof window === "undefined" || window.location.hash !== "#book") return;
-    return scrollToHashWhenReady("#book");
+    if (typeof window === "undefined") return;
+    if (window.location.hash === "#book") {
+      return scrollToHashWhenReady("#book");
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [activity.slug]);
 
   return (
@@ -176,8 +181,9 @@ export function ActivityDetailView({
                 onActiveChange={setActiveImage}
                 variant="dark"
                 showCaption={false}
-                autoplay={sliderImages.length + (promoVideo ? 1 : 0) > 1}
+                autoplay={sliderImages.length + (promoVideo || promoVideoMobile ? 1 : 0) > 1}
                 videoUrl={promoVideo}
+                mobileVideoUrl={promoVideoMobile}
               />
             </div>
           </div>

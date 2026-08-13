@@ -17,6 +17,7 @@ import type { Activity } from "@/types/api";
 
 export type HomeHero = Dictionary["hero"] & {
   videoUrl?: string;
+  videoUrlMobile?: string;
   videoPoster?: string;
   gallery?: string[];
 };
@@ -131,6 +132,7 @@ function pickHero(raw?: HomeApiPayload["hero"] & Record<string, unknown>): Parti
   if (!raw) return {};
 
   const videoRaw = raw.videoUrl ?? raw.video_url;
+  const videoMobileRaw = raw.videoUrlMobile ?? raw.video_url_mobile;
   const posterRaw = raw.videoPoster ?? raw.video_poster;
 
   return {
@@ -141,6 +143,7 @@ function pickHero(raw?: HomeApiPayload["hero"] & Record<string, unknown>): Parti
     primaryCta: nonEmpty(raw.primaryCta),
     secondaryCta: nonEmpty(raw.secondaryCta),
     videoUrl: sanitizeHeroVideoUrl(mediaUrl(videoRaw)),
+    videoUrlMobile: sanitizeHeroVideoUrl(mediaUrl(videoMobileRaw)),
     videoPoster: optimizePosterUrl(mediaUrl(posterRaw)),
     gallery: mapGalleryImages(raw.gallery),
   };
@@ -313,6 +316,7 @@ function mergeHome(locale: Locale, api: HomeApiPayload): HomeContent {
 
   const hero = { ...dict.hero, ...pickHero(api.hero) };
   hero.videoUrl = sanitizeHeroVideoUrl(hero.videoUrl);
+  hero.videoUrlMobile = sanitizeHeroVideoUrl(hero.videoUrlMobile);
   hero.videoPoster = optimizePosterUrl(hero.videoPoster) ?? hero.videoPoster;
 
   return {
@@ -381,6 +385,7 @@ async function fetchHomeContent(locale: Locale): Promise<HomeContent> {
     hero: {
       ...dict.hero,
       videoUrl: undefined,
+      videoUrlMobile: undefined,
       videoPoster: optimizePosterUrl(dict.hero.videoPoster) ?? dict.hero.videoPoster,
     },
     promoSlides: [],

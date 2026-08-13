@@ -23,6 +23,8 @@ export interface Activity {
   location?: string;
   promo_video_url?: string;
   promoVideoUrl?: string;
+  promo_video_mobile_url?: string;
+  promoVideoMobileUrl?: string;
   ticket_highlights?: TicketHighlight[];
   ticketHighlights?: TicketHighlight[];
   terms_conditions?: string;

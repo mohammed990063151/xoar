@@ -67,7 +67,7 @@ export function ActivityCardGrid({
               locale={locale}
               activity={toActivityCardData(activity)}
               bookCta={labels.bookNow}
-              bookHref={`/activities/${activity.slug}#book`}
+              bookHref={`/activities/${activity.slug}`}
               className="h-full shadow-[0_16px_40px_rgba(0,0,0,0.3)]"
               highlightLabel={highlight?.label}
               highlightVariant={highlight?.variant}

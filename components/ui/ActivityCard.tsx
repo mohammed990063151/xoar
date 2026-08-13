@@ -111,7 +111,7 @@ export function ActivityCard({
   const router = useRouter();
   const { toggle, has } = useWishlist();
   const path = localizedPath(locale, `/activities/${activity.slug}`);
-  const ctaPath = bookHref ? localizedPath(locale, bookHref) : `${path}#book`;
+  const ctaPath = bookHref ? localizedPath(locale, bookHref) : path;
   const slideUrl = (url: string) => typeof url === "string" && url.trim() !== "";
   const fromMedia = (activity.mediaSlides ?? []).filter((s) => slideUrl(s.url));
   const slides =
@@ -273,7 +273,7 @@ export function ActivityCard({
             </span>
           ) : null}
 
-          <Link href={path} scroll={false}>
+          <Link href={path}>
             <h3 className="line-clamp-1 text-sm font-bold leading-snug text-white transition group-hover:text-purple-200 sm:text-base">
               {activity.title}
             </h3>
@@ -317,7 +317,7 @@ export function ActivityCard({
               {bookCta}
             </button>
           ) : (
-            <Link href={ctaPath} scroll={false} className={cn(bookButtonClass, "mt-1")}>
+            <Link href={ctaPath} className={cn(bookButtonClass, "mt-1")}>
               {bookCta}
             </Link>
           )}

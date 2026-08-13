@@ -11,7 +11,7 @@ import { YoutubeEmbed } from "@/components/ui/YoutubeEmbed";
 
 export type ActivityCardMediaSlide =
   | { readonly type: "image"; readonly url: string }
-  | { readonly type: "video"; readonly url: string };
+  | { readonly type: "video"; readonly url: string; readonly device?: "desktop" | "mobile" };
 
 interface ActivityCardMediaSliderProps {
   readonly slides: readonly ActivityCardMediaSlide[];
@@ -36,9 +36,26 @@ export function ActivityCardMediaSlider({
 }: ActivityCardMediaSliderProps): React.ReactElement {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [viewport, setViewport] = useState<"mobile" | "desktop" | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setViewport(mq.matches ? "mobile" : "desktop");
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   const validSlides = useMemo(
-    () => slides.filter((s) => isValidSlideUrl(s.url)),
-    [slides],
+    () =>
+      slides.filter((s) => {
+        if (!isValidSlideUrl(s.url)) return false;
+        if (s.type !== "video") return true;
+        if (viewport === null) return false;
+        const device = s.device ?? "desktop";
+        return device === viewport;
+      }),
+    [slides, viewport],
   );
   const count = validSlides.length;
   const ar = locale === "ar";

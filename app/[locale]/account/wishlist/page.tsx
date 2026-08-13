@@ -51,7 +51,7 @@ export default function AccountWishlistPage(): React.ReactElement {
               locale={locale}
               activity={toActivityCardData(activity)}
               bookCta={labels.bookNow}
-              bookHref={`/activities/${activity.slug}#book`}
+              bookHref={`/activities/${activity.slug}`}
             />
           ))}
         </div>

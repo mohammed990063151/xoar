@@ -23,6 +23,7 @@ export function normalizeActivityFromApi(raw: Activity): Activity {
     availableTimes?: string[];
     recurringWeekdays?: number[];
     promoVideoUrl?: string;
+    promoVideoMobileUrl?: string;
     comparePrice?: string;
     displayPrice?: string;
     originalPrice?: string;
@@ -50,6 +51,8 @@ export function normalizeActivityFromApi(raw: Activity): Activity {
     recurringWeekdays: raw.recurring_weekdays ?? ext.recurringWeekdays ?? [],
     promo_video_url: raw.promo_video_url ?? ext.promoVideoUrl,
     promoVideoUrl: raw.promo_video_url ?? ext.promoVideoUrl,
+    promo_video_mobile_url: raw.promo_video_mobile_url ?? ext.promoVideoMobileUrl,
+    promoVideoMobileUrl: raw.promo_video_mobile_url ?? ext.promoVideoMobileUrl,
     compare_price: raw.activeCoupon ? (raw.compare_price ?? ext.comparePrice ?? '') : '',
     comparePrice: raw.activeCoupon ? (raw.compare_price ?? ext.comparePrice ?? '') : '',
     displayPrice: ext.displayPrice ?? raw.displayPrice ?? raw.price,
@@ -144,15 +147,26 @@ export function activityPromoVideoUrl(activity: Activity): string | null {
   return raw && String(raw).trim() !== "" ? String(raw).trim() : null;
 }
 
-/** Slides for activity card carousel (images + optional video). */
+export function activityPromoVideoMobileUrl(activity: Activity): string | null {
+  const raw =
+    activity.promo_video_mobile_url ??
+    (activity as Activity & { promoVideoMobileUrl?: string }).promoVideoMobileUrl;
+  return raw && String(raw).trim() !== "" ? String(raw).trim() : null;
+}
+
+/** Slides for activity card carousel (images + optional desktop/mobile video). */
 export function activityCardMediaSlides(activity: Activity): ActivityCardMediaSlide[] {
   const slides: ActivityCardMediaSlide[] = activityAllImages(activity).map((url) => ({
     type: "image" as const,
     url,
   }));
-  const video = activityPromoVideoUrl(activity);
-  if (video) {
-    slides.push({ type: "video", url: video });
+  const desktopVideo = activityPromoVideoUrl(activity);
+  if (desktopVideo) {
+    slides.push({ type: "video", url: desktopVideo, device: "desktop" });
+  }
+  const mobileVideo = activityPromoVideoMobileUrl(activity);
+  if (mobileVideo) {
+    slides.push({ type: "video", url: mobileVideo, device: "mobile" });
   }
   return slides.filter((s) => isValidMediaUrl(s.url));
 }
