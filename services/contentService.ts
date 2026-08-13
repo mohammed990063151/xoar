@@ -57,6 +57,7 @@ export type SiteSettings = {
   companyName?: string;
   tagline?: string;
   logo?: string;
+  favicon?: string;
   website?: string;
   address?: string;
   city?: string;

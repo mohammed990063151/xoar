@@ -11,6 +11,7 @@ import { BookingModalProvider } from "@/components/providers/BookingModalProvide
 import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
+import { siteIconMetadata } from "@/lib/site-icons";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -43,14 +44,7 @@ export async function generateMetadata({
   return {
     title: dict.brand.name,
     description: dict.hero.subtitle,
-    icons: {
-      icon: [
-        { url: "/favicon.png?v=20260811", type: "image/png", sizes: "32x32" },
-        { url: "/icon.png?v=20260811", type: "image/png", sizes: "32x32" },
-      ],
-      shortcut: [{ url: "/favicon.png?v=20260811", type: "image/png" }],
-      apple: [{ url: "/apple-icon.png?v=20260811", type: "image/png", sizes: "180x180" }],
-    },
+    icons: siteIconMetadata(dict.settings?.favicon, dict.settings?.logo),
     alternates: {
       languages: {
         ar: "/ar",
