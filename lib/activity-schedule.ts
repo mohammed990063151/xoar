@@ -2,14 +2,15 @@ import {
   DEFAULT_BOOKING_TIMES,
   resolveAvailableTimes,
 } from "@/lib/activity";
-import { toIsoDate, upcomingBookableDays } from "@/lib/booking";
-import type { Activity } from "@/types/api";
+import { parsePriceAmount, toIsoDate, upcomingBookableDays } from "@/lib/booking";
+import type { Activity, ActivityBookingSlot, ActivityWeekdayPrices } from "@/types/api";
 
 /** 0 = Sunday … 6 = Saturday (matches JS Date.getDay()). */
 export function activityRecurringWeekdays(activity: Activity): number[] {
   const raw =
     activity.recurring_weekdays ??
-    (activity as Activity & { recurringWeekdays?: number[] }).recurringWeekdays ??
+    activity.recurringWeekdays ??
+    activity.schedule?.recurringWeekdays ??
     [];
   return raw
     .map((d) => Number(d))
@@ -72,12 +73,87 @@ export function parseLocalizedEventDate(raw?: string | null): Date | null {
 }
 
 export function parseActivityEventDate(activity: Activity): Date | null {
-  const raw = activity.event_date ?? (activity as Activity & { eventDate?: string }).eventDate;
+  const raw = activity.event_date ?? activity.eventDate;
   return parseLocalizedEventDate(typeof raw === "string" ? raw : null);
 }
 
 function startOfLocalDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0);
+}
+
+function scheduleField<T>(activity: Activity, camel: keyof NonNullable<Activity["schedule"]>, snake: string): T | undefined {
+  const schedule = activity.schedule;
+  if (schedule && schedule[camel] !== undefined && schedule[camel] !== null) {
+    return schedule[camel] as T;
+  }
+  const ext = activity as Activity & Record<string, unknown>;
+  if (ext[snake] !== undefined && ext[snake] !== null) {
+    return ext[snake] as T;
+  }
+  if (ext[camel as string] !== undefined && ext[camel as string] !== null) {
+    return ext[camel as string] as T;
+  }
+  return undefined;
+}
+
+export function activityScheduleMode(activity: Activity): "explicit" | "generated" {
+  const mode = scheduleField<string>(activity, "scheduleMode", "schedule_mode");
+  return mode === "generated" ? "generated" : "explicit";
+}
+
+function timeToMinutes(value?: string | null): number | null {
+  if (!value) return null;
+  const match = String(value).trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const h = Number(match[1]);
+  const m = Number(match[2]);
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return h * 60 + m;
+}
+
+function minutesToHhMm(total: number): string {
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/** Generate start times from duration + buffer + day window. */
+export function generateStartTimes(activity: Activity): string[] {
+  const duration = Number(
+    scheduleField<number>(activity, "durationMinutes", "duration_minutes") ?? 0,
+  );
+  const buffer = Math.max(
+    0,
+    Number(scheduleField<number>(activity, "bufferMinutes", "buffer_minutes") ?? 0),
+  );
+  const start = timeToMinutes(
+    scheduleField<string>(activity, "dayWindowStart", "day_window_start") ?? null,
+  );
+  const end = timeToMinutes(
+    scheduleField<string>(activity, "dayWindowEnd", "day_window_end") ?? null,
+  );
+  if (!duration || start === null || end === null || end <= start) return [];
+
+  const times: string[] = [];
+  let cursor = start;
+  while (cursor + duration <= end) {
+    times.push(minutesToHhMm(cursor));
+    cursor += duration + buffer;
+  }
+  return times;
+}
+
+export function usesGeneratedSchedule(activity: Activity): boolean {
+  return activityScheduleMode(activity) === "generated" && generateStartTimes(activity).length > 0;
+}
+
+function withinAvailabilityWindow(activity: Activity, day: Date): boolean {
+  const starts = scheduleField<string>(activity, "availabilityStartsOn", "availability_starts_on");
+  const ends = scheduleField<string>(activity, "availabilityEndsOn", "availability_ends_on");
+  const iso = toIsoDate(day);
+  if (starts && iso < starts.slice(0, 10)) return false;
+  if (ends && iso > ends.slice(0, 10)) return false;
+  return true;
 }
 
 /** Dates the customer can pick in the booking calendar. */
@@ -87,37 +163,30 @@ export function resolveBookableDays(activity: Activity, daysAhead = 90): Date[] 
   const weekdays = activityRecurringWeekdays(activity);
   const eventDate = parseActivityEventDate(activity);
 
-  if (weekdays.length > 0) {
-    return upcomingBookableDays(daysAhead).filter((d) => weekdays.includes(d.getDay()));
-  }
+  let days: Date[] = [];
 
-  if (eventDate) {
+  if (weekdays.length > 0) {
+    days = upcomingBookableDays(daysAhead).filter((d) => weekdays.includes(d.getDay()));
+  } else if (eventDate) {
     const event = startOfLocalDay(eventDate);
     const iso = toIsoDate(event);
-    if (iso >= todayIso) {
-      return [event];
-    }
-    return [];
+    days = iso >= todayIso ? [event] : [];
+  } else {
+    days = upcomingBookableDays(daysAhead);
   }
 
-  return upcomingBookableDays(daysAhead);
+  return days.filter((d) => withinAvailabilityWindow(activity, d));
 }
 
 export function resolveBookableIsoSet(activity: Activity, daysAhead = 90): Set<string> {
   return new Set(resolveBookableDays(activity, daysAhead).map((d) => toIsoDate(d)));
 }
 
-/** Times shown after the user picks a date. */
-export function resolveAvailableTimesForDate(
-  activity: Activity,
-  date: Date,
-): string[] {
-  const slots = resolveAvailableTimes(activity);
-  const times = slots.length > 0 ? slots : [...DEFAULT_BOOKING_TIMES];
+/** Times shown after the user picks a date (local generation / explicit list). */
+export function resolveAvailableTimesForDate(activity: Activity, date: Date): string[] {
   const weekdays = activityRecurringWeekdays(activity);
-
-  if (weekdays.length > 0) {
-    return weekdays.includes(date.getDay()) ? times : [];
+  if (weekdays.length > 0 && !weekdays.includes(date.getDay())) {
+    return [];
   }
 
   const eventDate = parseActivityEventDate(activity);
@@ -125,5 +194,72 @@ export function resolveAvailableTimesForDate(
     return [];
   }
 
-  return times;
+  if (!withinAvailabilityWindow(activity, date)) {
+    return [];
+  }
+
+  if (usesGeneratedSchedule(activity)) {
+    return generateStartTimes(activity);
+  }
+
+  const explicit =
+    activity.available_times ??
+    activity.availableTimes ??
+    [];
+  if (explicit.length > 0) {
+    return [...explicit];
+  }
+
+  // Legacy fallback only for activities without schedule config.
+  if (activityScheduleMode(activity) === "generated") {
+    return [];
+  }
+
+  const slots = resolveAvailableTimes(activity);
+  return slots.length > 0 ? slots : [...DEFAULT_BOOKING_TIMES];
 }
+
+export function guestUnitPricesForDate(
+  activity: Activity,
+  date: Date,
+): { adult: number; child: number } {
+  const weekdayPrices =
+    (scheduleField<ActivityWeekdayPrices>(activity, "weekdayPrices", "weekday_prices") ??
+      {}) as ActivityWeekdayPrices;
+  const override = weekdayPrices[String(date.getDay())] ?? weekdayPrices[date.getDay()];
+
+  let adultRaw =
+    (override && (override.adult || override.adult_price)) ||
+    scheduleField<string>(activity, "adultPrice", "adult_price") ||
+    activity.adult_price ||
+    activity.adultPrice ||
+    activity.price;
+  let childRaw =
+    (override && (override.child || override.child_price)) ||
+    scheduleField<string>(activity, "childPrice", "child_price") ||
+    activity.child_price ||
+    activity.childPrice;
+
+  const adult = parsePriceAmount(adultRaw ?? undefined);
+  let child = parsePriceAmount(childRaw ?? undefined);
+  if (child <= 0 && adult > 0) {
+    child = Math.round(adult * 0.5 * 100) / 100;
+  }
+  return { adult, child };
+}
+
+export function calculateGuestBookingTotal(
+  adultPrice: number,
+  childPrice: number,
+  adults: number,
+  children: number,
+  days = 1,
+): number {
+  if (adultPrice <= 0) return 0;
+  const dayCount = Math.max(1, Math.floor(days));
+  return (adultPrice * Math.max(1, adults) + childPrice * Math.max(0, children)) * dayCount;
+}
+
+export type LiveBookingSlot = ActivityBookingSlot & {
+  time: string;
+};

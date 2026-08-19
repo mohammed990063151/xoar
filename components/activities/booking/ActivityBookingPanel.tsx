@@ -9,19 +9,21 @@ import {
 } from "@/components/activities/booking/GiftBookingModal";
 import {
   bookableIsoDaysInRange,
-  calculateBookingTotal,
   formatDisplayDate,
   formatMoney,
   parsePriceAmount,
   toIsoDate,
 } from "@/lib/booking";
 import {
+  calculateGuestBookingTotal,
+  guestUnitPricesForDate,
   resolveAvailableTimesForDate,
   resolveBookableDays,
   resolveBookableIsoSet,
+  type LiveBookingSlot,
 } from "@/lib/activity-schedule";
 import { bookingLabels, giftConfirmedMessage } from "@/lib/booking-labels";
-import type { Activity } from "@/types/api";
+import type { Activity, ActivityBookingSlot } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { localizedPath } from "@/lib/i18n";
@@ -111,11 +113,6 @@ export function ActivityBookingPanel({
 }: ActivityBookingPanelProps): React.ReactElement {
   const labels = bookingLabels(locale);
   const ar = locale === "ar";
-  const originalUnitPrice = parsePriceAmount(
-    activity.originalPrice ?? activity.original_price ?? activity.price,
-  );
-  const displayUnitPrice = parsePriceAmount(activity.displayPrice ?? activity.price);
-  const unitPrice = originalUnitPrice > 0 ? originalUnitPrice : displayUnitPrice;
   const bookableDays = useMemo(() => resolveBookableDays(activity, 90), [activity]);
   const bookableIsoSet = useMemo(() => resolveBookableIsoSet(activity, 90), [activity]);
   const [bookingMode, setBookingMode] = useState<BookingMode>("self");
@@ -157,14 +154,95 @@ export function ActivityBookingPanel({
     }
   }, [partySize, adults]);
 
-  const timesForDate = useMemo(
+  const localTimes = useMemo(
     () => resolveAvailableTimesForDate(activity, selectedDate),
     [activity, selectedDate],
   );
+  const [liveSlots, setLiveSlots] = useState<LiveBookingSlot[] | null>(null);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  useEffect(() => {
+    const iso = dateFrom;
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+      setLiveSlots(null);
+      return;
+    }
+
+    let cancelled = false;
+    setSlotsLoading(true);
+    const url = `${getApiBaseUrl()}/api/activities/${locale}/${encodeURIComponent(activity.slug)}/slots?date=${iso}`;
+    fetch(url)
+      .then(async (res) => {
+        if (!res.ok) throw new Error("slots");
+        return (await res.json()) as { data?: { slots?: ActivityBookingSlot[] } };
+      })
+      .then((json) => {
+        if (cancelled) return;
+        const slots = (json.data?.slots ?? []).map((slot) => ({
+          ...slot,
+          time: String(slot.time ?? "").slice(0, 5),
+        }));
+        setLiveSlots(slots);
+      })
+      .catch(() => {
+        if (!cancelled) setLiveSlots(null);
+      })
+      .finally(() => {
+        if (!cancelled) setSlotsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activity.slug, dateFrom, locale]);
+
+  const slotOptions = useMemo(() => {
+    if (liveSlots && liveSlots.length > 0) return liveSlots;
+    return localTimes.map((time) => ({
+      time,
+      available: true,
+      seatsLeft: null,
+      capacity: null,
+    }));
+  }, [liveSlots, localTimes]);
+
   const [selectedTime, setSelectedTime] = useState("");
   useEffect(() => {
-    setSelectedTime(timesForDate[0] ?? "");
-  }, [timesForDate]);
+    const firstOpen = slotOptions.find((s) => s.available !== false)?.time ?? slotOptions[0]?.time ?? "";
+    setSelectedTime((current) => {
+      const stillValid = slotOptions.some((s) => s.time === current && s.available !== false);
+      return stillValid ? current : firstOpen;
+    });
+  }, [slotOptions]);
+
+  const selectedSlot = useMemo(
+    () => slotOptions.find((s) => s.time === selectedTime) ?? null,
+    [slotOptions, selectedTime],
+  );
+
+  const dayPrices = useMemo(() => guestUnitPricesForDate(activity, selectedDate), [activity, selectedDate]);
+  const adultUnit =
+    typeof selectedSlot?.adultPriceAmount === "number" && selectedSlot.adultPriceAmount > 0
+      ? selectedSlot.adultPriceAmount
+      : dayPrices.adult;
+  const childUnit =
+    typeof selectedSlot?.childPriceAmount === "number" && selectedSlot.childPriceAmount >= 0
+      ? selectedSlot.childPriceAmount
+      : dayPrices.child;
+  const unitPrice = adultUnit > 0 ? adultUnit : parsePriceAmount(activity.displayPrice ?? activity.price);
+
+  const seatsLeft = selectedSlot?.seatsLeft ?? null;
+  const maxParty =
+    seatsLeft !== null && seatsLeft !== undefined ? Math.max(1, seatsLeft) : 30;
+
+  useEffect(() => {
+    if (adults + children > maxParty) {
+      const nextAdults = Math.min(adults, maxParty);
+      const nextChildren = Math.max(0, maxParty - nextAdults);
+      if (nextAdults !== adults) setAdults(nextAdults);
+      if (nextChildren !== children) setChildren(nextChildren);
+    }
+  }, [maxParty, adults, children]);
 
   const [giftDetails, setGiftDetails] = useState<GiftRecipientDetails | null>(null);
   const [giftModalOpen, setGiftModalOpen] = useState(false);
@@ -195,7 +273,7 @@ export function ActivityBookingPanel({
   const checkoutStepNum = isGift ? 3 : 2;
   const isGroupParty = forceGroup || adults >= 2;
 
-  const subtotal = calculateBookingTotal(unitPrice, adults, children, dayCount);
+  const subtotal = calculateGuestBookingTotal(adultUnit || unitPrice, childUnit, adults, children, dayCount);
   const discountAmount =
     appliedCoupon?.valid && typeof appliedCoupon.discount === "number"
       ? appliedCoupon.discount
@@ -670,29 +748,57 @@ export function ActivityBookingPanel({
                   }}
                   bookableIsoSet={bookableIsoSet}
                 />
-                {timesForDate.length > 0 ? (
+                {slotOptions.length > 0 ? (
                   <div className="mt-4" role="group" aria-labelledby="booking-time-label">
                     <p id="booking-time-label" className="mb-2 text-xs font-medium text-slate-400">
                       {labels.selectTime}
                       <span className="mx-1 text-slate-600">·</span>
                       <span className="text-slate-500">{formatDisplayDate(selectedDate, locale)}</span>
+                      {slotsLoading ? (
+                        <span className="ms-2 text-slate-500">{ar ? "تحديث المقاعد…" : "Updating seats…"}</span>
+                      ) : null}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {timesForDate.map((time) => (
-                        <button
-                          key={time}
-                          type="button"
-                          onClick={() => setSelectedTime(time)}
-                          className={
-                            selectedTime === time
-                              ? "rounded-xl border border-cyan-400/50 bg-cyan-500/15 px-3 py-2 text-xs font-semibold text-cyan-100"
-                              : "rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400 hover:border-white/20"
-                          }
-                        >
-                          {time}
-                        </button>
-                      ))}
+                      {slotOptions.map((slot) => {
+                        const full = slot.available === false;
+                        const active = selectedTime === slot.time;
+                        return (
+                          <button
+                            key={slot.time}
+                            type="button"
+                            disabled={full}
+                            onClick={() => setSelectedTime(slot.time)}
+                            className={
+                              full
+                                ? "cursor-not-allowed rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-xs text-slate-600 line-through"
+                                : active
+                                  ? "rounded-xl border border-cyan-400/50 bg-cyan-500/15 px-3 py-2 text-xs font-semibold text-cyan-100"
+                                  : "rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400 hover:border-white/20"
+                            }
+                          >
+                            <span className="block">{slot.time}</span>
+                            {typeof slot.seatsLeft === "number" ? (
+                              <span className="mt-0.5 block text-[10px] opacity-80">
+                                {full
+                                  ? ar
+                                    ? "مكتمل"
+                                    : "Full"
+                                  : ar
+                                    ? `${slot.seatsLeft} مقاعد`
+                                    : `${slot.seatsLeft} left`}
+                              </span>
+                            ) : null}
+                          </button>
+                        );
+                      })}
                     </div>
+                    {adultUnit > 0 ? (
+                      <p className="mt-2 text-[11px] text-slate-500">
+                        {ar ? "بالغ" : "Adult"} {formatMoney(adultUnit, locale)}
+                        {" · "}
+                        {ar ? "طفل" : "Child"} {formatMoney(childUnit, locale)}
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
               </section>
@@ -701,14 +807,14 @@ export function ActivityBookingPanel({
                   label={labels.adults}
                   value={adults}
                   min={forceGroup ? 2 : 1}
-                  max={20}
+                  max={Math.max(forceGroup ? 2 : 1, Math.min(20, maxParty))}
                   onChange={setPartyAdults}
                 />
                 <GuestStepper
                   label={labels.children}
                   value={children}
                   min={0}
-                  max={10}
+                  max={Math.max(0, Math.min(10, maxParty - adults))}
                   onChange={setChildren}
                 />
               </section>
