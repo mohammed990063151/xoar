@@ -94,21 +94,29 @@ export async function serverFetch<T>(
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8_000);
+  const timer = setTimeout(() => controller.abort(), 15_000);
 
   try {
     const res = await laravelFetch(path, {
       headers: { Accept: "application/json" },
-      cache: options?.cache === "no-store" ? "no-store" : "default",
+      cache: options?.cache ?? "no-store",
       signal: controller.signal,
       next:
         options?.cache === "no-store"
           ? undefined
           : { revalidate: options?.revalidate ?? 60 },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(`[serverFetch] ${path} → HTTP ${res.status}`);
+      }
+      return null;
+    }
     return res.json() as Promise<T>;
-  } catch {
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[serverFetch] ${path} failed`, error);
+    }
     return null;
   } finally {
     clearTimeout(timer);

@@ -156,8 +156,31 @@ function withinAvailabilityWindow(activity: Activity, day: Date): boolean {
   return true;
 }
 
+export function usesCalendarSchedule(activity: Activity): boolean {
+  const schedule = activity.schedule;
+  if (schedule?.usesCalendarSchedule === true) return true;
+  const bookable = schedule?.bookableDates ?? schedule?.bookable_dates;
+  return Array.isArray(bookable) && bookable.length > 0;
+}
+
+function calendarBookableIsoDates(activity: Activity): string[] {
+  const schedule = activity.schedule;
+  const raw = schedule?.bookableDates ?? schedule?.bookable_dates ?? [];
+  return raw
+    .map((d) => String(d).slice(0, 10))
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+}
+
 /** Dates the customer can pick in the booking calendar. */
 export function resolveBookableDays(activity: Activity, daysAhead = 90): Date[] {
+  if (usesCalendarSchedule(activity)) {
+    const todayIso = toIsoDate(startOfLocalDay(new Date()));
+    return calendarBookableIsoDates(activity)
+      .filter((iso) => iso >= todayIso)
+      .slice(0, daysAhead)
+      .map((iso) => new Date(`${iso}T12:00:00`));
+  }
+
   const today = startOfLocalDay(new Date());
   const todayIso = toIsoDate(today);
   const weekdays = activityRecurringWeekdays(activity);

@@ -8,6 +8,14 @@ import type { PlatformFeature } from "@/services/featureService";
 import type { Activity } from "@/types/api";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
+async function fetchActivityDetail(locale: string, slug: string) {
+  return serverFetch<{ data: Activity }>(`/api/activities/${locale}/${slug}`, {
+    cache: "no-store",
+  });
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -15,10 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: loc, slug } = await params;
   if (!isLocale(loc)) return {};
-  const detailRes = await serverFetch<{ data: Activity }>(
-    `/api/activities/${loc}/${slug}`,
-    { revalidate: 15 },
-  );
+  const detailRes = await fetchActivityDetail(loc, slug);
   const raw = detailRes?.data;
   if (!raw) return {};
   const activity = normalizeActivityFromApi(raw);
@@ -37,12 +42,12 @@ export default async function ActivityDetailPage({
   if (!isLocale(loc)) notFound();
 
   const [detailRes, listRes, featuresRes] = await Promise.all([
-    serverFetch<{ data: Activity }>(`/api/activities/${loc}/${slug}`, {
-      revalidate: 15,
+    fetchActivityDetail(loc, slug),
+    serverFetch<{ data: Activity[] }>(`/api/activities/${loc}?per_page=3`, {
+      cache: "no-store",
     }),
-    serverFetch<{ data: Activity[] }>(`/api/activities/${loc}?per_page=3`),
     serverFetch<{ data: PlatformFeature[] }>(`/api/site/${loc}/features`, {
-      revalidate: 300,
+      cache: "no-store",
     }),
   ]);
 

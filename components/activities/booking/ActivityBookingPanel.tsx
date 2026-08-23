@@ -196,13 +196,17 @@ export function ActivityBookingPanel({
     };
   }, [activity.slug, dateFrom, locale]);
 
-  const slotOptions = useMemo(() => {
+  const slotOptions = useMemo((): LiveBookingSlot[] => {
     if (liveSlots && liveSlots.length > 0) return liveSlots;
     return localTimes.map((time) => ({
       time,
       available: true,
       seatsLeft: null,
       capacity: null,
+      adultPrice: "",
+      childPrice: "",
+      adultPriceAmount: undefined,
+      childPriceAmount: undefined,
     }));
   }, [liveSlots, localTimes]);
 

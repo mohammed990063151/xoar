@@ -88,9 +88,9 @@ export function requestVisitorGeo(): Promise<VisitorGeo | null> {
       },
       () => resolve(null),
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         maximumAge: 5 * 60 * 1000,
-        timeout: 15_000,
+        timeout: 5_000,
       },
     );
   });

@@ -84,16 +84,19 @@ export function LiveVisitorBeacon(): null {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let cancelled = false;
 
-    const start = async (): Promise<void> => {
-      const geo = await requestVisitorGeo();
-      if (cancelled) {
-        return;
-      }
-
-      geoRef.current = geo;
+    const start = (): void => {
       const section = normalizePresencePath(window.location.pathname);
       lastPathRef.current = section;
-      void sendHeartbeat(section, geo);
+
+      void sendHeartbeat(section, readCachedVisitorGeo());
+
+      void requestVisitorGeo().then((geo) => {
+        if (cancelled) {
+          return;
+        }
+        geoRef.current = geo;
+        void sendHeartbeat(section, geo);
+      });
 
       intervalId = window.setInterval(() => {
         const currentSection = normalizePresencePath(window.location.pathname);

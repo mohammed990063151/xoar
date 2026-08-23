@@ -12,11 +12,18 @@ function normalizeApiOrigin(value: string | undefined): string | undefined {
 /**
  * Base URL for API requests.
  * - Browser: same-origin (`""`) → Next.js `/api/*` proxy injects FRONTEND_API_KEY server-side.
- * - Server (SSR): direct to API_PROXY_TARGET with FRONTEND_API_KEY header.
+ * - Server (SSR) dev: loopback Next server `/api/*` proxy (same path as the browser — avoids key / cache mismatches).
+ * - Server (SSR) prod: direct to API_PROXY_TARGET with FRONTEND_API_KEY header.
  */
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {
     return "";
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    const port = process.env.PORT ?? "3000";
+    const host = process.env.INTERNAL_API_HOST?.trim() || "127.0.0.1";
+    return `http://${host}:${port}`;
   }
 
   const proxy = normalizeApiOrigin(process.env.API_PROXY_TARGET);
@@ -25,9 +32,5 @@ export function getApiBaseUrl(): string {
   const configured = normalizeApiOrigin(process.env.NEXT_PUBLIC_API_URL);
   if (configured) return configured;
 
-  const port = process.env.PORT ?? "3000";
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return `http://127.0.0.1:${port}`;
+  return defaultLaravelOrigin();
 }

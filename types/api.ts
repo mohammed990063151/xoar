@@ -41,6 +41,9 @@ export interface ActivitySchedulePayload {
   weekday_prices?: ActivityWeekdayPrices;
   generatedTimes?: string[];
   recurringWeekdays?: number[];
+  usesCalendarSchedule?: boolean;
+  bookableDates?: string[];
+  bookable_dates?: string[];
   slotsPreview?: { date?: string | null; slots?: ActivityBookingSlot[] };
 }
 
