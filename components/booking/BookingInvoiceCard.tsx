@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import QRCode from "react-qr-code";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
 
@@ -113,15 +114,14 @@ export function BookingInvoiceCard({
 
       <div className="px-4 pb-4 pt-3 text-center sm:px-5">
         <div className="mx-auto inline-block rounded-xl bg-white p-3">
-          <div
-            className={cn(
-              "mx-auto flex items-center justify-center bg-white text-[#1A1B4B]",
-              compact ? "h-16 w-16 text-[8px]" : "h-20 w-20 text-[9px]",
-            )}
-            aria-hidden
-          >
-            QR
-          </div>
+          <QRCode
+            value={confirmationCode}
+            size={compact ? 64 : 88}
+            bgColor="#ffffff"
+            fgColor="#1A1B4B"
+            level="M"
+            aria-label={ar ? "رمز QR للحجز" : "Booking QR code"}
+          />
         </div>
         <p className="mt-3 font-mono text-2xl font-bold tracking-[0.18em]">{confirmationCode}</p>
         <p className="mt-1 text-[11px] text-white/60">
