@@ -25,6 +25,8 @@ import {
 import { bookingLabels, giftConfirmedMessage } from "@/lib/booking-labels";
 import type { Activity, ActivityBookingSlot } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
+import { BookingInvoiceCard } from "@/components/booking/BookingInvoiceCard";
+import { normalizeStorageImageUrl } from "@/lib/image-url";
 import { getApiBaseUrl } from "@/lib/api-base";
 import { localizedPath } from "@/lib/i18n";
 import { customerService } from "@/services/customerService";
@@ -498,37 +500,34 @@ export function ActivityBookingPanel({
     }
   }
   if (success) {
+    const heroImage = activity.image_url ? normalizeStorageImageUrl(activity.image_url) : undefined;
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/40 to-slate-950 p-6 text-center"
+        className="rounded-3xl border border-white/10 bg-[#14163f]/80 p-4 text-center sm:p-6"
       >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-2xl text-emerald-300">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal-500/20 text-2xl text-teal-200">
           ✓
         </div>
         <h2 className="mt-4 text-xl font-bold text-white">{labels.successTitle}</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="mt-2 text-sm text-white/65">
           {giftReady ? labels.successGiftSubtitle : labels.successSubtitle}
         </p>
-        <div className="mx-auto mt-6 max-w-xs rotate-[-1deg] rounded-2xl border border-dashed border-cyan-400/40 bg-slate-900/90 p-5 shadow-xl">
-          <p className="text-[10px] uppercase tracking-widest text-slate-500">{labels.ticket}</p>
-          <p className="mt-2 font-mono text-2xl font-bold text-cyan-300">{confirmationCode}</p>
-          <span className="mt-2 inline-block rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-300">
-            {labels.confirmed}
-          </span>
-          <p className="mt-4 text-sm font-medium text-white">{activity.title}</p>
-          <p className="text-xs text-slate-500">
-            {dateFrom}
-            {(dateTo || dateFrom) !== dateFrom ? ` → ${dateTo || dateFrom}` : ""}
-            {` · ${dayCount} ${ar ? "يوم" : "day(s)"}`}
-          </p>
-          <p className="mt-1 text-xs text-slate-400">
-            {adults} {labels.adults}
-            {children > 0 ? ` · ${children} ${labels.children}` : ""}
-            {isGroupParty ? ` · ${labels.groupBadge}` : ""}
-          </p>
-          <p className="mt-2 text-lg font-bold text-white">{totalLabel}</p>
+        <div className="mx-auto mt-6 max-w-md">
+          <BookingInvoiceCard
+            locale={locale}
+            confirmationCode={confirmationCode}
+            activityTitle={activity.title}
+            activityImage={heroImage}
+            bookingDate={dateFrom}
+            bookingDateTo={dateTo || dateFrom}
+            guests={adults + children}
+            totalAmount={totalLabel}
+            isGift={giftReady}
+            isGroup={isGroupParty}
+            isPaid
+          />
           {giftReady && giftDetails ? (
             <p className="mt-3 text-start text-xs font-medium text-violet-200">
               {giftConfirmedMessage(locale, giftDetails.name)}
@@ -541,7 +540,7 @@ export function ActivityBookingPanel({
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-400/40 bg-cyan-500/15 py-3.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25"
+            className="mt-6 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15"
           >
             <span aria-hidden>⬇</span>
             {labels.downloadPdf}

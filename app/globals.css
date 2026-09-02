@@ -2,14 +2,19 @@
 @import "lenis/dist/lenis.css";
 
 :root {
-  --bg-deep: #020617;
-  --bg-panel: rgba(15, 23, 42, 0.72);
+  --brand-navy: #1A1B4B;
+  --brand-navy-deep: #14163f;
+  --brand-white: #ffffff;
+  --bg-deep: var(--brand-navy);
+  --bg-panel: rgba(255, 255, 255, 0.96);
   --blue: #3b82f6;
-  --purple: #a855f7;
+  --purple: #8b5cf6;
+  --accent-teal: #14b8a6;
   --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --muted: #94a3b8;
-  --border-glow: rgba(168, 85, 247, 0.5);
+  --text-on-panel: #0f172a;
+  --text-muted: rgba(248, 250, 252, 0.72);
+  --muted: var(--text-muted);
+  --border-glow: rgba(20, 184, 166, 0.45);
 }
 
 @theme inline {
@@ -42,8 +47,9 @@ body {
   overflow-x: clip;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  background: radial-gradient(1000px 700px at 85% -5%, rgba(168, 85, 247, 0.18), transparent),
-    radial-gradient(800px 500px at 5% 30%, rgba(59, 130, 246, 0.12), transparent),
+  background:
+    radial-gradient(900px 620px at 88% -8%, rgba(139, 92, 246, 0.16), transparent 55%),
+    radial-gradient(760px 520px at 6% 24%, rgba(20, 184, 166, 0.12), transparent 52%),
     var(--bg-deep);
   color: var(--text);
   min-height: 100vh;

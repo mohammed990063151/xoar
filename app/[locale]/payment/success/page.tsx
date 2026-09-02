@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useParams } from "next/navigation";
+import { BookingInvoiceCard } from "@/components/booking/BookingInvoiceCard";
 import { paymentService } from "@/services/paymentService";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
@@ -28,20 +29,23 @@ function PaymentSuccessContent(): React.ReactElement {
   return (
     <div className={siteContainer}>
       <div className={`${pageBottom} mx-auto max-w-lg py-16 text-center`}>
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-3xl text-emerald-300">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-500/20 text-3xl text-teal-200">
           ✓
         </div>
         <h1 className="mt-6 text-2xl font-bold text-white">
           {ar ? "شكراً لحجزك!" : "Thank you for your booking!"}
         </h1>
-        <p className="mt-2 text-slate-400">
-          {code ? (
-            <>
-              {ar ? "رمز الحجز:" : "Confirmation:"}{" "}
-              <span className="font-mono text-cyan-300">{code}</span>
-            </>
-          ) : null}
-        </p>
+        {code ? (
+          <div className="mx-auto mt-6 max-w-md text-start">
+            <BookingInvoiceCard
+              locale={locale}
+              confirmationCode={code}
+              activityTitle={ar ? "تأكيد الحجز" : "Booking confirmation"}
+              isPaid={status === "paid"}
+              compact
+            />
+          </div>
+        ) : null}
         {status === "pending" ? (
           <p className="mt-4 text-sm text-amber-200/90">
             {ar
@@ -54,7 +58,7 @@ function PaymentSuccessContent(): React.ReactElement {
             href={pdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex rounded-2xl border border-cyan-400/40 bg-cyan-500/15 px-6 py-3 text-sm font-semibold text-cyan-100"
+            className="mt-6 inline-flex rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white"
           >
             {ar ? "تحميل التذكرة (PDF)" : "Download ticket (PDF)"}
           </a>
