@@ -14,6 +14,7 @@ import { customerService } from "@/services/customerService";
 import type { CustomerBooking } from "@/types/customer";
 import { bookingPdfUrl } from "@/lib/booking-pdf-url";
 import { useDocumentTheme } from "@/hooks/useDocumentTheme";
+import { useParams } from "next/navigation";
 
 type FilterKey = "all" | "upcoming" | "past" | "gift";
 
