@@ -6,7 +6,8 @@ import { useSearchParams, useParams } from "next/navigation";
 import { BookingInvoiceCard } from "@/components/booking/BookingInvoiceCard";
 import { paymentService } from "@/services/paymentService";
 import type { Locale } from "@/lib/i18n";
-import { localizedPath } from "@/lib/i18n";
+import { bookingPdfUrl } from "@/lib/booking-pdf-url";
+import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 import { siteContainer, pageBottom } from "@/lib/layout";
 
 function PaymentSuccessContent(): React.ReactElement {
@@ -15,6 +16,7 @@ function PaymentSuccessContent(): React.ReactElement {
   const locale = (params?.locale === "en" ? "en" : "ar") as Locale;
   const ar = locale === "ar";
   const code = search.get("code") ?? "";
+  const theme = useDocumentTheme();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("pending");
 
@@ -53,12 +55,12 @@ function PaymentSuccessContent(): React.ReactElement {
               : "Payment confirmation pending — refresh shortly."}
           </p>
         ) : null}
-        {pdfUrl ? (
+        {code ? (
           <a
-            href={pdfUrl}
+            href={bookingPdfUrl(code, theme)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white"
+            className="booking-success-download mt-6 inline-flex rounded-2xl border border-slate-900 bg-slate-900 px-6 py-3 text-sm font-semibold shadow-md transition hover:bg-slate-800"
           >
             {ar ? "تحميل التذكرة (PDF)" : "Download ticket (PDF)"}
           </a>

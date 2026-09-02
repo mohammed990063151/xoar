@@ -46,6 +46,7 @@ export function CustomerSpace({
   /** Auth/token checks run only after mount to avoid SSR/client HTML mismatch. */
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [ready, setReady] = useState(!requireAuth);
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [, startTransition] = useTransition();
 
   const labels: Record<(typeof DESTINATIONS)[number]["key"], string> = {
@@ -71,6 +72,8 @@ export function CustomerSpace({
     }
 
     if (!getCustomerToken()) {
+      setNeedsLogin(true);
+      setReady(true);
       router.replace(
         `${localizedPath(locale, "/account/login")}?returnTo=${encodeURIComponent(pathname || localizedPath(locale, "/account"))}`,
       );
@@ -91,6 +94,22 @@ export function CustomerSpace({
   function logout(): void {
     customerService.logout();
     router.replace(localizedPath(locale, "/account/login"));
+  }
+
+  if (requireAuth && needsLogin && !customer) {
+    return (
+      <div className={cn(siteContainer, pageBottom, "flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center")}>
+        <p className="text-slate-400">
+          {ar ? "جاري تحويلك لتسجيل الدخول…" : "Redirecting you to sign in…"}
+        </p>
+        <Link
+          href={`${localizedPath(locale, "/account/login")}?returnTo=${encodeURIComponent(pathname || localizedPath(locale, "/account"))}`}
+          className="rounded-full bg-gradient-to-l from-cyan-500 to-teal-400 px-5 py-2.5 text-sm font-bold text-slate-950"
+        >
+          {ar ? "تسجيل الدخول" : "Sign in"}
+        </Link>
+      </div>
+    );
   }
 
   if (!ready) {

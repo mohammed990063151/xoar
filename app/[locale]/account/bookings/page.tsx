@@ -12,7 +12,8 @@ import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { customerService } from "@/services/customerService";
 import type { CustomerBooking } from "@/types/customer";
-import { useParams } from "next/navigation";
+import { bookingPdfUrl } from "@/lib/booking-pdf-url";
+import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 
 type FilterKey = "all" | "upcoming" | "past" | "gift";
 
@@ -74,6 +75,7 @@ function TicketCard({
   readonly reduceMotion: boolean | null;
 }): React.ReactElement {
   const ar = locale === "ar";
+  const theme = useDocumentTheme();
   const status = statusMeta(booking, ar);
   const rawImage = booking.activity?.image?.trim() ?? "";
   const image = rawImage ? normalizeStorageImageUrl(rawImage) : "";
@@ -81,7 +83,7 @@ function TicketCard({
 
   return (
     <motion.article
-      className="group relative overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#1A1B4B] content-visibility-auto"
+      className="group relative overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#071525] content-visibility-auto"
       style={{ contentVisibility: "auto", containIntrinsicSize: "280px" }}
       initial={reduceMotion ? false : { opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -89,8 +91,8 @@ function TicketCard({
       whileHover={reduceMotion ? undefined : { y: -3 }}
     >
       <div className="pointer-events-none absolute inset-y-4 start-0 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
-      <div className="pointer-events-none absolute start-[-6px] top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-[#1A1B4B] ring-1 ring-white/10" />
-      <div className="pointer-events-none absolute end-[-6px] top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-[#1A1B4B] ring-1 ring-white/10" />
+      <div className="pointer-events-none absolute start-[-6px] top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-[#020617] ring-1 ring-white/10" />
+      <div className="pointer-events-none absolute end-[-6px] top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-[#020617] ring-1 ring-white/10" />
 
       <div className="flex min-h-[11.5rem]">
         <div className="relative hidden w-[7.5rem] shrink-0 overflow-hidden sm:block">
@@ -107,7 +109,7 @@ function TicketCard({
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/25 via-teal-600/10 to-transparent" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-l from-[#1A1B4B] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-l from-[#071525] via-transparent to-transparent" />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 p-4 sm:p-5">
@@ -156,9 +158,9 @@ function TicketCard({
                   {ar ? "التفاصيل" : "Details"}
                 </Link>
               ) : null}
-              {booking.pdfUrl ? (
+              {booking.confirmationCode ? (
                 <a
-                  href={booking.pdfUrl}
+                  href={bookingPdfUrl(booking.confirmationCode, theme)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-3.5 py-1.5 text-[11px] font-bold text-white"

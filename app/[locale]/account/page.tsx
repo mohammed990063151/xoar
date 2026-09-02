@@ -9,12 +9,14 @@ import type { Customer, CustomerBooking } from "@/types/customer";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { useParams } from "next/navigation";
-import { portalPath } from "@/lib/portal-url";
+import { bookingPdfUrl } from "@/lib/booking-pdf-url";
+import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 
 export default function AccountHomePage(): React.ReactElement {
   const params = useParams();
   const locale = (params?.locale === "en" ? "en" : "ar") as Locale;
   const ar = locale === "ar";
+  const theme = useDocumentTheme();
   const reduceMotion = useReducedMotion();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [bookings, setBookings] = useState<CustomerBooking[]>([]);
@@ -149,9 +151,9 @@ export default function AccountHomePage(): React.ReactElement {
                       {b.bookingTime ? ` · ${b.bookingTime}` : ""}
                     </p>
                   </div>
-                  {b.pdfUrl ? (
+                  {b.confirmationCode ? (
                     <a
-                      href={b.pdfUrl}
+                      href={bookingPdfUrl(b.confirmationCode, theme)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded-full border border-cyan-400/30 px-4 py-2 text-xs font-semibold text-cyan-100"

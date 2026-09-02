@@ -27,7 +27,9 @@ import type { Activity, ActivityBookingSlot } from "@/types/api";
 import type { Locale } from "@/lib/i18n";
 import { BookingInvoiceCard } from "@/components/booking/BookingInvoiceCard";
 import { normalizeStorageImageUrl } from "@/lib/image-url";
+import { bookingPdfUrl } from "@/lib/booking-pdf-url";
 import { getApiBaseUrl } from "@/lib/api-base";
+import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 import { localizedPath } from "@/lib/i18n";
 import { customerService } from "@/services/customerService";
 import type { Customer } from "@/types/customer";
@@ -115,6 +117,7 @@ export function ActivityBookingPanel({
 }: ActivityBookingPanelProps): React.ReactElement {
   const labels = bookingLabels(locale);
   const ar = locale === "ar";
+  const theme = useDocumentTheme();
   const bookableDays = useMemo(() => resolveBookableDays(activity, 90), [activity]);
   const bookableIsoSet = useMemo(() => resolveBookableIsoSet(activity, 90), [activity]);
   const [bookingMode, setBookingMode] = useState<BookingMode>("self");
@@ -486,10 +489,7 @@ export function ActivityBookingPanel({
       }
       const code = result.confirmationCode ?? `XRA${result.id}`;
       setConfirmationCode(code);
-      setPdfUrl(
-        result.pdfUrl ??
-          `${getApiBaseUrl()}/api/bookings/${encodeURIComponent(code)}/pdf`,
-      );
+      setPdfUrl(result.pdfUrl ?? bookingPdfUrl(code, theme));
       setGroupInviteUrl(result.inviteUrl ?? null);
       setGroupWhatsappUrl(result.whatsappUrl ?? null);
       setSuccess(true);
@@ -505,13 +505,13 @@ export function ActivityBookingPanel({
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-white/10 bg-[#14163f]/80 p-4 text-center sm:p-6"
+        className="booking-success-panel rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/40 to-slate-950 p-4 text-center sm:p-6"
       >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal-500/20 text-2xl text-teal-200">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-2xl text-emerald-300">
           ✓
         </div>
         <h2 className="mt-4 text-xl font-bold text-white">{labels.successTitle}</h2>
-        <p className="mt-2 text-sm text-white/65">
+        <p className="mt-2 text-sm text-slate-400">
           {giftReady ? labels.successGiftSubtitle : labels.successSubtitle}
         </p>
         <div className="mx-auto mt-6 max-w-md">
@@ -534,13 +534,13 @@ export function ActivityBookingPanel({
             </p>
           ) : null}
         </div>
-        {pdfUrl ? (
+        {confirmationCode ? (
           <a
-            href={pdfUrl}
+            href={bookingPdfUrl(confirmationCode, theme)}
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15"
+            className="booking-success-download mt-6 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl border border-slate-900 bg-slate-900 py-3.5 text-sm font-semibold shadow-md transition hover:bg-slate-800"
           >
             <span aria-hidden>⬇</span>
             {labels.downloadPdf}

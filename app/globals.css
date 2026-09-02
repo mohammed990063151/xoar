@@ -2,19 +2,14 @@
 @import "lenis/dist/lenis.css";
 
 :root {
-  --brand-navy: #1A1B4B;
-  --brand-navy-deep: #14163f;
-  --brand-white: #ffffff;
-  --bg-deep: var(--brand-navy);
-  --bg-panel: rgba(255, 255, 255, 0.96);
+  --bg-deep: #020617;
+  --bg-panel: rgba(15, 23, 42, 0.72);
   --blue: #3b82f6;
-  --purple: #8b5cf6;
-  --accent-teal: #14b8a6;
+  --purple: #a855f7;
   --text: #f8fafc;
-  --text-on-panel: #0f172a;
-  --text-muted: rgba(248, 250, 252, 0.72);
-  --muted: var(--text-muted);
-  --border-glow: rgba(20, 184, 166, 0.45);
+  --text-muted: #94a3b8;
+  --muted: #94a3b8;
+  --border-glow: rgba(168, 85, 247, 0.5);
 }
 
 @theme inline {
@@ -47,9 +42,8 @@ body {
   overflow-x: clip;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  background:
-    radial-gradient(900px 620px at 88% -8%, rgba(139, 92, 246, 0.16), transparent 55%),
-    radial-gradient(760px 520px at 6% 24%, rgba(20, 184, 166, 0.12), transparent 52%),
+  background: radial-gradient(1000px 700px at 85% -5%, rgba(168, 85, 247, 0.18), transparent),
+    radial-gradient(800px 500px at 5% 30%, rgba(59, 130, 246, 0.12), transparent),
     var(--bg-deep);
   color: var(--text);
   min-height: 100vh;
@@ -1570,6 +1564,149 @@ html[data-theme="light"] .booking-panel select {
   background-color: rgba(255, 255, 255, 0.95) !important;
   color: #0f172a !important;
   border-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+/* Booking success panel — light theme */
+html[data-theme="light"] .booking-success-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: rgba(16, 185, 129, 0.28) !important;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08) !important;
+}
+html[data-theme="light"] .booking-success-panel .text-white {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .booking-success-panel .text-slate-400 {
+  color: #475569 !important;
+}
+html[data-theme="light"] .booking-success-panel .text-emerald-300 {
+  color: #059669 !important;
+}
+html[data-theme="light"] .booking-success-panel .bg-emerald-500\/20 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+}
+html[data-theme="light"] .booking-success-download {
+  background-color: #0f172a !important;
+  border-color: #0f172a !important;
+  color: #ffffff !important;
+}
+html[data-theme="light"] .booking-success-download:hover {
+  background-color: #1e293b !important;
+}
+html[data-theme="light"] .booking-success-download,
+html[data-theme="light"] .booking-success-download span {
+  color: #ffffff !important;
+}
+
+.booking-success-download {
+  color: #ffffff !important;
+}
+.booking-success-download span {
+  color: #ffffff !important;
+}
+
+/* ─── BOOKING INVOICE CARD: light theme ─────────────────────────────────────── */
+html[data-theme="light"] .booking-invoice-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .booking-invoice-hero-fallback {
+  background: linear-gradient(to bottom right, #f1f5f9, #e2e8f0) !important;
+}
+
+html[data-theme="light"] .booking-invoice-hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    #ffffff 100%
+  ) !important;
+}
+
+html[data-theme="light"] .booking-invoice-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .booking-invoice-subtitle {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .booking-invoice-badge-confirmed {
+  background-color: #ecfdf5 !important;
+  border-color: #bbf7d0 !important;
+  color: #166534 !important;
+}
+
+html[data-theme="light"] .booking-invoice-badge-group {
+  background-color: #f0fdfa !important;
+  border-color: #99f6e4 !important;
+  color: #0f766e !important;
+}
+
+html[data-theme="light"] .booking-invoice-badge-gift {
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #6d28d9 !important;
+}
+
+html[data-theme="light"] .booking-invoice-qr {
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .booking-invoice-caption {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .booking-invoice-code {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .booking-invoice-summary {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .booking-invoice-summary-cell {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .booking-invoice-summary-label {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .booking-invoice-summary-value {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .booking-invoice-section {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .booking-invoice-section-head {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .booking-invoice-row {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .booking-invoice-label {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .booking-invoice-value {
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .booking-invoice-pending {
+  color: #d97706 !important;
 }
 
 /* "الحجز الآن" CTA button in activity card */
