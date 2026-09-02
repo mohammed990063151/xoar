@@ -11,6 +11,7 @@ import { localizedPath } from "@/lib/i18n";
 import { useParams } from "next/navigation";
 import { bookingPdfUrl } from "@/lib/booking-pdf-url";
 import { useDocumentTheme } from "@/hooks/useDocumentTheme";
+import { portalPath } from "@/lib/portal-url";
 
 export default function AccountHomePage(): React.ReactElement {
   const params = useParams();

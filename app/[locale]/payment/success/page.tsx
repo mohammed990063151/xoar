@@ -6,6 +6,7 @@ import { useSearchParams, useParams } from "next/navigation";
 import { BookingInvoiceCard } from "@/components/booking/BookingInvoiceCard";
 import { paymentService } from "@/services/paymentService";
 import type { Locale } from "@/lib/i18n";
+import { localizedPath } from "@/lib/i18n";
 import { bookingPdfUrl } from "@/lib/booking-pdf-url";
 import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 import { siteContainer, pageBottom } from "@/lib/layout";
