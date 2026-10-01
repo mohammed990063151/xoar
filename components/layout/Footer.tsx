@@ -28,7 +28,6 @@ const navLinks = [
   { href: "/works", key: "works" as const },
   { href: "/events", key: "events" as const },
   { href: "/activities", key: "activities" as const },
-  { href: "/national-day", key: "nationalDay" as const },
   { href: "/partners", key: "partners" as const },
   { href: "/blog", key: "blog" as const },
   { href: "/careers", key: "careers" as const },

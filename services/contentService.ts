@@ -122,7 +122,6 @@ function mergePages(
     careers: { ...dictPages.careers, ...apiPages.careers },
     blog: { ...dictPages.blog, ...apiPages.blog },
     requestEvent: { ...dictPages.requestEvent, ...apiPages.requestEvent },
-    nationalDay: { ...dictPages.nationalDay, ...apiPages.nationalDay },
     contact: { ...dictPages.contact, ...apiPages.contact },
   };
 }
