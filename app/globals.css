@@ -1667,3 +1667,211 @@ html[data-theme="light"] .text-violet-100 {
   padding: 6px 12px;
   transition: background 0.15s ease;
 }
+
+.site-assistant {
+  position: fixed;
+  z-index: 80;
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem));
+  inset-inline-start: max(1rem, env(safe-area-inset-left, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  max-width: min(calc(100vw - 2rem), 24rem);
+}
+
+.site-assistant__launcher {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.site-assistant__bubble {
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.92rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.28);
+  animation: site-assistant-bubble 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.site-assistant__button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border: 0;
+  border-radius: 999px;
+  color: white;
+  cursor: pointer;
+  background: linear-gradient(145deg, #22d3ee, #7c3aed 70%);
+  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.45);
+  animation: site-assistant-bob 1.8s ease-in-out infinite;
+}
+
+.site-assistant__rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.site-assistant__rings span {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid rgba(34, 211, 238, 0.75);
+  animation: site-assistant-ring 2.2s ease-out infinite;
+}
+
+.site-assistant__rings span:nth-child(2) { animation-delay: 0.45s; }
+.site-assistant__rings span:nth-child(3) { animation-delay: 0.9s; }
+
+.site-assistant__panel {
+  width: min(calc(100vw - 2rem), 22rem);
+  max-height: min(70vh, 34rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 12, 24, 0.96);
+  color: #e8edf5;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+}
+
+.site-assistant__head,
+.site-assistant__form,
+.site-assistant__hits {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.75rem 0.85rem;
+}
+
+.site-assistant__head {
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.site-assistant__head p,
+.site-assistant__log .is-bot,
+.site-assistant__log .is-user {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.site-assistant__head p {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.site-assistant__close {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.site-assistant__log {
+  overflow: auto;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.site-assistant__log .is-user,
+.site-assistant__log .is-bot {
+  border-radius: 0.9rem;
+  padding: 0.55rem 0.7rem;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.site-assistant__log .is-user {
+  align-self: flex-end;
+  background: #7c3aed;
+}
+
+.site-assistant__log .is-bot {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.site-assistant__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.site-assistant__suggestions button,
+.site-assistant__hits a,
+.site-assistant__form button {
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.site-assistant__suggestions button,
+.site-assistant__hits a {
+  background: rgba(34, 211, 238, 0.12);
+  color: #a5f3fc;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.site-assistant__hits {
+  overflow: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.site-assistant__form input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: white;
+  border-radius: 999px;
+  padding: 0.55rem 0.8rem;
+}
+
+.site-assistant__form button {
+  background: #22d3ee;
+  color: #0f172a;
+  font-weight: 700;
+  padding: 0.55rem 0.8rem;
+}
+
+.site-assistant__form button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@keyframes site-assistant-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes site-assistant-ring {
+  0% { transform: scale(1); opacity: 0.75; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+@keyframes site-assistant-bubble {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-assistant__button,
+  .site-assistant__rings span,
+  .site-assistant__bubble {
+    animation: none;
+  }
+}

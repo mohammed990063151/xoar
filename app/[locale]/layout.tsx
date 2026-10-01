@@ -12,6 +12,7 @@ import { getSiteContent } from "@/services/contentService";
 import type { Locale } from "@/lib/i18n";
 import { isLocale } from "@/lib/i18n";
 import { siteIconMetadata } from "@/lib/site-icons";
+import { absoluteUrl } from "@/lib/seo";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -79,6 +80,22 @@ export default async function LocaleLayout({
           <div
             className={`${locale === "ar" ? tajawal.variable : outfit.variable} ${fontClass} flex min-h-screen min-w-0 flex-col overflow-x-clip`}
           >
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "WebSite",
+                  name: dict.brand.name,
+                  url: absoluteUrl(`/${locale}`),
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: absoluteUrl(`/${locale}/activities?search={search_term_string}`),
+                    "query-input": "required name=search_term_string",
+                  },
+                }),
+              }}
+            />
             <Header locale={locale} nav={dict.nav} settings={dict.settings} />
             <main className="flex-1 min-w-0 overflow-x-clip pb-[5.5rem] sm:pb-[4.5rem]">{children}</main>
             <Footer

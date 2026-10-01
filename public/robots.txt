@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 
 Sitemap: https://xoraevents.com/sitemap.xml
+
+# Catalog for AI search engines
+# https://xoraevents.com/llms.txt

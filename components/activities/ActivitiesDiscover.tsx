@@ -68,7 +68,9 @@ export function ActivitiesDiscover({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined" || window.location.hash.length > 1) {
+    const query = new URLSearchParams(window.location.search).get("search");
+    if (query) setSearch(query);
+    if (window.location.hash.length > 1) {
       return;
     }
     scheduleScrollToTop();
