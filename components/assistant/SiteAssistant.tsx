@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/api-base";
 import type { Locale } from "@/lib/i18n";
+import { normalizeStorageImageUrl } from "@/lib/image-url";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -16,6 +18,7 @@ interface SearchHit {
   text: string;
   href: string;
   meta: string;
+  image?: string;
 }
 
 interface SiteAssistantProps {
@@ -24,50 +27,67 @@ interface SiteAssistantProps {
 
 const copy = {
   ar: {
-    bubble: "هل يمكنني مساعدتك؟",
-    title: "مساعد إكسورا",
-    subtitle: "أبحث في الأنشطة والأعمال والفعاليات الحقيقية",
+    bubble: "هلا، أنا نورة. أقدر أساعدك؟",
+    title: "نورة",
+    subtitle: "أشرح لك أي شيء في المنصة",
+    status: "متصلة الآن",
+    hello: "هلا والله، أنا نورة. اسألني عن الأنشطة، أو الأعمال، أو الفعاليات، أو كيف تسجّل، وأشرحها لك. وإذا سألت عن شيء معيّن أوريك صورته.",
+    typing: "نورة تكتب…",
     placeholder: "اكتب سؤالك…",
     send: "إرسال",
     close: "إغلاق المساعد",
     open: "افتح مساعد إكسورا",
     grow: "تكبير الصندوق",
     shrink: "تصغير الصندوق",
-    suggestions: ["أنشطة في الرياض", "أعمالنا", "فعالياتنا", "كيف أسجل كشريك؟", "كيف أسجل كعميل؟", "كيف أتواصل معكم؟"],
+    suggestions: ["أنشطة في الرياض", "أعمالنا", "أبي أسوي فعالية", "كيف أسجل كشريك؟", "كيف أسجل كعميل؟", "كيف أتواصل معكم؟"],
     error: "تعذر الرد الآن. حاول مرة أخرى.",
   },
   en: {
-    bubble: "Can I help you?",
-    title: "Xora assistant",
-    subtitle: "I search live activities, work, and events",
+    bubble: "Hi, I'm Noura. Need a hand?",
+    title: "Noura",
+    subtitle: "I explain anything on the site",
+    status: "Online",
+    hello: "Hi, I'm Noura. Ask me about activities, our work, events, or how to register, and I'll explain it. If you ask about something specific, I'll show you its photo.",
+    typing: "Noura is writing…",
     placeholder: "Ask a question…",
     send: "Send",
     close: "Close assistant",
     open: "Open Xora assistant",
     grow: "Enlarge chat",
     shrink: "Shrink chat",
-    suggestions: ["Activities", "Our work", "Our events", "How do I become a partner?", "How do I create an account?", "How do I contact you?"],
+    suggestions: ["Activities", "Our work", "I want to create an event", "How do I become a partner?", "How do I create an account?", "How do I contact you?"],
     error: "Could not reply right now. Please try again.",
   },
 } as const;
 
-function SparkIcon(): ReactElement {
+function SendIcon(): ReactElement {
   return (
-    <svg viewBox="0 0 24 24" className="relative z-10 h-7 w-7" fill="none" aria-hidden>
-      <path
-        d="M12 2.5l1.4 5.2L18.5 9 13.4 10.3 12 15.5 10.6 10.3 5.5 9l4.7-1.3L12 2.5z"
-        fill="currentColor"
-      />
-      <path
-        d="M18 13.5l.7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7.7-2.3z"
-        fill="currentColor"
-        opacity="0.9"
-      />
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+      <path d="M4 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function renderRichText(text: string): ReactNode[] {
+function NouraFace(): ReactElement {
+  return (
+    <span className="site-assistant__face">
+      <img src="/noura-avatar.jpg" alt="" />
+      <span className="site-assistant__shine" />
+    </span>
+  );
+}
+
+function visibleAssistantText(content: string): string {
+  return content.replace(/\s*\[\[noura:[a-z]+:[a-z_]+:[A-Za-z0-9+/=]+\]\]/g, "").trim();
+}
+
+function messageDir(content: string): "rtl" | "ltr" {
+  const arabic = content.match(/[\u0600-\u06FF]/g)?.length ?? 0;
+  const latin = content.match(/[A-Za-z]/g)?.length ?? 0;
+  return latin > arabic ? "ltr" : "rtl";
+}
+
+function renderRichText(text: string, onOpen?: () => void): ReactNode[] {
   const chunks = text.split(/(\[[^\]]+\]\([^)]+\))/g);
 
   return chunks.map((chunk, index) => {
@@ -82,7 +102,7 @@ function renderRichText(text: string): ReactNode[] {
     }
 
     return (
-      <Link key={index} href={href} className="font-semibold text-cyan-300 underline-offset-2 hover:underline">
+      <Link key={index} href={href} className="font-semibold text-cyan-300 underline-offset-2 hover:underline" onClick={() => onOpen?.()}>
         {match[1]}
       </Link>
     );
@@ -91,6 +111,8 @@ function renderRichText(text: string): ReactNode[] {
 
 export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
   const text = copy[locale];
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [showBubble, setShowBubble] = useState(true);
   const [draft, setDraft] = useState("");
@@ -124,29 +146,45 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
       const response = await fetch(`${getApiBaseUrl()}/api/assistant/chat`, {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify({ locale, messages: nextMessages.slice(-8) }),
+        body: JSON.stringify({ locale, messages: nextMessages.slice(-12) }),
       });
       const body = (await response.json().catch(() => ({}))) as {
-        data?: { reply?: string; results?: SearchHit[] };
+        data?: { reply?: string; results?: SearchHit[]; open?: string | null };
+        message?: string;
       };
-      const reply = body.data?.reply?.trim() || text.error;
+      const fallbackError = messageDir(content) === "ltr" ? copy.en.error : copy.ar.error;
+      const reply = body.data?.reply?.trim() || body.message?.trim() || fallbackError;
+      const hits = Array.isArray(body.data?.results) ? body.data.results : [];
+      const target = body.data?.open;
       setMessages([...nextMessages, { role: "assistant", content: reply }]);
-      setResults(Array.isArray(body.data?.results) ? body.data.results : []);
+      setResults(hits);
+      if (typeof target === "string" && target.startsWith("/") && target !== pathname) {
+        setOpen(false);
+        router.push(target);
+      }
     } catch {
-      setMessages([...nextMessages, { role: "assistant", content: text.error }]);
+      setMessages([...nextMessages, { role: "assistant", content: messageDir(content) === "ltr" ? copy.en.error : copy.ar.error }]);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="site-assistant" dir={locale === "ar" ? "rtl" : "ltr"}>
+    <div className={`site-assistant is-size-${size}`} dir={locale === "ar" ? "rtl" : "ltr"}>
       {open ? (
-        <section className={`site-assistant__panel is-size-${size}`} aria-label={text.title}>
+        <section className="site-assistant__panel" aria-label={text.title}>
           <header className="site-assistant__head">
-            <div>
-              <strong>{text.title}</strong>
-              <p>{text.subtitle}</p>
+            <div className="site-assistant__identity">
+              <span className="site-assistant__avatar" aria-hidden>
+                <img src="/noura-avatar.jpg" alt="" />
+              </span>
+              <div>
+                <strong>{text.title}</strong>
+                <p>
+                  <span className="site-assistant__online" />
+                  {text.status}
+                </p>
+              </div>
             </div>
             <div className="site-assistant__actions">
               <button
@@ -171,6 +209,7 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
             </div>
           </header>
           <div ref={listRef} className="site-assistant__log">
+            <p className="is-bot" dir={messageDir(text.hello)}>{text.hello}</p>
             {messages.length === 0 ? (
               <div className="site-assistant__suggestions">
                 {text.suggestions.map((item) => (
@@ -180,23 +219,42 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
                 ))}
               </div>
             ) : (
-              messages.map((message, index) => (
-                <p key={`${message.role}-${index}`} className={message.role === "user" ? "is-user" : "is-bot"}>
-                  {renderRichText(message.content)}
-                </p>
-              ))
+              messages.map((message, index) => {
+                const shown = message.role === "assistant" ? visibleAssistantText(message.content) : message.content;
+                return (
+                  <p key={`${message.role}-${index}`} className={message.role === "user" ? "is-user" : "is-bot"} dir={messageDir(shown)}>
+                    {renderRichText(shown, () => setOpen(false))}
+                  </p>
+                );
+              })
             )}
-            {loading ? <p className="is-bot site-assistant__typing">…</p> : null}
+            {results.length > 0 ? (
+              <div className="site-assistant__cards">
+                {results.slice(0, 3).map((hit) => {
+                  const image = hit.image ? normalizeStorageImageUrl(hit.image) : "";
+                  return (
+                    <Link
+                      key={hit.href}
+                      href={hit.href}
+                      className="site-assistant__card"
+                      onClick={() => setOpen(false)}
+                    >
+                      {image.startsWith("/storage/") || image.startsWith("https://") ? (
+                        <img src={image} alt="" />
+                      ) : (
+                        <span className="site-assistant__card-fallback" aria-hidden />
+                      )}
+                      <span>
+                        <strong>{hit.title}</strong>
+                        {hit.meta ? <small>{hit.meta}</small> : null}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+            {loading ? <p className="is-bot site-assistant__typing">{text.typing}</p> : null}
           </div>
-          {results.length > 0 ? (
-            <div className="site-assistant__hits">
-              {results.slice(0, 3).map((hit) => (
-                <Link key={hit.href} href={hit.href}>
-                  {hit.title}
-                </Link>
-              ))}
-            </div>
-          ) : null}
           <form
             className="site-assistant__form"
             onSubmit={(event) => {
@@ -211,8 +269,8 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
               aria-label={text.placeholder}
               maxLength={1000}
             />
-            <button type="submit" disabled={loading || draft.trim() === ""}>
-              {text.send}
+            <button type="submit" disabled={loading || draft.trim() === ""} aria-label={text.send}>
+              <SendIcon />
             </button>
           </form>
         </section>
@@ -234,7 +292,8 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
             <span />
             <span />
           </span>
-          <SparkIcon />
+          <NouraFace />
+          <span className="site-assistant__live" aria-hidden />
         </button>
       </div>
     </div>
