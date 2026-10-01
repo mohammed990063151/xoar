@@ -31,6 +31,8 @@ const copy = {
     send: "إرسال",
     close: "إغلاق المساعد",
     open: "افتح مساعد إكسورا",
+    grow: "تكبير الصندوق",
+    shrink: "تصغير الصندوق",
     suggestions: ["أنشطة في الرياض", "أعمالنا", "فعالياتنا", "كيف أسجل كشريك؟", "كيف أسجل كعميل؟", "كيف أتواصل معكم؟"],
     error: "تعذر الرد الآن. حاول مرة أخرى.",
   },
@@ -42,6 +44,8 @@ const copy = {
     send: "Send",
     close: "Close assistant",
     open: "Open Xora assistant",
+    grow: "Enlarge chat",
+    shrink: "Shrink chat",
     suggestions: ["Activities", "Our work", "Our events", "How do I become a partner?", "How do I create an account?", "How do I contact you?"],
     error: "Could not reply right now. Please try again.",
   },
@@ -93,6 +97,7 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [results, setResults] = useState<SearchHit[]>([]);
+  const [size, setSize] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -137,15 +142,33 @@ export function SiteAssistant({ locale }: SiteAssistantProps): ReactElement {
   return (
     <div className="site-assistant" dir={locale === "ar" ? "rtl" : "ltr"}>
       {open ? (
-        <section className="site-assistant__panel" aria-label={text.title}>
+        <section className={`site-assistant__panel is-size-${size}`} aria-label={text.title}>
           <header className="site-assistant__head">
             <div>
               <strong>{text.title}</strong>
               <p>{text.subtitle}</p>
             </div>
-            <button type="button" className="site-assistant__close" onClick={() => setOpen(false)} aria-label={text.close}>
-              ×
-            </button>
+            <div className="site-assistant__actions">
+              <button
+                type="button"
+                onClick={() => setSize((value) => Math.max(0, value - 1))}
+                disabled={size === 0}
+                aria-label={text.shrink}
+              >
+                –
+              </button>
+              <button
+                type="button"
+                onClick={() => setSize((value) => Math.min(2, value + 1))}
+                disabled={size === 2}
+                aria-label={text.grow}
+              >
+                +
+              </button>
+              <button type="button" className="site-assistant__close" onClick={() => setOpen(false)} aria-label={text.close}>
+                ×
+              </button>
+            </div>
           </header>
           <div ref={listRef} className="site-assistant__log">
             {messages.length === 0 ? (

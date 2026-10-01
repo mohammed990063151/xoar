@@ -1731,8 +1731,8 @@ html[data-theme="light"] .text-violet-100 {
 .site-assistant__rings span:nth-child(3) { animation-delay: 0.9s; }
 
 .site-assistant__panel {
-  width: min(calc(100vw - 2rem), 22rem);
-  max-height: min(70vh, 34rem);
+  width: min(calc(100vw - 2rem), 26rem);
+  height: min(68vh, 32rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1752,9 +1752,42 @@ html[data-theme="light"] .text-violet-100 {
   padding: 0.75rem 0.85rem;
 }
 
+.site-assistant__panel.is-size-0 {
+  width: min(calc(100vw - 2rem), 20rem);
+  height: min(52vh, 24rem);
+}
+
+.site-assistant__panel.is-size-2 {
+  width: min(calc(100vw - 2rem), 42rem);
+  height: min(82vh, 46rem);
+}
+
 .site-assistant__head {
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.site-assistant__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.site-assistant__actions button {
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.site-assistant__actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .site-assistant__head p,
@@ -1778,11 +1811,14 @@ html[data-theme="light"] .text-violet-100 {
 }
 
 .site-assistant__log {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 0.8rem;
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  overflow-wrap: anywhere;
 }
 
 .site-assistant__log .is-user,
