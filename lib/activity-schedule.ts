@@ -171,8 +171,19 @@ function calendarBookableIsoDates(activity: Activity): string[] {
     .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
 }
 
-/** Dates the customer can pick in the booking calendar. */
+function soldOutIsoSet(activity: Activity): Set<string> {
+  const schedule = activity.schedule;
+  const raw = schedule?.soldOutDates ?? schedule?.sold_out_dates ?? [];
+  return new Set(raw.map((d) => String(d).slice(0, 10)));
+}
+
+/** Dates the customer can pick in the booking calendar (fully booked days excluded). */
 export function resolveBookableDays(activity: Activity, daysAhead = 90): Date[] {
+  const soldOut = soldOutIsoSet(activity);
+  return resolveScheduledDays(activity, daysAhead).filter((d) => !soldOut.has(toIsoDate(d)));
+}
+
+function resolveScheduledDays(activity: Activity, daysAhead: number): Date[] {
   if (usesCalendarSchedule(activity)) {
     const todayIso = toIsoDate(startOfLocalDay(new Date()));
     return calendarBookableIsoDates(activity)

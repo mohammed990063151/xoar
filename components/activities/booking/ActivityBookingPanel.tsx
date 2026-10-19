@@ -39,7 +39,7 @@ import { couponService, type CouponValidationResult } from "@/services/couponSer
 import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import type { PaymentConfig, PaymentMethodOption } from "@/types/payment";
 import { GeideaWordmark, PaymentBrandMark } from "@/components/payment/PaymentBrandMark";
-import { startGeideaCheckout } from "@/components/payment/startGeideaCheckout";
+import { GeideaPaymentModal, type GeideaPaymentSession } from "@/components/payment/GeideaPaymentModal";
 
 type BookingMode = "self" | "gift";
 
@@ -259,6 +259,7 @@ export function ActivityBookingPanel({
   const [giftModalOpen, setGiftModalOpen] = useState(false);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [geideaSession, setGeideaSession] = useState<GeideaPaymentSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -284,17 +285,56 @@ export function ActivityBookingPanel({
   const checkoutStepNum = isGift ? 3 : 2;
   const isGroupParty = forceGroup || adults >= 2;
 
+  const [serverQuote, setServerQuote] = useState<{ key: string; total: number; discount: number } | null>(null);
+  const quoteCode = appliedCoupon?.valid ? appliedCoupon.code : "";
+  const quoteKey = `${dateFrom}|${dateTo || dateFrom}|${adults}|${children}|${quoteCode}`;
+
+  useEffect(() => {
+    if (!dateFrom || !/^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams({
+        from: dateFrom,
+        to: dateTo || dateFrom,
+        adults: String(adults),
+        children: String(children),
+      });
+      if (quoteCode) params.set("code", quoteCode);
+      fetch(
+        `${getApiBaseUrl()}/api/activities/${locale}/${encodeURIComponent(activity.slug)}/quote?${params.toString()}`,
+        { headers: { Accept: "application/json" }, signal: controller.signal },
+      )
+        .then(async (res) => {
+          if (!res.ok) throw new Error("quote");
+          return (await res.json()) as { data?: { total?: number; discount?: number } };
+        })
+        .then((json) => {
+          if (typeof json.data?.total === "number") {
+            setServerQuote({ key: quoteKey, total: json.data.total, discount: json.data.discount ?? 0 });
+          }
+        })
+        .catch(() => undefined);
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [activity.slug, adults, children, dateFrom, dateTo, locale, quoteCode, quoteKey]);
+
+  const quoteReady = serverQuote !== null && serverQuote.key === quoteKey;
   const subtotal = calculateGuestBookingTotal(adultUnit || unitPrice, childUnit, adults, children, dayCount);
-  const discountAmount =
-    appliedCoupon?.valid && typeof appliedCoupon.discount === "number"
+  const discountAmount = quoteReady
+    ? serverQuote.discount
+    : appliedCoupon?.valid && typeof appliedCoupon.discount === "number"
       ? appliedCoupon.discount
       : 0;
-  const total =
-    appliedCoupon?.valid && typeof appliedCoupon.total === "number"
+  const total = quoteReady
+    ? serverQuote.total
+    : appliedCoupon?.valid && typeof appliedCoupon.total === "number"
       ? appliedCoupon.total
       : subtotal;
   const totalLabel =
-    unitPrice > 0
+    quoteReady || unitPrice > 0
       ? formatMoney(total, locale)
       : (activity.displayPrice ?? activity.price ?? "—");
 
@@ -483,24 +523,14 @@ export function ActivityBookingPanel({
           .join(" · "),
       });
       if (result.sessionId && result.confirmationCode) {
-        try {
-          await startGeideaCheckout({
-            sessionId: result.sessionId,
-            confirmationCode: result.confirmationCode,
-            locale,
-            scriptUrl: paymentConfig?.hppScriptUrl,
-            onCancel: () => {
-              setError(ar ? "تم إلغاء الدفع. يمكنك المحاولة مرة أخرى." : "Payment cancelled. You can try again.");
-            },
-            onError: (message) => setError(message),
-          });
-          return;
-        } catch {
-          if (result.checkoutUrl) {
-            window.location.href = result.checkoutUrl;
-            return;
-          }
-        }
+        const charged = parsePriceAmount(result.totalAmount ?? "");
+        setGeideaSession({
+          sessionId: result.sessionId,
+          confirmationCode: result.confirmationCode,
+          checkoutUrl: result.checkoutUrl,
+          amountLabel: charged > 0 ? formatMoney(charged, locale) : totalLabel,
+        });
+        return;
       }
       if (result.requiresRedirect && result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
@@ -1048,6 +1078,21 @@ export function ActivityBookingPanel({
         onClose={handleGiftModalClose}
         onSave={handleGiftSaved}
       />
+      {geideaSession ? (
+        <GeideaPaymentModal
+          session={geideaSession}
+          locale={locale}
+          scriptUrl={paymentConfig?.hppScriptUrl}
+          onClose={() => {
+            setGeideaSession(null);
+            setError(ar ? "تم إلغاء الدفع. يمكنك المحاولة مرة أخرى." : "Payment cancelled. You can try again.");
+          }}
+          onError={(message) => {
+            setGeideaSession(null);
+            setError(message);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -9,7 +9,7 @@ interface GeideaClientResult {
 }
 
 interface GeideaCheckoutClient {
-  startPayment: (sessionId: string) => void;
+  startPayment: (sessionId: string, options?: null, containerId?: string) => void;
 }
 
 type GeideaCheckoutCtor = new (
@@ -58,6 +58,8 @@ export async function startGeideaCheckout(options: {
   confirmationCode: string;
   locale: Locale;
   scriptUrl?: string | null;
+  /** Element id to embed Geidea's page into (drop-in); popup mode when omitted. */
+  containerId?: string;
   onCancel: () => void;
   onError: (message: string) => void;
 }): Promise<void> {
@@ -89,6 +91,11 @@ export async function startGeideaCheckout(options: {
       options.onCancel();
     },
   );
+
+  if (options.containerId) {
+    payment.startPayment(options.sessionId, null, options.containerId);
+    return;
+  }
 
   payment.startPayment(options.sessionId);
 }

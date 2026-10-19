@@ -44,6 +44,8 @@ export interface ActivitySchedulePayload {
   usesCalendarSchedule?: boolean;
   bookableDates?: string[];
   bookable_dates?: string[];
+  soldOutDates?: string[];
+  sold_out_dates?: string[];
   slotsPreview?: { date?: string | null; slots?: ActivityBookingSlot[] };
 }
 
