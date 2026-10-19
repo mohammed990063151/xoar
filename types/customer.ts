@@ -31,6 +31,9 @@ export interface CustomerBooking {
   totalAmount?: string;
   paymentStatus?: string;
   paymentMethod?: string;
+  paymentMethodLabel?: string;
+  paymentGateway?: string;
+  paymentGatewayLabel?: string;
   adults?: number;
   children?: number;
   isGift?: boolean;

@@ -38,6 +38,8 @@ import { formProfileDefaults } from "@/lib/form-profile-cookie";
 import { couponService, type CouponValidationResult } from "@/services/couponService";
 import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import type { PaymentConfig, PaymentMethodOption } from "@/types/payment";
+import { GeideaWordmark, PaymentBrandMark } from "@/components/payment/PaymentBrandMark";
+import { startGeideaCheckout } from "@/components/payment/startGeideaCheckout";
 
 type BookingMode = "self" | "gift";
 
@@ -256,7 +258,7 @@ export function ActivityBookingPanel({
   const [giftDetails, setGiftDetails] = useState<GiftRecipientDetails | null>(null);
   const [giftModalOpen, setGiftModalOpen] = useState(false);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -392,13 +394,6 @@ export function ActivityBookingPanel({
     setAppliedCoupon(null);
     setCouponError("");
   }
-  const methodIcons: Record<string, string> = {
-    card: "💳",
-    apple: "",
-    google: "G",
-    tamara: "T",
-    tabby: "B",
-  };
   function selectSelfBooking(): void {
     setBookingMode("self");
     setGiftDetails(null);
@@ -434,6 +429,10 @@ export function ActivityBookingPanel({
     if (isGift && !giftDetails?.name.trim()) {
       setError(labels.giftRequiredOnSubmit);
       setGiftModalOpen(true);
+      return;
+    }
+    if (!paymentMethod) {
+      setError(ar ? "اختر طريقة الدفع." : "Choose a payment method.");
       return;
     }
     if (!dateFrom) {
@@ -483,6 +482,26 @@ export function ActivityBookingPanel({
           .filter(Boolean)
           .join(" · "),
       });
+      if (result.sessionId && result.confirmationCode) {
+        try {
+          await startGeideaCheckout({
+            sessionId: result.sessionId,
+            confirmationCode: result.confirmationCode,
+            locale,
+            scriptUrl: paymentConfig?.hppScriptUrl,
+            onCancel: () => {
+              setError(ar ? "تم إلغاء الدفع. يمكنك المحاولة مرة أخرى." : "Payment cancelled. You can try again.");
+            },
+            onError: (message) => setError(message),
+          });
+          return;
+        } catch {
+          if (result.checkoutUrl) {
+            window.location.href = result.checkoutUrl;
+            return;
+          }
+        }
+      }
       if (result.requiresRedirect && result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
         return;
@@ -939,27 +958,61 @@ export function ActivityBookingPanel({
                 {!livePayments ? (
                   <p className="mb-3 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90">
                     {ar
-                      ? "وضع تجريبي —   "
+                      ? "وضع تجريبي — أضف مفاتيح البوابة في الإعدادات لتفعيل الدفع الحقيقي."
                       : "Demo mode — add gateway keys in .env to enable live payments."}
                   </p>
                 ) : null}
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {paymentMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(method.id)}
-                      className={
-                        paymentMethod === method.id
-                          ? "rounded-xl border border-cyan-400/50 bg-cyan-500/15 py-3 text-xs font-semibold text-cyan-100"
-                          : "rounded-xl border border-white/10 bg-white/5 py-3 text-xs text-slate-400 hover:border-white/20"
-                      }
-                    >
-                      <span className="block text-base">{methodIcons[method.id] ?? "●"}</span>
-                      {method.label}
-                    </button>
-                  ))}
-                </div>
+                {paymentConfig?.driver === "geidea" && paymentConfig.configured === false ? (
+                  <p className="mb-3 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90">
+                    {ar
+                      ? "مفاتيح Geidea غير مكتملة على الخادم. الصق المفتاح العام وكلمة سر API ثم أعد المحاولة."
+                      : "Geidea keys are missing on the server. Add the public key and API password, then try again."}
+                  </p>
+                ) : null}
+                {paymentConfig?.driver === "geidea" ? (
+                  <div className="space-y-2">
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={
+                          paymentMethod === method.id
+                            ? "w-full rounded-xl border border-cyan-400/50 bg-cyan-500/10 px-3 py-3 text-start"
+                            : "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-start hover:border-white/20"
+                        }
+                      >
+                        <span className="flex items-center justify-between gap-2">
+                          <GeideaWordmark />
+                          <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
+                        </span>
+                        <span className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                          {(method.brands ?? []).map((brand) => (
+                            <PaymentBrandMark key={brand} id={brand} className="h-8 w-16" />
+                          ))}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={
+                          paymentMethod === method.id
+                            ? "flex flex-col items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-500/15 px-2 py-3 text-xs font-semibold text-cyan-100"
+                            : "flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-2 py-3 text-xs text-slate-300 hover:border-white/20"
+                        }
+                      >
+                        <PaymentBrandMark id={method.id} />
+                        {method.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <p className="mt-3 flex items-center justify-center gap-2 text-center text-[11px] text-slate-500">
                   <span className="text-emerald-400">🔒</span>
                   {labels.securePayment}

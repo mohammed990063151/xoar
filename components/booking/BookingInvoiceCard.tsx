@@ -4,6 +4,12 @@ import Image from "next/image";
 import QRCode from "react-qr-code";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
+import {
+  GeideaWordmark,
+  PaymentBrandMark,
+  paymentGatewayLabel,
+  paymentMethodLabel,
+} from "@/components/payment/PaymentBrandMark";
 
 export type BookingInvoiceCardProps = {
   readonly locale: Locale;
@@ -18,6 +24,9 @@ export type BookingInvoiceCardProps = {
   readonly customerEmail?: string;
   readonly customerPhone?: string;
   readonly paymentMethod?: string;
+  readonly paymentMethodLabel?: string;
+  readonly paymentGateway?: string;
+  readonly paymentGatewayLabel?: string;
   readonly isGift?: boolean;
   readonly isGroup?: boolean;
   readonly isPaid?: boolean;
@@ -75,6 +84,9 @@ export function BookingInvoiceCard({
   customerEmail,
   customerPhone,
   paymentMethod,
+  paymentMethodLabel: paymentMethodLabelProp,
+  paymentGateway,
+  paymentGatewayLabel: paymentGatewayLabelProp,
   isGift = false,
   isGroup = false,
   isPaid = true,
@@ -224,8 +236,30 @@ export function BookingInvoiceCard({
 
           <div className="booking-invoice-section overflow-hidden rounded-xl border border-white/11 bg-white/[0.05]">
             <SectionHead titleEn="Payment" titleAr="الدفع" />
+            {paymentGateway ? (
+              <BilingualRow
+                labelEn="Payment Gateway"
+                labelAr="بوابة الدفع"
+                value={
+                  paymentGateway === "geidea" ? (
+                    <GeideaWordmark className="px-2 py-0.5" />
+                  ) : (
+                    paymentGatewayLabelProp || paymentGatewayLabel(paymentGateway)
+                  )
+                }
+              />
+            ) : null}
             {paymentMethod ? (
-              <BilingualRow labelEn="Payment Method" labelAr="طريقة الدفع" value={paymentMethod} />
+              <BilingualRow
+                labelEn="Payment Method"
+                labelAr="طريقة الدفع"
+                value={
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <PaymentBrandMark id={paymentMethod} className="h-6 w-16" />
+                    <span>{paymentMethodLabelProp || paymentMethodLabel(paymentMethod, ar)}</span>
+                  </span>
+                }
+              />
             ) : null}
             {totalAmount ? (
               <BilingualRow labelEn="Total Amount" labelAr="المبلغ الإجمالي" value={totalAmount} />

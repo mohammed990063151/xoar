@@ -4,15 +4,14 @@ import { saveFormProfile } from "@/lib/form-profile-cookie";
 import type { BookingCheckoutResult, PaymentConfig } from "@/types/payment";
 import type { InquiryPayload } from "@/types/api";
 import { getCustomerToken } from "@/services/customerService";
-import { sanitizePublicError } from "@/lib/parse-api-error";
+import { parseApiError } from "@/lib/parse-api-error";
 
 async function parseJson<T>(res: Response, locale: Locale = "ar"): Promise<T> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const fallback =
       locale === "ar" ? "تعذّر إتمام الحجز. حاول مرة أخرى." : "Booking failed. Please try again.";
-    const raw = (err as { message?: string }).message ?? "";
-    throw new Error(sanitizePublicError(raw, fallback));
+    throw new Error(parseApiError(err, fallback, fallback, locale));
   }
   return res.json() as Promise<T>;
 }

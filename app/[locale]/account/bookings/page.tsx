@@ -13,6 +13,7 @@ import { localizedPath } from "@/lib/i18n";
 import { customerService } from "@/services/customerService";
 import type { CustomerBooking } from "@/types/customer";
 import { bookingPdfUrl } from "@/lib/booking-pdf-url";
+import { PaymentBrandMark } from "@/components/payment/PaymentBrandMark";
 import { useDocumentTheme } from "@/hooks/useDocumentTheme";
 import { useParams } from "next/navigation";
 
@@ -149,6 +150,15 @@ function TicketCard({
                 {guests > 0 ? `${guests} ${ar ? "مشارك" : "guests"}` : null}
                 {booking.totalAmount ? ` · ${booking.totalAmount}` : null}
               </p>
+              {booking.paymentGateway || booking.paymentMethod ? (
+                <p className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+                  {booking.paymentMethod ? <PaymentBrandMark id={booking.paymentMethod} className="h-6 w-16" /> : null}
+                  <span>
+                    {booking.paymentGatewayLabel || booking.paymentGateway || ""}
+                    {booking.paymentMethodLabel ? ` · ${booking.paymentMethodLabel}` : ""}
+                  </span>
+                </p>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
               {booking.activity?.slug ? (
