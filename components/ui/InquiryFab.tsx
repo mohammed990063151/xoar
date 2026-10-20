@@ -34,16 +34,13 @@ export function InquiryFab({
   const waLink = whatsappHref(whatsapp);
 
   return (
-    <div
-      className="safe-fab fixed flex justify-end"
-      dir={locale === "ar" ? "rtl" : "ltr"}
-    >
+    <div className="safe-fab fixed flex" dir={locale === "ar" ? "rtl" : "ltr"}>
       <motion.a
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={whatsappAria}
-        className="inquiry-fab-wa relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white sm:h-16 sm:w-16"
+        className="inquiry-fab-wa relative z-10 flex h-[var(--fab-size)] w-[var(--fab-size)] items-center justify-center rounded-full bg-[#25D366] text-white"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 380, damping: 26 }}

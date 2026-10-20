@@ -57,10 +57,23 @@ const BRAND_LOGOS: Record<string, { src: string; alt: string; width: number; hei
   applepay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
 };
 
-export function GeideaWordmark({ className }: { readonly className?: string }): React.ReactElement {
+export function GeideaWordmark({
+  className,
+  imageClassName,
+}: {
+  readonly className?: string;
+  readonly imageClassName?: string;
+}): React.ReactElement {
   return (
     <span className={cn("inline-flex items-center rounded-lg bg-white px-2.5 py-1", className)}>
-      <Image src="/payment-logos/geidea.png" alt="Geidea" width={120} height={40} className="h-5 w-auto" unoptimized />
+      <Image
+        src="/payment-logos/geidea.png"
+        alt="Geidea"
+        width={120}
+        height={40}
+        className={cn("h-5 w-auto", imageClassName)}
+        unoptimized
+      />
     </span>
   );
 }
@@ -90,7 +103,7 @@ export function PaymentBrandMark({
         alt={logo.alt}
         width={logo.width}
         height={logo.height}
-        className="h-full max-h-5 w-auto object-contain"
+        className="h-full max-h-full w-auto object-contain"
         unoptimized
       />
     </span>

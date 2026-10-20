@@ -640,22 +640,6 @@ export function ActivityBookingPanel({
           <p className="text-xs font-medium uppercase tracking-wider text-cyan-400/90">
             {ar ? "احجز تجربتك" : "Book your experience"}
           </p>
-          <ActivityPriceDisplay
-            locale={locale}
-            price={
-              activity.activeCoupon
-                ? (activity.displayPrice ?? activity.price)
-                : (activity.originalPrice ?? activity.original_price ?? activity.price)
-            }
-            comparePrice={
-              activity.activeCoupon
-                ? (activity.originalPrice ?? activity.original_price ?? activity.comparePrice)
-                : undefined
-            }
-            showCompare={Boolean(activity.activeCoupon)}
-            perPerson
-            size="md"
-          />
         </div>
         <span className="inline-flex w-fit shrink-0 self-start rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
           {labels.securePayment}
@@ -916,10 +900,48 @@ export function ActivityBookingPanel({
                   </p>
                 ) : null}
               </section>
-              <div className="rounded-2xl border border-cyan-500/25 bg-cyan-500/10 px-4 py-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-cyan-200/80">{labels.total}</span>
-                  <span className="text-2xl font-bold text-white">{totalLabel}</span>
+              <motion.div
+                className="booking-total-card relative overflow-hidden rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-500/15 via-violet-500/10 to-slate-950 px-4 py-4 shadow-[0_10px_40px_rgba(34,211,238,0.18)]"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 24 }}
+              >
+                <span
+                  className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 animate-[booking-total-shine_3.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                  aria-hidden
+                />
+                <div className="relative flex items-end justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="block text-xs font-semibold text-cyan-200/90">{labels.total}</span>
+                    <ActivityPriceDisplay
+                      locale={locale}
+                      price={
+                        activity.activeCoupon
+                          ? (activity.displayPrice ?? activity.price)
+                          : (activity.originalPrice ?? activity.original_price ?? activity.price)
+                      }
+                      comparePrice={
+                        activity.activeCoupon
+                          ? (activity.originalPrice ?? activity.original_price ?? activity.comparePrice)
+                          : undefined
+                      }
+                      showCompare={Boolean(activity.activeCoupon)}
+                      perPerson
+                      size="sm"
+                    />
+                  </div>
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.span
+                      key={totalLabel}
+                      className="booking-total-amount shrink-0 bg-gradient-to-l from-cyan-200 via-white to-violet-200 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-4xl"
+                      initial={{ opacity: 0, y: 14, scale: 0.92 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -14, scale: 0.92 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                    >
+                      {totalLabel}
+                    </motion.span>
+                  </AnimatePresence>
                 </div>
                 {discountAmount > 0 ? (
                   <p className="mt-1 text-xs text-emerald-300">
@@ -933,7 +955,7 @@ export function ActivityBookingPanel({
                   {adults + children}{" "}
                   {ar ? "مشارك" : "guests"}
                 </p>
-              </div>
+              </motion.div>
               <section>
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
                   <StepBadge n={giftBookingEnabled ? checkoutStepNum : 2} />
