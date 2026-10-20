@@ -22,7 +22,7 @@ export function paymentMethodLabel(id: string | undefined, ar: boolean): string 
     case "tamara":
       return "Tamara";
     case "tabby":
-      return "Tabby";
+      return ar ? "تابي — تقسيط" : "Tabby — pay later";
     default:
       return id || "—";
   }
@@ -55,6 +55,12 @@ const BRAND_LOGOS: Record<string, { src: string; alt: string; width: number; hei
   apple: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   apple_pay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   applepay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
+  tabby: { src: "/payment-logos/tabby.svg", alt: "Tabby", width: 75, height: 32 },
+};
+
+/** Tabby brand: dark wordmark on its mint background. */
+const BRAND_BACKGROUND: Record<string, string> = {
+  tabby: "bg-[#3EEDBF]",
 };
 
 export function GeideaWordmark({
@@ -93,7 +99,8 @@ export function PaymentBrandMark({
   return (
     <span
       className={cn(
-        "inline-flex h-7 w-[4.5rem] items-center justify-center rounded-md bg-white px-1.5 py-1",
+        "inline-flex h-7 w-[4.5rem] items-center justify-center rounded-md px-1.5 py-1",
+        (id && BRAND_BACKGROUND[id]) || "bg-white",
         className,
       )}
       title={logo.alt}

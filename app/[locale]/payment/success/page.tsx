@@ -20,6 +20,7 @@ function PaymentSuccessContent(): React.ReactElement {
   const locale = (params?.locale === "en" ? "en" : "ar") as Locale;
   const ar = locale === "ar";
   const code = search.get("code") ?? "";
+  const result = search.get("result");
   const theme = useDocumentTheme();
   const [booking, setBooking] = useState<BookingCheckoutResult | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -36,7 +37,7 @@ function PaymentSuccessContent(): React.ReactElement {
           if (stopped) return;
           setBooking(data);
           setLoaded(true);
-          if (data.paymentStatus === "paid" || attempts >= 10) return;
+          if (data.paymentStatus === "paid" || data.paymentStatus === "failed" || attempts >= 10) return;
           attempts += 1;
           window.setTimeout(tick, 2000);
         })
@@ -56,8 +57,44 @@ function PaymentSuccessContent(): React.ReactElement {
   }, [code]);
 
   const paid = booking?.paymentStatus === "paid";
+  const failed =
+    !paid && (booking?.paymentStatus === "failed" || ((result === "cancel" || result === "failure") && loaded));
   const guests = booking ? (booking.adults ?? 0) + (booking.children ?? 0) : undefined;
   const image = booking?.activity?.image ? normalizeStorageImageUrl(booking.activity.image) : undefined;
+  const retryHref = booking?.activity?.slug
+    ? localizedPath(locale, `/activities/${booking.activity.slug}`)
+    : localizedPath(locale, "/activities");
+
+  if (failed) {
+    const cancelled = result === "cancel";
+    return (
+      <div className={siteContainer}>
+        <div className={`${pageBottom} mx-auto max-w-lg py-16 text-center`}>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 text-3xl text-red-300">
+            ✕
+          </div>
+          <h1 className="mt-6 text-2xl font-bold text-white">
+            {cancelled ? (ar ? "تم إلغاء الدفع" : "Payment cancelled") : ar ? "لم يكتمل الدفع" : "Payment not completed"}
+          </h1>
+          <p className="mx-auto mt-3 max-w-md rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm leading-relaxed text-red-100">
+            {cancelled
+              ? ar
+                ? "لقد ألغيت الدفعة. فضلاً حاول مجددًا أو اختر طريقة دفع أخرى."
+                : "You aborted the payment. Please retry or choose another payment method."
+              : ar
+                ? "نأسف، تابي غير قادرة على الموافقة على هذه العملية. الرجاء استخدام طريقة دفع أخرى."
+                : "Sorry, Tabby is unable to approve this purchase. Please use an alternative payment method for your order."}
+          </p>
+          <Link
+            href={retryHref}
+            className="mt-6 inline-flex rounded-2xl bg-gradient-to-l from-violet-600 via-blue-500 to-cyan-400 px-6 py-3 text-sm font-bold text-white"
+          >
+            {ar ? "العودة وإكمال الحجز" : "Back to booking"}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={siteContainer}>

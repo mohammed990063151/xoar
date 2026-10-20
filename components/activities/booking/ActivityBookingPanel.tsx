@@ -910,9 +910,23 @@ export function ActivityBookingPanel({
                   className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 animate-[booking-total-shine_3.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"
                   aria-hidden
                 />
-                <div className="relative flex items-end justify-between gap-3">
-                  <div className="min-w-0">
-                    <span className="block text-xs font-semibold text-cyan-200/90">{labels.total}</span>
+                <div className="relative">
+                  <span className="block text-xs font-semibold text-cyan-200/90">{labels.total}</span>
+                  <div className="mt-1 min-h-[2.75rem] overflow-hidden">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.p
+                        key={totalLabel}
+                        className="booking-total-amount text-3xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_0_14px_rgba(34,211,238,0.45)] sm:text-4xl"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                      >
+                        {totalLabel}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+                  <div className="mt-1 text-xs text-slate-400">
                     <ActivityPriceDisplay
                       locale={locale}
                       price={
@@ -930,18 +944,6 @@ export function ActivityBookingPanel({
                       size="sm"
                     />
                   </div>
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.span
-                      key={totalLabel}
-                      className="booking-total-amount shrink-0 bg-gradient-to-l from-cyan-200 via-white to-violet-200 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-4xl"
-                      initial={{ opacity: 0, y: 14, scale: 0.92 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -14, scale: 0.92 }}
-                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                    >
-                      {totalLabel}
-                    </motion.span>
-                  </AnimatePresence>
                 </div>
                 {discountAmount > 0 ? (
                   <p className="mt-1 text-xs text-emerald-300">
@@ -1034,15 +1036,33 @@ export function ActivityBookingPanel({
                             : "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-start hover:border-white/20"
                         }
                       >
-                        <span className="flex items-center justify-between gap-2">
-                          <GeideaWordmark />
-                          <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
-                        </span>
-                        <span className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                          {(method.brands ?? []).map((brand) => (
-                            <PaymentBrandMark key={brand} id={brand} className="h-8 w-16" />
-                          ))}
-                        </span>
+                        {method.id === "tabby" ? (
+                          <>
+                            <span className="flex items-center justify-between gap-2">
+                              <PaymentBrandMark id="tabby" className="h-8 w-[4.5rem]" />
+                              <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
+                            </span>
+                            {total > 0 ? (
+                              <span className="mt-2 block text-[11px] leading-relaxed text-slate-400">
+                                {ar
+                                  ? `4 دفعات بقيمة ${formatMoney((total * 1.015) / 4, locale)} شهريًا أو حتى 12 شهرًا`
+                                  : `4 payments of ${formatMoney((total * 1.015) / 4, locale)}/mo or up to 12 months`}
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          <>
+                            <span className="flex items-center justify-between gap-2">
+                              <GeideaWordmark />
+                              <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
+                            </span>
+                            <span className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                              {(method.brands ?? []).map((brand) => (
+                                <PaymentBrandMark key={brand} id={brand} className="h-8 w-16" />
+                              ))}
+                            </span>
+                          </>
+                        )}
                       </button>
                     ))}
                   </div>

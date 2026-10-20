@@ -2100,7 +2100,8 @@ html[data-theme="light"] .booking-total-card {
 }
 
 html[data-theme="light"] .booking-total-card .booking-total-amount {
-  background-image: linear-gradient(270deg, #0e7490, #4338ca 55%, #7c3aed);
+  color: #1e1b4b;
+  filter: none;
 }
 
 html[data-theme="light"] .booking-total-card span[aria-hidden] {
