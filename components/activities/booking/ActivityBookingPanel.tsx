@@ -36,7 +36,6 @@ import type { Customer } from "@/types/customer";
 import { paymentService } from "@/services/paymentService";
 import { formProfileDefaults } from "@/lib/form-profile-cookie";
 import { couponService, type CouponValidationResult } from "@/services/couponService";
-import { ActivityPriceDisplay } from "@/components/ui/ActivityPriceDisplay";
 import type { PaymentConfig, PaymentMethodOption } from "@/types/payment";
 import { GeideaWordmark, PaymentBrandMark } from "@/components/payment/PaymentBrandMark";
 import { GeideaPaymentModal, type GeideaPaymentSession } from "@/components/payment/GeideaPaymentModal";
@@ -961,24 +960,6 @@ export function ActivityBookingPanel({
                         {totalLabel}
                       </motion.p>
                     </AnimatePresence>
-                  </div>
-                  <div className="mt-1 text-xs text-slate-400">
-                    <ActivityPriceDisplay
-                      locale={locale}
-                      price={
-                        activity.activeCoupon
-                          ? (activity.displayPrice ?? activity.price)
-                          : (activity.originalPrice ?? activity.original_price ?? activity.price)
-                      }
-                      comparePrice={
-                        activity.activeCoupon
-                          ? (activity.originalPrice ?? activity.original_price ?? activity.comparePrice)
-                          : undefined
-                      }
-                      showCompare={Boolean(activity.activeCoupon)}
-                      perPerson
-                      size="sm"
-                    />
                   </div>
                 </div>
                 {discountAmount > 0 ? (
