@@ -244,7 +244,10 @@ export function BookingInvoiceCard({
                   paymentGateway === "geidea" ? (
                     <GeideaWordmark className="px-2 py-0.5" />
                   ) : paymentGateway === "tabby" || paymentGateway === "tamara" ? (
-                    <PaymentBrandMark id={paymentGateway} className="h-7 w-16" />
+                    <PaymentBrandMark
+                      id={paymentGateway}
+                      className={paymentGateway === "tamara" ? "h-7" : "h-7 w-16"}
+                    />
                   ) : (
                     paymentGatewayLabelProp || paymentGatewayLabel(paymentGateway)
                   )

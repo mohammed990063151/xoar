@@ -56,19 +56,19 @@ const BRAND_LOGOS: Record<string, { src: string; alt: string; width: number; hei
   apple_pay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   applepay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   tabby: { src: "/payment-logos/tabby.svg", alt: "Tabby", width: 75, height: 32 },
-  /** Official English wordmark (Wordmark Black.svg); aspect ~5.1:1 */
-  tamara: { src: "/payment-logos/tamara.svg", alt: "Tamara", width: 545, height: 107 },
+  /** Official EN wordmark from tamara.co (tamara-text-logo-black-en.svg); paths use fill #16181D. */
+  tamara: { src: "/payment-logos/tamara.svg", alt: "Tamara", width: 97, height: 19 },
 };
 
-/** BNPL brand chips. */
+/** BNPL brand chips — Tabby mint / Tamara peach plate. */
 const BRAND_BACKGROUND: Record<string, string> = {
   tabby: "bg-[#3EEDBF]",
   tamara: "bg-[#FFF0E8]",
 };
 
-/** Wider chip for Tamara's long wordmark so it stays readable next to Tabby. */
+/** Wider chip for Tamara's long ~5:1 wordmark so it matches Tabby's polish. */
 const BRAND_CHIP_SIZE: Record<string, string> = {
-  tamara: "!w-[6.5rem]",
+  tamara: "!w-28 !px-2",
 };
 
 export function GeideaWordmark({
