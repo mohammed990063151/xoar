@@ -56,11 +56,13 @@ const BRAND_LOGOS: Record<string, { src: string; alt: string; width: number; hei
   apple_pay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   applepay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   tabby: { src: "/payment-logos/tabby.svg", alt: "Tabby", width: 75, height: 32 },
+  tamara: { src: "/payment-logos/tamara.svg", alt: "Tamara", width: 120, height: 32 },
 };
 
-/** Tabby brand: dark wordmark on its mint background. */
+/** BNPL brand chips. */
 const BRAND_BACKGROUND: Record<string, string> = {
   tabby: "bg-[#3EEDBF]",
+  tamara: "bg-[#FFF0E8]",
 };
 
 export function GeideaWordmark({

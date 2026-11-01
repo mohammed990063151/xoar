@@ -14,6 +14,9 @@ export interface PaymentConfig {
   methods: PaymentMethodOption[];
   hppScriptUrl?: string | null;
   publishableKey?: string | null;
+  /** Widget public key only — never an API token. */
+  tamaraPublicKey?: string | null;
+  tabbyPublicKey?: string | null;
   successUrl?: string;
   cancelUrl?: string;
 }

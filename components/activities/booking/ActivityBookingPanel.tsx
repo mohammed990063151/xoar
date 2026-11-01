@@ -259,6 +259,9 @@ export function ActivityBookingPanel({
   const [giftModalOpen, setGiftModalOpen] = useState(false);
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [checkoutPhone, setCheckoutPhone] = useState("");
+  const [checkoutEmail, setCheckoutEmail] = useState("");
+  const [tamaraEligible, setTamaraEligible] = useState(true);
   const [geideaSession, setGeideaSession] = useState<GeideaPaymentSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -287,7 +290,7 @@ export function ActivityBookingPanel({
 
   const [serverQuote, setServerQuote] = useState<{ key: string; total: number; discount: number } | null>(null);
   const quoteCode = appliedCoupon?.valid ? appliedCoupon.code : "";
-  const quoteKey = `${dateFrom}|${dateTo || dateFrom}|${adults}|${children}|${quoteCode}`;
+  const quoteKey = `${dateFrom}|${dateTo || dateFrom}|${adults}|${children}|${quoteCode}|${selectedTime}`;
 
   useEffect(() => {
     if (!dateFrom || !/^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) return;
@@ -300,6 +303,7 @@ export function ActivityBookingPanel({
         children: String(children),
       });
       if (quoteCode) params.set("code", quoteCode);
+      if (selectedTime) params.set("time", selectedTime);
       fetch(
         `${getApiBaseUrl()}/api/activities/${locale}/${encodeURIComponent(activity.slug)}/quote?${params.toString()}`,
         { headers: { Accept: "application/json" }, signal: controller.signal },
@@ -319,7 +323,7 @@ export function ActivityBookingPanel({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [activity.slug, adults, children, dateFrom, dateTo, locale, quoteCode, quoteKey]);
+  }, [activity.slug, adults, children, dateFrom, dateTo, locale, quoteCode, quoteKey, selectedTime]);
 
   const quoteReady = serverQuote !== null && serverQuote.key === quoteKey;
   const subtotal = calculateGuestBookingTotal(adultUnit || unitPrice, childUnit, adults, children, dayCount);
@@ -363,6 +367,38 @@ export function ActivityBookingPanel({
       }
     });
   }, [locale]);
+
+  useEffect(() => {
+    setCheckoutPhone(guestDefaults.phone || "");
+    setCheckoutEmail(guestDefaults.email || "");
+  }, [guestDefaults.email, guestDefaults.phone]);
+
+  const offersTamara = paymentMethods.some((method) => method.id === "tamara");
+
+  useEffect(() => {
+    if (!offersTamara || total <= 0) {
+      setTamaraEligible(true);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void paymentService
+        .checkTamaraEligibility({
+          amount: total,
+          currency: paymentConfig?.currency || "SAR",
+          phone: checkoutPhone,
+          email: checkoutEmail,
+        })
+        .then(setTamaraEligible);
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [checkoutEmail, checkoutPhone, offersTamara, paymentConfig?.currency, total]);
+
+  useEffect(() => {
+    if (paymentMethod === "tamara" && !tamaraEligible) {
+      const fallback = paymentMethods.find((method) => method.id !== "tamara");
+      if (fallback) setPaymentMethod(fallback.id);
+    }
+  }, [paymentMethod, paymentMethods, tamaraEligible]);
 
   useEffect(() => {
     let active = true;
@@ -989,8 +1025,9 @@ export function ActivityBookingPanel({
                     name="email"
                     type="email"
                     required
-                    defaultValue={guestDefaults.email}
-                    key={`booking-email-${customer?.id ?? "guest"}-${guestDefaults.email}`}
+                    value={checkoutEmail}
+                    onChange={(event) => setCheckoutEmail(event.target.value)}
+                    key={`booking-email-${customer?.id ?? "guest"}`}
                     placeholder={ar ? "البريد الإلكتروني *" : "Email *"}
                     className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-400/50"
                   />
@@ -998,8 +1035,9 @@ export function ActivityBookingPanel({
                     name="phone"
                     type="tel"
                     required
-                    defaultValue={guestDefaults.phone}
-                    key={`booking-phone-${customer?.id ?? "guest"}-${guestDefaults.phone}`}
+                    value={checkoutPhone}
+                    onChange={(event) => setCheckoutPhone(event.target.value)}
+                    key={`booking-phone-${customer?.id ?? "guest"}`}
                     placeholder={ar ? "رقم الجوال *" : "Phone *"}
                     className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-400/50"
                   />
@@ -1025,28 +1063,45 @@ export function ActivityBookingPanel({
                 ) : null}
                 {paymentConfig?.driver === "geidea" ? (
                   <div className="space-y-2">
-                    {paymentMethods.map((method) => (
+                    {paymentMethods.map((method) => {
+                      const tamaraDisabled = method.id === "tamara" && !tamaraEligible;
+                      return (
                       <button
                         key={method.id}
                         type="button"
-                        onClick={() => setPaymentMethod(method.id)}
+                        disabled={tamaraDisabled}
+                        onClick={() => {
+                          if (!tamaraDisabled) setPaymentMethod(method.id);
+                        }}
                         className={
-                          paymentMethod === method.id
-                            ? "w-full rounded-xl border border-cyan-400/50 bg-cyan-500/10 px-3 py-3 text-start"
-                            : "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-start hover:border-white/20"
+                          tamaraDisabled
+                            ? "w-full cursor-not-allowed rounded-xl border border-white/5 bg-white/[0.03] px-3 py-3 text-start opacity-45"
+                            : paymentMethod === method.id
+                              ? "w-full rounded-xl border border-cyan-400/50 bg-cyan-500/10 px-3 py-3 text-start"
+                              : "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-start hover:border-white/20"
                         }
                       >
-                        {method.id === "tabby" ? (
+                        {method.id === "tabby" || method.id === "tamara" ? (
                           <>
                             <span className="flex items-center justify-between gap-2">
-                              <PaymentBrandMark id="tabby" className="h-8 w-[4.5rem]" />
+                              <PaymentBrandMark id={method.id} className="h-8 w-[4.5rem]" />
                               <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
                             </span>
-                            {total > 0 ? (
-                              <span className="mt-2 block text-[11px] leading-relaxed text-slate-400">
+                            {tamaraDisabled ? (
+                              <span className="mt-2 block text-[11px] leading-relaxed text-slate-500">
                                 {ar
-                                  ? `4 دفعات بقيمة ${formatMoney((total * 1.015) / 4, locale)} شهريًا أو حتى 12 شهرًا`
-                                  : `4 payments of ${formatMoney((total * 1.015) / 4, locale)}/mo or up to 12 months`}
+                                  ? "تمارا غير متاحة لهذا الطلب حاليًا"
+                                  : "Tamara is not available for this checkout"}
+                              </span>
+                            ) : total > 0 ? (
+                              <span className="mt-2 block text-[11px] leading-relaxed text-slate-400">
+                                {method.id === "tamara"
+                                  ? ar
+                                    ? `قسّطها على 3 دفعات من ${formatMoney(total / 3, locale)}`
+                                    : `Split into 3 payments of ${formatMoney(total / 3, locale)}`
+                                  : ar
+                                    ? `4 دفعات بقيمة ${formatMoney((total * 1.015) / 4, locale)} شهريًا أو حتى 12 شهرًا`
+                                    : `4 payments of ${formatMoney((total * 1.015) / 4, locale)}/mo or up to 12 months`}
                               </span>
                             ) : null}
                           </>
@@ -1064,7 +1119,8 @@ export function ActivityBookingPanel({
                           </>
                         )}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2">

@@ -26,6 +26,31 @@ export const paymentService = {
     return json.data;
   },
 
+  /** Pre-checkout eligibility — grey out Tamara when false; timeout defaults to eligible. */
+  async checkTamaraEligibility(input: {
+    amount: number;
+    currency?: string;
+    phone?: string;
+    email?: string;
+  }): Promise<boolean> {
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/payments/tamara/eligibility`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+        cache: "no-store",
+      });
+      if (!res.ok) return true;
+      const json = (await res.json()) as { data?: { eligible?: boolean } };
+      return json.data?.eligible !== false;
+    } catch {
+      return true;
+    }
+  },
+
   async submitBooking(payload: InquiryPayload): Promise<BookingCheckoutResult> {
     const token = getCustomerToken();
     const headers: HeadersInit = {
