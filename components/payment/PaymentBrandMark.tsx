@@ -56,13 +56,19 @@ const BRAND_LOGOS: Record<string, { src: string; alt: string; width: number; hei
   apple_pay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   applepay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   tabby: { src: "/payment-logos/tabby.svg", alt: "Tabby", width: 75, height: 32 },
-  tamara: { src: "/payment-logos/tamara.svg", alt: "Tamara", width: 120, height: 32 },
+  /** Official English wordmark (Wordmark Black.svg); aspect ~5.1:1 */
+  tamara: { src: "/payment-logos/tamara.svg", alt: "Tamara", width: 545, height: 107 },
 };
 
 /** BNPL brand chips. */
 const BRAND_BACKGROUND: Record<string, string> = {
   tabby: "bg-[#3EEDBF]",
   tamara: "bg-[#FFF0E8]",
+};
+
+/** Wider chip for Tamara's long wordmark so it stays readable next to Tabby. */
+const BRAND_CHIP_SIZE: Record<string, string> = {
+  tamara: "w-[5.75rem]",
 };
 
 export function GeideaWordmark({
@@ -102,6 +108,7 @@ export function PaymentBrandMark({
     <span
       className={cn(
         "inline-flex h-7 w-[4.5rem] items-center justify-center rounded-md px-1.5 py-1",
+        id && BRAND_CHIP_SIZE[id],
         (id && BRAND_BACKGROUND[id]) || "bg-white",
         className,
       )}
