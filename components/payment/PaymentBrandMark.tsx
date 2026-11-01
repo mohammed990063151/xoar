@@ -68,7 +68,7 @@ const BRAND_BACKGROUND: Record<string, string> = {
 
 /** Wider chip for Tamara's long wordmark so it stays readable next to Tabby. */
 const BRAND_CHIP_SIZE: Record<string, string> = {
-  tamara: "w-[5.75rem]",
+  tamara: "!w-[6.5rem]",
 };
 
 export function GeideaWordmark({
@@ -108,9 +108,10 @@ export function PaymentBrandMark({
     <span
       className={cn(
         "inline-flex h-7 w-[4.5rem] items-center justify-center rounded-md px-1.5 py-1",
-        id && BRAND_CHIP_SIZE[id],
         (id && BRAND_BACKGROUND[id]) || "bg-white",
         className,
+        // Chip size last so callers cannot shrink Tamara's long wordmark.
+        id && BRAND_CHIP_SIZE[id],
       )}
       title={logo.alt}
     >

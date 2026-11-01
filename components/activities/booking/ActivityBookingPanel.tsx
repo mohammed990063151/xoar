@@ -1084,14 +1084,17 @@ export function ActivityBookingPanel({
                         {method.id === "tabby" || method.id === "tamara" ? (
                           <>
                             <span className="flex items-center justify-between gap-2">
-                              <PaymentBrandMark id={method.id} className="h-8 w-[4.5rem]" />
+                              <PaymentBrandMark
+                                id={method.id}
+                                className={method.id === "tamara" ? "h-8" : "h-8 w-[4.5rem]"}
+                              />
                               <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
                             </span>
                             {tamaraDisabled ? (
                               <span className="mt-2 block text-[11px] leading-relaxed text-slate-500">
                                 {ar
-                                  ? "تمارا غير متاحة لهذا الطلب حاليًا"
-                                  : "Tamara is not available for this checkout"}
+                                  ? "تمارا غير متاحة لهذا الطلب — استخدم رقمًا سعوديًا (+966) أو طريقة دفع أخرى"
+                                  : "Tamara unavailable — use a Saudi mobile (+966) or another payment method"}
                               </span>
                             ) : total > 0 ? (
                               <span className="mt-2 block text-[11px] leading-relaxed text-slate-400">
