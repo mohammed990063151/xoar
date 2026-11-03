@@ -57,6 +57,11 @@ export function AccountSocialButtons({
         </svg>
         {ar ? "متابعة مع Facebook" : "Continue with Facebook"}
       </a>
+      <p className="text-center text-[10px] leading-relaxed text-slate-500">
+        {ar
+          ? "للحسابات المسجّلة مسبقاً فقط — سجّل حساباً أولاً إن لم يكن لديك حساب."
+          : "Existing accounts only — register first if you do not have an account."}
+      </p>
     </div>
   );
 }
