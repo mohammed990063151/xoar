@@ -108,6 +108,87 @@ export const customerService = {
     return json.data;
   },
 
+  async forgotPassword(email: string, locale: Locale = "ar"): Promise<string> {
+    const res = await fetch(`${getApiBaseUrl()}/api/customer/password/forgot`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ email, locale }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        parseApiError(
+          body,
+          "تعذّر إرسال رابط إعادة التعيين",
+          "Could not send reset link",
+          locale,
+        ),
+      );
+    }
+    return typeof body.message === "string"
+      ? body.message
+      : locale === "ar"
+        ? "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني."
+        : "A password reset link has been sent to your email.";
+  },
+
+  async resetPassword(payload: {
+    token: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    locale?: Locale;
+  }): Promise<string> {
+    const locale = (payload.locale === "en" ? "en" : "ar") as Locale;
+    const res = await fetch(`${getApiBaseUrl()}/api/customer/password/reset`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, locale }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        parseApiError(
+          body,
+          "تعذّر تحديث كلمة المرور",
+          "Could not reset password",
+          locale,
+        ),
+      );
+    }
+    return typeof body.message === "string"
+      ? body.message
+      : locale === "ar"
+        ? "تم تحديث كلمة المرور بنجاح."
+        : "Password updated successfully.";
+  },
+
+  async exchangeSocialCode(code: string, locale: Locale = "ar"): Promise<string> {
+    const res = await fetch(`${getApiBaseUrl()}/api/customer/auth/exchange`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(
+        parseApiError(
+          err,
+          "تعذّر إكمال تسجيل الدخول الاجتماعي",
+          "Social login exchange failed",
+          locale,
+        ),
+      );
+    }
+    const json = (await res.json()) as { data: { token: string } };
+    if (!json.data?.token) {
+      throw new Error(locale === "ar" ? "رمز الدخول غير صالح" : "Invalid login token");
+    }
+    setCustomerToken(json.data.token);
+    customerCache.clear();
+    return json.data.token;
+  },
+
   logout(): void {
     const token = getCustomerToken();
     if (token) {

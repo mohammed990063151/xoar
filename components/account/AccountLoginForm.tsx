@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { AccountSocialButtons } from "@/components/account/AccountSocialButtons";
 import { customerService } from "@/services/customerService";
 import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
@@ -104,15 +106,27 @@ export function AccountLoginForm({
             />
           ) : null}
 
-          <input
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            placeholder={ar ? "كلمة المرور" : "Password"}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
-          />
+          <div className="space-y-2">
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              placeholder={ar ? "كلمة المرور" : "Password"}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
+            />
+            {mode === "login" ? (
+              <div className="text-end">
+                <Link
+                  href={localizedPath(locale, "/account/forgot-password")}
+                  className="text-xs font-semibold text-cyan-300/90 hover:text-cyan-200"
+                >
+                  {ar ? "نسيت كلمة المرور؟" : "Forgot password?"}
+                </Link>
+              </div>
+            ) : null}
+          </div>
 
           {mode === "register" ? (
             <>
@@ -156,6 +170,8 @@ export function AccountLoginForm({
                   : "Create account"}
           </button>
 
+          <AccountSocialButtons locale={locale} returnTo={returnTo} />
+
           <button
             type="button"
             onClick={() => setMode(mode === "login" ? "register" : "login")}
@@ -169,12 +185,6 @@ export function AccountLoginForm({
                 ? "لديك حساب؟ سجّل الدخول"
                 : "Have an account? Sign in"}
           </button>
-
-          <p className="text-center text-[10px] text-slate-600">
-            {ar
-              ? "تسجيل Google ووسائل التواصل — قريباً"
-              : "Google & social login — coming soon"}
-          </p>
         </form>
       </div>
     </div>
