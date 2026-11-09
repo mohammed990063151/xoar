@@ -18,7 +18,7 @@ export async function generateMetadata({
   if (!offering) return {};
   return pageMetadata("corporate-events.detail", loc, `/${loc}/corporate-events/${slug}`, {
     title: offering.title,
-    description: offering.description ?? undefined,
+    description: offering.description ?? "",
   });
 }
 
