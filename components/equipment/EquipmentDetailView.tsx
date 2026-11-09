@@ -608,7 +608,7 @@ export function EquipmentDetailView({
           </div>
 
           {waHref || offering.contactPhone ? (
-            <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
+            <div className="booking-panel rounded-2xl border border-white/10 bg-slate-950/50 p-4">
               <p className="text-sm font-semibold text-white">
                 {ar ? "تحتاج استشارة تقنية؟" : "Need a tech consult?"}
               </p>
