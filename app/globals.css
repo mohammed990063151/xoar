@@ -320,6 +320,53 @@ html[data-theme="light"] header.mobile-menu-open.glass {
   border-color: rgba(15, 23, 42, 0.12) !important;
 }
 
+/* ─── DESKTOP SERVICES DROPDOWN: readable in both themes ────────────────────── */
+
+.services-dropdown {
+  background: rgba(2, 6, 23, 0.98);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.services-dropdown-item {
+  color: #e2e8f0 !important;
+}
+
+.services-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.services-dropdown-item--active {
+  background-color: rgba(124, 58, 237, 0.3) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .services-dropdown {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14) !important;
+}
+
+html[data-theme="light"] .services-dropdown-item {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .services-dropdown-item:hover {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .services-dropdown-item--active {
+  background-color: rgba(124, 58, 237, 0.14) !important;
+  color: #5b21b6 !important;
+}
+
+/* Mobile services submenu under the centered Services button */
+html[data-theme="light"] .mobile-nav-panel .services-mobile-submenu {
+  background: rgba(241, 245, 249, 0.95) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
 /* ─── MOBILE NAV: readable in both themes ───────────────────────────────────── */
 
 .mobile-nav-panel {

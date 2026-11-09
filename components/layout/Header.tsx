@@ -254,7 +254,7 @@ export function Header({
                       hidden={!servicesOpen}
                       className="absolute top-full start-1/2 z-[60] w-max -translate-x-1/2 pt-3 rtl:translate-x-1/2"
                     >
-                      <div className="min-w-[16rem] overflow-hidden rounded-2xl border border-white/12 bg-slate-950/98 p-2 shadow-[0_20px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+                      <div className="services-dropdown min-w-[16rem] overflow-hidden rounded-2xl border p-2 shadow-[0_20px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl">
                         {servicesChildren.map((child) => {
                           const resolved = resolveHref(locale, child.href);
                           return (
@@ -264,10 +264,8 @@ export function Header({
                               role="menuitem"
                               prefetch={prefetchRoutes}
                               className={cn(
-                                "block rounded-xl px-3.5 py-2.5 text-sm transition",
-                                isActive(child.href)
-                                  ? "bg-purple-600/30 text-white"
-                                  : "text-slate-200 hover:bg-white/8 hover:text-white",
+                                "services-dropdown-item block rounded-xl px-3.5 py-2.5 text-sm transition",
+                                isActive(child.href) && "services-dropdown-item--active",
                               )}
                               onClick={() => setServicesOpen(false)}
                             >
@@ -386,7 +384,7 @@ export function Header({
                           </span>
                         </button>
                         {mobileServicesOpen ? (
-                          <div className="mt-1 space-y-1 rounded-xl border border-white/10 bg-black/25 p-2">
+                          <div className="services-mobile-submenu mt-1 space-y-1 rounded-xl border border-white/10 bg-black/25 p-2">
                             {servicesChildren.map((child) => (
                               <Link
                                 key={child.href}
@@ -394,8 +392,8 @@ export function Header({
                                 prefetch={prefetchRoutes}
                                 onClick={() => setOpen(false)}
                                 className={cn(
-                                  "block rounded-lg px-3 py-2.5 text-center text-sm font-medium",
-                                  isActive(child.href) ? "bg-purple-600/30 text-white" : "text-slate-200",
+                                  "services-dropdown-item block rounded-lg px-3 py-2.5 text-center text-sm font-medium",
+                                  isActive(child.href) && "services-dropdown-item--active",
                                 )}
                               >
                                 {servicesChildLabel(child.key, nav)}
