@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import type { Locale } from "@/lib/i18n";
 import type {
   EquipmentAudience,
@@ -16,9 +16,9 @@ export const equipmentOfferingService = {
       audience,
       per_page: String(perPage),
     });
-    const res = await fetch(
-      `${getApiBaseUrl()}/api/equipment-offerings/${locale}?${params}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+    const res = await laravelFetch(
+      `/api/equipment-offerings/${locale}?${params}`,
+      { cache: "no-store" },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as { data?: EquipmentOffering[] };
@@ -27,9 +27,9 @@ export const equipmentOfferingService = {
 
   async get(locale: Locale, slug: string, audience?: EquipmentAudience): Promise<EquipmentOffering | null> {
     const params = audience && audience !== "both" ? `?audience=${audience}` : "";
-    const res = await fetch(
-      `${getApiBaseUrl()}/api/equipment-offerings/${locale}/${encodeURIComponent(slug)}${params}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+    const res = await laravelFetch(
+      `/api/equipment-offerings/${locale}/${encodeURIComponent(slug)}${params}`,
+      { cache: "no-store" },
     );
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: EquipmentOffering };
@@ -46,9 +46,9 @@ export const equipmentOfferingService = {
     if (packageIds.length) params.set("package_ids", packageIds.join(","));
     if (audience) params.set("audience", audience);
     const qs = params.toString();
-    const res = await fetch(
-      `${getApiBaseUrl()}/api/equipment-offerings/${locale}/${encodeURIComponent(slug)}/quote${qs ? `?${qs}` : ""}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+    const res = await laravelFetch(
+      `/api/equipment-offerings/${locale}/${encodeURIComponent(slug)}/quote${qs ? `?${qs}` : ""}`,
+      { cache: "no-store" },
     );
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: EquipmentQuote };

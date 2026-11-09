@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import type { Locale } from "@/lib/i18n";
 import type {
   EventOffering,
@@ -16,9 +16,9 @@ export const eventOfferingService = {
       audience,
       per_page: String(perPage),
     });
-    const res = await fetch(
-      `${getApiBaseUrl()}/api/event-offerings/${locale}?${params}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+    const res = await laravelFetch(
+      `/api/event-offerings/${locale}?${params}`,
+      { cache: "no-store" },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as { data?: EventOffering[] };
@@ -31,9 +31,9 @@ export const eventOfferingService = {
     audience?: EventOfferingAudience,
   ): Promise<EventOffering | null> {
     const params = audience ? `?audience=${audience}` : "";
-    const res = await fetch(
-      `${getApiBaseUrl()}/api/event-offerings/${locale}/${encodeURIComponent(slug)}${params}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+    const res = await laravelFetch(
+      `/api/event-offerings/${locale}/${encodeURIComponent(slug)}${params}`,
+      { cache: "no-store" },
     );
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: EventOffering };
@@ -50,9 +50,9 @@ export const eventOfferingService = {
     if (packageIds.length) params.set("package_ids", packageIds.join(","));
     if (audience) params.set("audience", audience);
     const qs = params.toString();
-    const res = await fetch(
-      `${getApiBaseUrl()}/api/event-offerings/${locale}/${encodeURIComponent(slug)}/quote${qs ? `?${qs}` : ""}`,
-      { headers: { Accept: "application/json" }, cache: "no-store" },
+    const res = await laravelFetch(
+      `/api/event-offerings/${locale}/${encodeURIComponent(slug)}/quote${qs ? `?${qs}` : ""}`,
+      { cache: "no-store" },
     );
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: EventOfferingQuote };
