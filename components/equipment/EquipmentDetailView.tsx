@@ -412,7 +412,7 @@ export function EquipmentDetailView({
               : "Pick rental days, delivery location, and add-ons — then pay instantly."}
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/80 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+          <div className="booking-panel rounded-[1.5rem] border border-white/10 bg-slate-950/80 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
             <p className="text-lg font-bold text-white">{totalLabel}</p>
             <p className="text-xs text-slate-500">
               {ar ? "الإجمالي التقديري قبل الدفع" : "Estimated total before payment"}

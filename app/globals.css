@@ -320,6 +320,132 @@ html[data-theme="light"] header.mobile-menu-open.glass {
   border-color: rgba(15, 23, 42, 0.12) !important;
 }
 
+/* ─── EQUIPMENT + EVENT SURFACES: readable in light theme ───────────────────── */
+
+html[data-theme="light"] .equipment-card {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .equipment-card .text-white,
+html[data-theme="light"] .equipment-card .text-white\/90 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .equipment-card .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .equipment-card .text-slate-500 {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .equipment-card .text-cyan-100 {
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .equipment-card .hover\:text-cyan-100:hover {
+  color: #0891b2 !important;
+}
+
+html[data-theme="light"] .equipment-card .border-white\/8 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Keep CTA label white on gradient button */
+html[data-theme="light"] .equipment-card a.inline-flex.rounded-full,
+html[data-theme="light"] .equipment-card a.inline-flex.rounded-full * {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .equipment-strip {
+  background: linear-gradient(135deg, #ecfeff 0%, #ffffff 45%, #f8fafc 100%) !important;
+  border-color: rgba(6, 182, 212, 0.28) !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="light"] .equipment-strip .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .equipment-strip .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .equipment-strip .text-cyan-300\/80,
+html[data-theme="light"] .equipment-strip .text-cyan-100,
+html[data-theme="light"] .equipment-strip .text-cyan-100\/90 {
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .equipment-strip .text-amber-200\/80 {
+  color: #b45309 !important;
+}
+
+html[data-theme="light"] .equipment-strip a.group,
+html[data-theme="light"] .equipment-strip .rounded-2xl.border.border-white\/10 {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .equipment-strip a.group .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .event-tabs-panel {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="light"] .event-tabs-panel .text-cyan-100 {
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .event-tabs-panel .text-slate-300 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .event-tabs-panel .text-emerald-100,
+html[data-theme="light"] .event-tabs-panel .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .event-tabs-panel .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .event-tabs-panel .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .event-tabs-panel .bg-black\/20,
+html[data-theme="light"] .event-tabs-panel .bg-white\/\[0\.03\],
+html[data-theme="light"] .event-tabs-panel .bg-white\/\[0\.02\] {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+}
+
+html[data-theme="light"] .booking-panel .text-slate-200,
+html[data-theme="light"] .booking-panel .text-emerald-200,
+html[data-theme="light"] .booking-panel .text-emerald-100,
+html[data-theme="light"] .booking-panel .text-cyan-200,
+html[data-theme="light"] .booking-panel .text-amber-200 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .booking-panel .text-emerald-200 {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .booking-panel .text-cyan-200 {
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .booking-panel .text-amber-200 {
+  color: #b45309 !important;
+}
+
 /* ─── DESKTOP SERVICES DROPDOWN: readable in both themes ────────────────────── */
 
 .services-dropdown {

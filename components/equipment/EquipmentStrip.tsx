@@ -25,7 +25,7 @@ export function EquipmentStrip({
   const ar = locale === "ar";
 
   return (
-    <section className="mt-12 overflow-hidden rounded-[1.75rem] border border-cyan-400/20 bg-gradient-to-br from-cyan-950/40 via-slate-950 to-slate-950 p-5 sm:p-7">
+    <section className="equipment-strip mt-12 overflow-hidden rounded-[1.75rem] border border-cyan-400/20 bg-gradient-to-br from-cyan-950/40 via-slate-950 to-slate-950 p-5 sm:p-7">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/80">

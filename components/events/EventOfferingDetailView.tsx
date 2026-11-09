@@ -501,7 +501,7 @@ export function EventOfferingDetailView({
 
           <div
             id="event-tabs"
-            className="scroll-mt-24 rounded-3xl border border-white/10 bg-slate-950/60 p-5 sm:p-6"
+            className="event-tabs-panel scroll-mt-24 rounded-3xl border border-white/10 bg-slate-950/60 p-5 sm:p-6"
           >
             <div className={cn(scrollRow, "border-b border-white/10 pb-px")}>
               {tabs.map((t) => (
@@ -672,7 +672,7 @@ export function EventOfferingDetailView({
               : "Pick your event day on the calendar — you choose when it happens."}
           </div>
 
-          <div className="rounded-[1.35rem] border border-white/10 bg-slate-950/80 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+          <div className="booking-panel rounded-[1.35rem] border border-white/10 bg-slate-950/80 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
             <p className="text-sm text-slate-400">{ar ? "ملخص الحجز" : "Booking summary"}</p>
             <p className="mt-1 text-2xl font-bold text-white">{totalLabel}</p>
             <p className="mt-1 text-xs text-slate-500">

@@ -184,7 +184,7 @@ export function EquipmentCatalogView({
           </div>
         )}
 
-        <section className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-cyan-950/40 p-6 sm:p-8">
+        <section className="equipment-strip relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-cyan-950/40 p-6 sm:p-8">
           <div
             className="pointer-events-none absolute -end-16 -top-16 h-48 w-48 rounded-full bg-rose-500/10 blur-3xl"
             aria-hidden
@@ -246,7 +246,7 @@ function EquipmentCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.24), duration: 0.35 }}
-      className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/70 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-cyan-400/30 hover:shadow-[0_22px_60px_rgba(6,182,212,0.12)]"
+      className="equipment-card group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/70 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition hover:border-cyan-400/30 hover:shadow-[0_22px_60px_rgba(6,182,212,0.12)]"
     >
       <Link href={href} className="relative block aspect-[16/11] overflow-hidden">
         <Image
