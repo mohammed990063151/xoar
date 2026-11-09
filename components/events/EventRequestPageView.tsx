@@ -12,18 +12,29 @@ import { pageBottom, pageTitle, siteContainer } from "@/lib/layout";
 interface EventRequestPageViewProps {
   readonly locale: Locale;
   readonly copy: Dictionary["pages"]["requestEvent"];
+  /** Prefills/locks form for audience-specific package pages. */
+  readonly mode?: "general" | "individual" | "corporate";
+  readonly hideIntro?: boolean;
 }
 
 const fieldClass =
   "mt-1.5 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-emerald-400/60 focus:shadow-[0_0_0_3px_rgba(52,211,153,0.12)]";
 
-const EVENT_TYPES = [
+const ALL_EVENT_TYPES = [
   { value: "private", ar: "حفلة خاصة", en: "Private party" },
   { value: "birthday", ar: "عيد ميلاد", en: "Birthday" },
   { value: "corporate", ar: "فعالية شركات", en: "Corporate event" },
   { value: "wedding", ar: "مناسبة عائلية", en: "Family celebration" },
   { value: "other", ar: "أخرى", en: "Other" },
 ] as const;
+
+const INDIVIDUAL_EVENT_TYPES = ALL_EVENT_TYPES.filter((item) =>
+  ["private", "birthday", "wedding", "other"].includes(item.value),
+);
+
+const CORPORATE_EVENT_TYPES = ALL_EVENT_TYPES.filter((item) =>
+  ["corporate", "other"].includes(item.value),
+);
 
 function buildMessage(payload: {
   eventTypeLabel: string;
@@ -63,9 +74,25 @@ function buildMessage(payload: {
 export function EventRequestPageView({
   locale,
   copy,
+  mode = "general",
+  hideIntro = false,
 }: EventRequestPageViewProps): React.ReactElement {
   const ar = locale === "ar";
-  const [eventType, setEventType] = useState<string>("private");
+  const eventTypes =
+    mode === "individual"
+      ? INDIVIDUAL_EVENT_TYPES
+      : mode === "corporate"
+        ? CORPORATE_EVENT_TYPES
+        : ALL_EVENT_TYPES;
+  const defaultType = mode === "corporate" ? "corporate" : "private";
+  const source =
+    mode === "individual"
+      ? "event-request-individual"
+      : mode === "corporate"
+        ? "event-request-corporate"
+        : "event-request";
+
+  const [eventType, setEventType] = useState<string>(defaultType);
   const [requestTitle, setRequestTitle] = useState("");
   const [description, setDescription] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
@@ -87,12 +114,12 @@ export function EventRequestPageView({
     setLoading(true);
 
     const eventTypeLabel =
-      EVENT_TYPES.find((item) => item.value === eventType)?.[ar ? "ar" : "en"] ?? eventType;
+      eventTypes.find((item) => item.value === eventType)?.[ar ? "ar" : "en"] ?? eventType;
 
     try {
       await submitInquiry({
         type: "service",
-        source: "event-request",
+        source,
         locale,
         name,
         email,
@@ -129,18 +156,8 @@ export function EventRequestPageView({
     }
   }
 
-  return (
-    <div className={pageBottom}>
-      <div className={siteContainer}>
-        <SlideInEdge from={locale === "ar" ? "end" : "start"} className="mx-auto max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-400/90">
-            {copy.eyebrow}
-          </p>
-          <h1 className={`mt-3 ${pageTitle}`}>{copy.title}</h1>
-          <p className="mt-4 text-base leading-relaxed text-slate-400">{copy.intro}</p>
-        </SlideInEdge>
-
-        <SlideInEdge from="bottom" delay={0.08} className="mx-auto mt-10 max-w-3xl">
+  const form = (
+          <>
           {sent ? (
             <motion.div
               className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-6 py-8 text-center"
@@ -174,7 +191,7 @@ export function EventRequestPageView({
                     className={fieldClass}
                     required
                   >
-                    {EVENT_TYPES.map((item) => (
+                    {eventTypes.map((item) => (
                       <option key={item.value} value={item.value}>
                         {ar ? item.ar : item.en}
                       </option>
@@ -322,6 +339,32 @@ export function EventRequestPageView({
               </button>
             </form>
           )}
+          </>
+  );
+
+  if (hideIntro) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <SlideInEdge from="bottom" delay={0.08}>
+          {form}
+        </SlideInEdge>
+      </div>
+    );
+  }
+
+  return (
+    <div className={pageBottom}>
+      <div className={siteContainer}>
+        <SlideInEdge from={locale === "ar" ? "end" : "start"} className="mx-auto max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-400/90">
+            {copy.eyebrow}
+          </p>
+          <h1 className={`mt-3 ${pageTitle}`}>{copy.title}</h1>
+          <p className="mt-4 text-base leading-relaxed text-slate-400">{copy.intro}</p>
+        </SlideInEdge>
+
+        <SlideInEdge from="bottom" delay={0.08} className="mx-auto mt-10 max-w-3xl">
+          {form}
         </SlideInEdge>
       </div>
     </div>

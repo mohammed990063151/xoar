@@ -28,7 +28,7 @@ export function EventRequestLink({
   variant = "section",
   className,
 }: EventRequestLinkProps): React.ReactElement {
-  const href = localizedPath(locale, "/request-event");
+  const href = localizedPath(locale, "/individual-events");
 
   if (variant === "hero") {
     return (

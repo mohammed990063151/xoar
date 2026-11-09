@@ -7,12 +7,21 @@
     "works": "Our work",
     "events": "Our events",
     "activities": "Entertainment",
+    "individualEvents": "Individual events",
+    "corporateEvents": "Corporate events",
+    "equipment": "Equipment booking",
     "partners": "Partners",
     "blog": "Xora Blog",
     "careers": "Careers",
     "account": "Sign in",
     "contact": "Contact",
-    "cta": "Contact us"
+    "cta": "Contact us",
+    "servicesMenu": {
+      "individualEvents": "Individual events",
+      "corporateEvents": "Corporate events",
+      "activities": "Entertainment activities",
+      "equipment": "Equipment booking"
+    }
   },
   "activityTabs": [
     { "id": "yoga", "label": "Yoga & wellness", "short": "Yoga" },
@@ -82,7 +91,7 @@
     "titleEnd": "you remember",
     "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
     "primaryCta": "Explore entertainment activities",
-    "eventRequestCta": "Request an event",
+    "eventRequestCta": "Individual events",
     "secondaryCta": "Watch our work",
     "videoPoster": "https://images.unsplash.com/photo-1674822858255-fcc093a1ef43?auto=format&fit=crop&w=960&q=85"
   },
@@ -110,7 +119,7 @@
   "entertainmentActivitiesSection": {
     "title": "Entertainment activities",
     "subtitle": "Discover exclusive experiences and book in seconds",
-    "eventRequestCta": "Request an event"
+    "eventRequestCta": "Individual events"
   },
   "ownedActivitiesSection": {
     "title": "Activities by Xora",
@@ -431,6 +440,56 @@
       "successTitle": "Request submitted",
       "success": "Thank you — our team will review your request and contact you soon.",
       "sendAnother": "Submit another request"
+    },
+    "individualEvents": {
+      "eyebrow": "Individual events",
+      "title": "Individual events",
+      "intro": "Pick a ready event, choose dates and packages, and pay instantly — same flow as entertainment activities.",
+      "highlights": [
+        "Instant booking and payment",
+        "Available dates and optional packages",
+        "Confirmation right after payment"
+      ],
+      "formTitle": "Custom request",
+      "cta": "Book now"
+    },
+    "corporateEvents": {
+      "eyebrow": "Corporate events",
+      "title": "Corporate events",
+      "intro": "Ready corporate events for booking — pick the date, add-ons, and complete payment directly.",
+      "highlights": [
+        "Ready corporate packages",
+        "Dates, guests, and instant payment",
+        "Ideal for meetings and product launches"
+      ],
+      "formTitle": "Custom request",
+      "cta": "Book now"
+    },
+    "equipment": {
+      "eyebrow": "Equipment rental",
+      "title": "Equipment booking & rental",
+      "intro": "A ready-to-book catalog: sound, lighting, LED screens, and staging — pick dates and add-ons, pay instantly, or send a custom request.",
+      "highlights": [
+        "Instant book & pay with live calendar",
+        "Sound, lighting, screens, and staging",
+        "Delivery and setup by arrangement"
+      ],
+      "formTitle": "Custom equipment request",
+      "equipmentNeeded": "Equipment needed",
+      "equipmentNeededPlaceholder": "e.g. PA system, 4 LED screens, stage lighting…",
+      "requestTitle": "Request title",
+      "preferredDate": "Usage date",
+      "location": "Delivery / event location",
+      "notes": "Additional notes",
+      "name": "Full name",
+      "email": "Email address",
+      "phone": "Phone number",
+      "submit": "Send custom request",
+      "sending": "Sending…",
+      "successTitle": "Equipment request received",
+      "success": "Thank you — our rental team will review your request and contact you soon.",
+      "sendAnother": "Submit another request",
+      "cta": "Book now"
     },
     "contact": {
       "title": "Contact",

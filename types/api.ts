@@ -194,12 +194,18 @@ export interface SiteSettings {
 }
 
 export interface InquiryPayload {
-  type: "booking" | "contact" | "service";
+  type: "booking" | "contact" | "service" | "event_booking" | "equipment_booking";
   name: string;
   email: string;
   phone?: string;
   message?: string;
+  /** Preferred venue when event offering locationMode is customer_choice */
+  location?: string;
   activity_id?: number;
+  event_offering_id?: number;
+  event_package_ids?: number[];
+  equipment_offering_id?: number;
+  equipment_package_ids?: number[];
   booking_date?: string;
   booking_end_date?: string;
   booking_time?: string;

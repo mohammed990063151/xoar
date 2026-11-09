@@ -25,10 +25,13 @@ const navLinks = [
   { href: "/", key: "home" as const },
   { href: "/about", key: "about" as const },
   { href: "/services", key: "services" as const },
-  { href: "/works", key: "works" as const },
-  { href: "/events", key: "events" as const },
+  { href: "/individual-events", key: "individualEvents" as const },
+  { href: "/corporate-events", key: "corporateEvents" as const },
+  { href: "/equipment", key: "equipment" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/events", key: "events" as const },
   { href: "/partners", key: "partners" as const },
+  // Blog / careers / contact stay footer-only (not in header).
   { href: "/blog", key: "blog" as const },
   { href: "/careers", key: "careers" as const },
   { href: "/contact", key: "contact" as const },
@@ -39,7 +42,6 @@ function footerNavLabel(
   key: (typeof navLinks)[number]["key"],
   nav: Dictionary["nav"],
 ): string {
-  if (key === "works") return locale === "ar" ? "أعمالنا" : "Our work";
   if (key === "events") return locale === "ar" ? "فعالياتنا" : "Our events";
   return nav[key];
 }

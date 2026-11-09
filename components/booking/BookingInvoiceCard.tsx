@@ -246,7 +246,7 @@ export function BookingInvoiceCard({
                   ) : paymentGateway === "tabby" || paymentGateway === "tamara" ? (
                     <PaymentBrandMark
                       id={paymentGateway}
-                      className={paymentGateway === "tamara" ? "h-7" : "h-7 w-16"}
+                      className={paymentGateway === "tamara" ? "h-8 !w-[5.75rem]" : "h-7 w-16"}
                     />
                   ) : (
                     paymentGatewayLabelProp || paymentGatewayLabel(paymentGateway)

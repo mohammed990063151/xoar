@@ -1067,7 +1067,7 @@ export function ActivityBookingPanel({
                             <span className="flex items-center justify-between gap-2">
                               <PaymentBrandMark
                                 id={method.id}
-                                className={method.id === "tamara" ? "h-8" : "h-8 w-[4.5rem]"}
+                                className={method.id === "tamara" ? "h-9 !w-[6rem]" : "h-8 w-[4.5rem]"}
                               />
                               <span className="text-[11px] font-semibold text-slate-200">{method.label}</span>
                             </span>

@@ -180,6 +180,28 @@ export function ServicesPageView({
   const steps = STEP_LABELS[locale];
   const detailCta = content.detailCta || (ar ? "التفاصيل" : "Details");
   const items = content.items.filter((item) => item.title.trim().length > 0);
+  const hubs = [
+    {
+      href: "/individual-events",
+      title: ar ? "فعاليات الأفراد" : "Individual events",
+      text: ar ? "باقات وحفلات خاصة عبر نموذج طلب" : "Private packages via request form",
+    },
+    {
+      href: "/corporate-events",
+      title: ar ? "فعاليات الشركات" : "Corporate events",
+      text: ar ? "باقات شركات ومؤتمرات مخصصة" : "Custom corporate & conference packages",
+    },
+    {
+      href: "/activities",
+      title: ar ? "الأنشطة الترفيهية" : "Entertainment activities",
+      text: ar ? "اكتشف واحجز الأنشطة المتاحة" : "Discover and book activities",
+    },
+    {
+      href: "/equipment",
+      title: ar ? "حجز المعدات" : "Equipment booking",
+      text: ar ? "تأجير صوت وإضاءة وشاشات" : "Sound, lighting, and screen rental",
+    },
+  ] as const;
 
   return (
     <div className={cn(pageBottom, "services-page")}>
@@ -247,6 +269,23 @@ export function ServicesPageView({
                 </div>
               )}
             </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      <section className={cn(sectionBlock, "pt-0")}>
+        <div className={siteContainerNarrow}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {hubs.map((hub) => (
+              <Link
+                key={hub.href}
+                href={localizedPath(locale, hub.href)}
+                className="rounded-2xl border border-white/10 bg-slate-950/55 p-4 transition hover:border-cyan-400/35 hover:bg-slate-900/70"
+              >
+                <p className="text-sm font-semibold text-white">{hub.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">{hub.text}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

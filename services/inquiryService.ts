@@ -1,7 +1,7 @@
 import { getApiBaseUrl } from "@/lib/api-base";
 import { saveFormProfile } from "@/lib/form-profile-cookie";
 
-export type InquiryType = "booking" | "contact" | "service";
+export type InquiryType = "booking" | "contact" | "service" | "event_booking";
 
 export interface InquiryPayload {
   type: InquiryType;

@@ -41,7 +41,7 @@ export function HeaderAccountLink({
         "inline-flex items-center justify-center gap-1.5 rounded-full border font-semibold transition",
         compact
           ? "w-full px-4 py-3.5 text-base"
-          : "px-2.5 py-2 text-[11px] sm:px-3 sm:text-xs",
+          : "h-9 px-2.5 text-[11px] sm:px-3 sm:text-xs",
         active
           ? "border-cyan-400/50 bg-cyan-500/15 text-white"
           : compact

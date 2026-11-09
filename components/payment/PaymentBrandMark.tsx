@@ -20,7 +20,7 @@ export function paymentMethodLabel(id: string | undefined, ar: boolean): string 
     case "google_pay":
       return "Google Pay";
     case "tamara":
-      return "Tamara";
+      return ar ? "تمارا" : "Tamara";
     case "tabby":
       return ar ? "تابي — تقسيط" : "Tabby — pay later";
     default:
@@ -56,19 +56,19 @@ const BRAND_LOGOS: Record<string, { src: string; alt: string; width: number; hei
   apple_pay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   applepay: { src: "/payment-logos/apple-pay.svg", alt: "Apple Pay", width: 512, height: 210 },
   tabby: { src: "/payment-logos/tabby.svg", alt: "Tabby", width: 75, height: 32 },
-  /** Official EN wordmark from tamara.co (tamara-text-logo-black-en.svg); paths use fill #16181D. */
-  tamara: { src: "/payment-logos/tamara.svg", alt: "Tamara", width: 97, height: 19 },
+  /** Official Arabic Tamara mark with brand gradient plate. */
+  tamara: { src: "/payment-logos/tamara.png", alt: "تمارا", width: 512, height: 180 },
 };
 
-/** BNPL brand chips — Tabby mint / Tamara peach plate. */
+/** BNPL brand chips — Tabby mint; Tamara logo already includes its gradient plate. */
 const BRAND_BACKGROUND: Record<string, string> = {
   tabby: "bg-[#3EEDBF]",
-  tamara: "bg-[#FFF0E8]",
+  tamara: "bg-transparent p-0",
 };
 
-/** Wider chip for Tamara's long ~5:1 wordmark so it matches Tabby's polish. */
+/** Wider chip for Tamara's gradient wordmark. */
 const BRAND_CHIP_SIZE: Record<string, string> = {
-  tamara: "!w-28 !px-2",
+  tamara: "!h-8 !w-[5.5rem] !px-0",
 };
 
 export function GeideaWordmark({

@@ -122,6 +122,9 @@ function mergePages(
     careers: { ...dictPages.careers, ...apiPages.careers },
     blog: { ...dictPages.blog, ...apiPages.blog },
     requestEvent: { ...dictPages.requestEvent, ...apiPages.requestEvent },
+    individualEvents: { ...dictPages.individualEvents, ...apiPages.individualEvents },
+    corporateEvents: { ...dictPages.corporateEvents, ...apiPages.corporateEvents },
+    equipment: { ...dictPages.equipment, ...apiPages.equipment },
     contact: { ...dictPages.contact, ...apiPages.contact },
   };
 }
@@ -158,6 +161,11 @@ function mergeSiteContent(
       // Keep أعمالنا / فعالياتنا split — never let stale CMS override
       works: dict.nav.works,
       events: dict.nav.events,
+      individualEvents: dict.nav.individualEvents,
+      corporateEvents: dict.nav.corporateEvents,
+      equipment: dict.nav.equipment,
+      activities: dict.nav.activities,
+      servicesMenu: dict.nav.servicesMenu,
     },
     inquiryForm: { ...dict.inquiryForm, ...api.inquiryForm },
     inquiryFab: { ...dict.inquiryFab, ...api.inquiryFab },

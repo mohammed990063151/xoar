@@ -59,6 +59,8 @@ interface ActivityCardProps {
   readonly activity: ActivityCardData;
   readonly bookCta: string;
   readonly bookHref?: string;
+  /** Detail page path (locale-aware via localizedPath). Defaults to /activities/{slug}. */
+  readonly detailHref?: string;
   readonly className?: string;
   readonly onBook?: () => void;
   readonly showWishlist?: boolean;
@@ -98,6 +100,7 @@ export function ActivityCard({
   activity,
   bookCta,
   bookHref,
+  detailHref,
   className,
   onBook,
   showWishlist = true,
@@ -110,7 +113,10 @@ export function ActivityCard({
 }: ActivityCardProps): React.ReactElement {
   const router = useRouter();
   const { toggle, has } = useWishlist();
-  const path = localizedPath(locale, `/activities/${activity.slug}`);
+  const path = localizedPath(
+    locale,
+    detailHref ?? bookHref ?? `/activities/${activity.slug}`,
+  );
   const ctaPath = bookHref ? localizedPath(locale, bookHref) : path;
   const slideUrl = (url: string) => typeof url === "string" && url.trim() !== "";
   const fromMedia = (activity.mediaSlides ?? []).filter((s) => slideUrl(s.url));

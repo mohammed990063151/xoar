@@ -79,6 +79,62 @@ export const paymentService = {
     return json.data;
   },
 
+  async submitEventBooking(payload: InquiryPayload): Promise<BookingCheckoutResult> {
+    const token = getCustomerToken();
+    const headers: HeadersInit = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${getApiBaseUrl()}/api/inquiries`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ ...payload, type: "event_booking" }),
+    });
+
+    const locale = (payload.locale === "en" ? "en" : "ar") as Locale;
+    const json = await parseJson<{ data: BookingCheckoutResult }>(res, locale);
+
+    saveFormProfile({
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+    });
+
+    return json.data;
+  },
+
+  async submitEquipmentBooking(payload: InquiryPayload): Promise<BookingCheckoutResult> {
+    const token = getCustomerToken();
+    const headers: HeadersInit = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${getApiBaseUrl()}/api/inquiries`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ ...payload, type: "equipment_booking" }),
+    });
+
+    const locale = (payload.locale === "en" ? "en" : "ar") as Locale;
+    const json = await parseJson<{ data: BookingCheckoutResult }>(res, locale);
+
+    saveFormProfile({
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+    });
+
+    return json.data;
+  },
+
   async getBookingStatus(code: string): Promise<BookingCheckoutResult> {
     const res = await fetch(
       `${getApiBaseUrl()}/api/bookings/${encodeURIComponent(code)}`,

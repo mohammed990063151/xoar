@@ -51,8 +51,8 @@ export function ThemeToggle(): React.ReactElement {
       type="button"
       className={
         isLight
-          ? "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 text-amber-500 transition hover:border-amber-400/50 hover:bg-amber-50 sm:h-9 sm:w-9"
-          : "inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-violet-400/40 hover:bg-white/5 hover:text-white sm:h-9 sm:w-9"
+          ? "inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 text-amber-500 transition hover:border-amber-400/50 hover:bg-amber-50"
+          : "inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-slate-200 transition hover:border-violet-400/40 hover:bg-white/5 hover:text-white"
       }
       aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}
       title={isLight ? "Dark" : "Light"}
