@@ -369,7 +369,7 @@ export function Header({
                         <button
                           type="button"
                           className={cn(
-                            "mobile-nav-link flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-base font-semibold transition",
+                            "mobile-nav-link relative flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-center text-base font-semibold transition",
                             servicesActive
                               ? "mobile-nav-link--active bg-purple-600 text-white ring-1 ring-purple-400/50"
                               : "text-slate-100 hover:bg-white/8",
@@ -378,7 +378,12 @@ export function Header({
                           onClick={() => setMobileServicesOpen((v) => !v)}
                         >
                           <span>{navLabel(locale, key, nav)}</span>
-                          <span aria-hidden>{mobileServicesOpen ? "▴" : "▾"}</span>
+                          <span
+                            className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-xs opacity-80"
+                            aria-hidden
+                          >
+                            {mobileServicesOpen ? "▴" : "▾"}
+                          </span>
                         </button>
                         {mobileServicesOpen ? (
                           <div className="mt-1 space-y-1 rounded-xl border border-white/10 bg-black/25 p-2">
@@ -389,7 +394,7 @@ export function Header({
                                 prefetch={prefetchRoutes}
                                 onClick={() => setOpen(false)}
                                 className={cn(
-                                  "block rounded-lg px-3 py-2.5 text-sm font-medium",
+                                  "block rounded-lg px-3 py-2.5 text-center text-sm font-medium",
                                   isActive(child.href) ? "bg-purple-600/30 text-white" : "text-slate-200",
                                 )}
                               >
