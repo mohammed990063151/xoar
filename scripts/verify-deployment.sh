@@ -33,10 +33,17 @@ check_files() {
     fi
   done
 
+  # CloudLinux Node Selector installs into ~/nodevenv/... and keeps app
+  # node_modules as a symlink. That is required for Passenger — only fail if
+  # the link is broken or Next is missing inside it.
   if [ -L "${root}/node_modules" ]; then
     local target
     target="$(readlink "${root}/node_modules" || true)"
-    fail "node_modules is a symlink (${target}). CI should ship a real directory — remove the symlink and redeploy."
+    if [[ "${target}" == *nodevenv* ]] && [ -f "${root}/node_modules/next/package.json" ]; then
+      echo "node_modules is CloudLinux nodevenv symlink (${target}) — OK"
+    else
+      fail "node_modules symlink is invalid (${target}). Expected a working CloudLinux nodevenv link with next installed."
+    fi
   fi
 
   if [ -f "${root}/.env" ] && grep -qE '^NODE_ENV=' "${root}/.env"; then
