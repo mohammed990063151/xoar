@@ -3,7 +3,6 @@ import type { Locale } from "@/lib/i18n";
 import type {
   EventOffering,
   EventOfferingAudience,
-  EventOfferingQuote,
 } from "@/types/event-offering";
 
 export const eventOfferingService = {
@@ -37,25 +36,6 @@ export const eventOfferingService = {
     );
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: EventOffering };
-    return json.data ?? null;
-  },
-
-  async quote(
-    locale: Locale,
-    slug: string,
-    packageIds: number[],
-    audience?: EventOfferingAudience,
-  ): Promise<EventOfferingQuote | null> {
-    const params = new URLSearchParams();
-    if (packageIds.length) params.set("package_ids", packageIds.join(","));
-    if (audience) params.set("audience", audience);
-    const qs = params.toString();
-    const res = await laravelFetch(
-      `/api/event-offerings/${locale}/${encodeURIComponent(slug)}/quote${qs ? `?${qs}` : ""}`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
-    const json = (await res.json()) as { data?: EventOfferingQuote };
     return json.data ?? null;
   },
 };

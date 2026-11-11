@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { EventOfferingsCatalog } from "@/components/events/EventOfferingsCatalog";
+import { EventConfiguratorForm } from "@/components/events/EventConfiguratorForm";
 import { getDictionary } from "@/lib/dictionary";
 import { isLocale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo-service";
-import { equipmentOfferingService } from "@/services/equipmentOfferingService";
 import { eventOfferingService } from "@/services/eventOfferingService";
 import { notFound } from "next/navigation";
 
@@ -25,8 +24,8 @@ export async function generateMetadata({
       title: loc === "ar" ? "فعاليات الشركات | اكزورا" : "Corporate events | Xora",
       description:
         loc === "ar"
-          ? "فعاليات شركات جاهزة للحجز — تواريخ وباقات ودفع فوري."
-          : "Bookable corporate events — dates, packages, and instant payment.",
+          ? "جهّز فعالية شركتك: اختر الفكرة والباقات وأرسل طلبك ليتواصل معك فريق إكزورا."
+          : "Prepare your company event: pick a theme and packages, then send your request so Xora can follow up.",
     },
   );
 }
@@ -39,18 +38,15 @@ export default async function CorporateEventsPage({
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
   const dict = getDictionary(loc);
-  const [offerings, equipmentItems] = await Promise.all([
-    eventOfferingService.list(loc, "corporate"),
-    equipmentOfferingService.list(loc, "corporate", 8),
-  ]);
+  const offerings = await eventOfferingService.list(loc, "corporate", 48);
 
   return (
-    <EventOfferingsCatalog
+    <EventConfiguratorForm
       locale={loc}
       audience="corporate"
       offerings={offerings}
-      copy={dict.pages.corporateEvents}
-      equipmentItems={equipmentItems}
+      copy={dict.pages.requestEvent}
+      page={dict.pages.corporateEvents}
     />
   );
 }

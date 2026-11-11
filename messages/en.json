@@ -423,15 +423,26 @@
     "requestEvent": {
       "eyebrow": "Your next event",
       "title": "Request an event",
-      "intro": "Tell us about your occasion — parties, birthdays, corporate events — and the Xora team will reach out within one business day.",
+      "intro": "Describe your occasion in one form — and the Xora team will reach out within one business day.",
       "eventType": "Event type",
       "requestTitle": "Request title",
-      "description": "Details",
-      "preferredDate": "Preferred date",
+      "description": "Event details",
+      "preferredDate": "Start date",
+      "endDate": "End date",
+      "duration": "Expected duration",
+      "durationPlaceholder": "e.g. 4 hours / full day",
       "guestsCount": "Number of guests",
-      "location": "Location",
+      "city": "City",
+      "cityPlaceholder": "Riyadh, Jeddah, Dammam…",
+      "location": "Venue / location",
+      "locationPlaceholder": "Address or venue name — or write “at my venue”",
+      "budget": "Approximate budget",
+      "budgetPlaceholder": "e.g. SAR 15,000",
+      "servicesNeeded": "Services needed",
+      "equipmentNeeded": "Equipment needed",
+      "equipmentNeededPlaceholder": "Sound, lighting, LED screens, staging…",
       "customerMessage": "Additional message",
-      "customerMessagePlaceholder": "Share your vision for the event…",
+      "customerMessagePlaceholder": "Share any important details for your event…",
       "name": "Full name",
       "email": "Email address",
       "phone": "Phone number",
@@ -443,27 +454,27 @@
     },
     "individualEvents": {
       "eyebrow": "Individual events",
-      "title": "Individual events",
-      "intro": "Pick a ready event, choose dates and packages, and pay instantly — same flow as entertainment activities.",
+      "title": "Request your event in clear steps",
+      "intro": "Four simple steps: pick an idea, add packages, fill the details, then submit. Tap the (i) next to any field to learn what it’s for — then Xora will contact you to confirm.",
       "highlights": [
-        "Instant booking and payment",
-        "Available dates and optional packages",
-        "Confirmation right after payment"
+        "Clear steps like trusted service platforms",
+        "Guidance beside every field",
+        "No payment on submit"
       ],
-      "formTitle": "Custom request",
-      "cta": "Book now"
+      "formTitle": "Event request",
+      "cta": "Submit request"
     },
     "corporateEvents": {
       "eyebrow": "Corporate events",
-      "title": "Corporate events",
-      "intro": "Ready corporate events for booking — pick the date, add-ons, and complete payment directly.",
+      "title": "Prepare your company event with clear steps",
+      "intro": "Choose an idea and packages, fill the details clearly, then submit. Every field has an (i) tip explaining its purpose — then Xora follows up to finalize arrangements.",
       "highlights": [
-        "Ready corporate packages",
-        "Dates, guests, and instant payment",
-        "Ideal for meetings and product launches"
+        "Clear steps for teams and companies",
+        "Guidance beside every field",
+        "Full follow-up after the request"
       ],
-      "formTitle": "Custom request",
-      "cta": "Book now"
+      "formTitle": "Event request",
+      "cta": "Submit request"
     },
     "equipment": {
       "eyebrow": "Equipment rental",

@@ -1,21 +1,5 @@
 export type EventOfferingAudience = "individual" | "corporate";
 
-export type EventDayStatus = "available" | "blocked" | "full" | "past";
-
-export interface EventDayAvailability {
-  status: EventDayStatus;
-  bookings: number;
-  remaining: number;
-}
-
-export interface EventOfferingAvailability {
-  maxBookingsPerDay: number;
-  bookingDaysAhead: number;
-  blockedDates: string[];
-  bookableDates: string[];
-  dayStatuses: Record<string, EventDayAvailability>;
-}
-
 export interface EventOfferingPackageWork {
   title: string;
   description?: string | null;
@@ -31,9 +15,6 @@ export interface EventOfferingPackage {
   features?: string[];
   works?: EventOfferingPackageWork[];
   image?: string | null;
-  price?: string | null;
-  comparePrice?: string | null;
-  priceAmount: number;
   badge?: string | null;
   sortOrder?: number;
 }
@@ -66,15 +47,11 @@ export interface EventOffering {
   image?: string | null;
   gallery?: string[];
   location?: string | null;
-  /** fixed = admin venue; customer_choice = customer provides venue at booking */
+  /** fixed = admin venue; customer_choice = customer provides venue */
   locationMode?: "fixed" | "customer_choice";
   city?: string | null;
   duration?: string | null;
   capacity?: number | null;
-  maxBookingsPerDay?: number;
-  bookingDaysAhead?: number;
-  blockedDates?: string[];
-  availability?: EventOfferingAvailability;
   organizerName?: string | null;
   organizerBio?: string | null;
   whatsIncluded?: string | null;
@@ -87,17 +64,5 @@ export interface EventOffering {
   contactEmail?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  basePrice?: string | null;
-  comparePrice?: string | null;
-  basePriceAmount: number;
   packages: EventOfferingPackage[];
-}
-
-export interface EventOfferingQuote {
-  ok: boolean;
-  base: number;
-  packages: number;
-  total: number;
-  packageIds: number[];
-  message?: string;
 }

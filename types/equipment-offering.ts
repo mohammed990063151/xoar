@@ -45,6 +45,18 @@ export interface EquipmentPackage {
   sortOrder?: number;
 }
 
+export interface EquipmentCustomizationChoice {
+  value: string;
+  label: string;
+}
+
+export interface EquipmentCustomizationOption {
+  key: string;
+  label: string;
+  required?: boolean;
+  choices: EquipmentCustomizationChoice[];
+}
+
 export interface EquipmentHighlight {
   title: string;
   description?: string | null;
@@ -70,6 +82,9 @@ export interface EquipmentOffering {
   city?: string | null;
   duration?: string | null;
   capacity?: number | null;
+  minQuantity?: number;
+  quantityStep?: number;
+  customizationOptions?: EquipmentCustomizationOption[];
   specs?: string | null;
   organizerName?: string | null;
   organizerBio?: string | null;

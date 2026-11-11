@@ -1,18 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { EventBookingCalendar } from "@/components/events/EventBookingCalendar";
 import { PackageDetailsModal } from "@/components/events/PackageDetailsModal";
 import type { EquipmentPackage } from "@/types/equipment-offering";
-import {
-  GeideaPaymentModal,
-  type GeideaPaymentSession,
-} from "@/components/payment/GeideaPaymentModal";
-import { GeideaWordmark, PaymentBrandMark } from "@/components/payment/PaymentBrandMark";
 import { AccordionImageGallery } from "@/components/ui/AccordionImageGallery";
 import { ACTIVITY_FALLBACK_IMAGE } from "@/lib/activity";
-import { formatMoney, parsePriceAmount } from "@/lib/booking";
+import { formatMoney } from "@/lib/booking";
 import { cn } from "@/lib/cn";
 import { categoryLabel } from "@/lib/equipment-categories";
 import { formProfileDefaults } from "@/lib/form-profile-cookie";
@@ -21,9 +16,8 @@ import type { Locale } from "@/lib/i18n";
 import { localizedPath } from "@/lib/i18n";
 import { pageBottom, siteContainer } from "@/lib/layout";
 import { whatsappHref } from "@/lib/whatsapp";
-import { paymentService } from "@/services/paymentService";
+import { submitInquiry } from "@/services/inquiryService";
 import type { EquipmentOffering } from "@/types/equipment-offering";
-import type { PaymentConfig, PaymentMethodOption } from "@/types/payment";
 
 interface EquipmentDetailViewProps {
   readonly locale: Locale;
@@ -51,37 +45,24 @@ export function EquipmentDetailView({
   const [tab, setTab] = useState<TabId>("description");
   const [selectedPackages, setSelectedPackages] = useState<number[]>([]);
   const [detailsPackage, setDetailsPackage] = useState<EquipmentPackage | null>(null);
+  const minQty = Math.max(1, offering.minQuantity ?? 1);
+  const qtyStep = Math.max(1, offering.quantityStep ?? 1);
+  const maxQty = Math.max(minQty, offering.capacity || 5000);
+  const customizationOptions = offering.customizationOptions ?? [];
+
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [deliveryLocation, setDeliveryLocation] = useState("");
-  const [units, setUnits] = useState(1);
-  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [units, setUnits] = useState(minQty);
+  const [customSelections, setCustomSelections] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [confirmationCode, setConfirmationCode] = useState("");
-  const [geideaSession, setGeideaSession] = useState<GeideaPaymentSession | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    paymentService
-      .getConfig(locale)
-      .then((cfg) => {
-        if (cancelled) return;
-        setPaymentConfig(cfg);
-        setPaymentMethod(cfg.methods?.[0]?.id ?? "");
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [locale]);
 
   const packagesTotal = offering.packages
     .filter((p) => selectedPackages.includes(p.id))
     .reduce((sum, p) => sum + (p.priceAmount || 0), 0);
-  const total = (offering.basePriceAmount || 0) * Math.max(1, units) + packagesTotal;
+  const total = (offering.basePriceAmount || 0) * Math.max(minQty, units) + packagesTotal;
   const totalLabel = formatMoney(total, locale);
 
   const tabs = (
@@ -111,6 +92,13 @@ export function EquipmentDetailView({
     );
   }
 
+  function snapUnits(raw: number): number {
+    const clamped = Math.min(maxQty, Math.max(minQty, raw || minQty));
+    const offset = clamped - minQty;
+    const snapped = minQty + Math.round(offset / qtyStep) * qtyStep;
+    return Math.min(maxQty, Math.max(minQty, snapped));
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError("");
@@ -118,16 +106,39 @@ export function EquipmentDetailView({
       setError(ar ? "اختر يوم التأجير." : "Choose the rental day.");
       return;
     }
-    if (!paymentMethod) {
-      setError(ar ? "اختر طريقة الدفع." : "Choose a payment method.");
-      return;
-    }
-    if (total <= 0) {
-      setError(ar ? "السعر غير متاح للحجز." : "This item is not bookable yet.");
-      return;
-    }
     if (!deliveryLocation.trim()) {
       setError(ar ? "اكتب موقع التسليم أو الفعالية." : "Enter the delivery / event location.");
+      return;
+    }
+    if (units < minQty) {
+      setError(
+        ar
+          ? `أقل عدد للوحدات هو ${minQty}.`
+          : `Minimum units is ${minQty}.`,
+      );
+      return;
+    }
+
+    const customizations = customizationOptions
+      .map((opt) => {
+        const value = customSelections[opt.key] ?? "";
+        const choice = opt.choices.find((c) => c.value === value);
+        return {
+          key: opt.key,
+          label: opt.label,
+          value,
+          value_label: choice?.label ?? value,
+          required: Boolean(opt.required),
+        };
+      });
+
+    const missing = customizations.find((c) => c.required && !c.value);
+    if (missing) {
+      setError(
+        ar
+          ? `اختر: ${missing.label}`
+          : `Please choose: ${missing.label}`,
+      );
       return;
     }
 
@@ -154,9 +165,13 @@ export function EquipmentDetailView({
 
     setLoading(true);
     const fd = new FormData(e.currentTarget);
+    const selectedCustomizationRows = customizations
+      .filter((c) => c.value)
+      .map(({ key, label, value, value_label }) => ({ key, label, value, value_label }));
+
     try {
-      const result = await paymentService.submitEquipmentBooking({
-        type: "equipment_booking",
+      await submitInquiry({
+        type: "service",
         equipment_offering_id: offering.id,
         equipment_package_ids: selectedPackages,
         locale,
@@ -164,44 +179,37 @@ export function EquipmentDetailView({
         name: String(fd.get("name")),
         email: String(fd.get("email")),
         phone: String(fd.get("phone") || ""),
+        title: offering.title,
+        preferred_date: dateFrom,
+        preferred_end_date: dateTo || dateFrom,
         booking_date: dateFrom,
         booking_end_date: dateTo || dateFrom,
         adults: units,
-        children: 0,
-        total_amount: String(total.toFixed(2)),
-        payment_method: paymentMethod,
+        units_count: units,
         location: deliveryLocation.trim(),
+        customizations: selectedCustomizationRows,
         message: [
+          ar ? "[طلب تأجير معدة من الكتالوج]" : "[Catalog equipment rental request]",
           `${ar ? "المعدة" : "Equipment"}: ${offering.title}`,
           `${ar ? "فترة التأجير" : "Rental days"}: ${dateFrom}${dateTo && dateTo !== dateFrom ? ` → ${dateTo}` : ""}`,
           `${ar ? "الوحدات" : "Units"}: ${units}`,
           `${ar ? "التسليم" : "Delivery"}: ${deliveryLocation.trim()}`,
+          selectedCustomizationRows.length
+            ? `${ar ? "خيارات" : "Options"}: ${selectedCustomizationRows.map((c) => `${c.label}=${c.value_label}`).join(" · ")}`
+            : null,
           selectedPackages.length
             ? `${ar ? "إضافات" : "Add-ons"}: ${selectedPackages.join(",")}`
             : null,
+          total > 0
+            ? `${ar ? "تقدير السعر" : "Estimated total"}: ${totalLabel}`
+            : null,
         ]
           .filter(Boolean)
-          .join(" · "),
+          .join("\n"),
       });
-
-      if (result.sessionId && result.confirmationCode) {
-        const charged = parsePriceAmount(result.totalAmount ?? "");
-        setGeideaSession({
-          sessionId: result.sessionId,
-          confirmationCode: result.confirmationCode,
-          checkoutUrl: result.checkoutUrl,
-          amountLabel: charged > 0 ? formatMoney(charged, locale) : totalLabel,
-        });
-        return;
-      }
-      if (result.requiresRedirect && result.checkoutUrl) {
-        window.location.href = result.checkoutUrl;
-        return;
-      }
-      setConfirmationCode(result.confirmationCode ?? `EQ${result.id}`);
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : ar ? "تعذّر الحجز." : "Booking failed.");
+      setError(err instanceof Error ? err.message : ar ? "تعذّر إرسال الطلب." : "Request failed.");
     } finally {
       setLoading(false);
     }
@@ -211,14 +219,15 @@ export function EquipmentDetailView({
     return (
       <div className={cn(siteContainer, pageBottom, "py-16 text-center")}>
         <p className="text-sm uppercase tracking-[0.2em] text-emerald-300">
-          {ar ? "تم تأكيد الحجز" : "Booking confirmed"}
+          {ar ? "تم استلام الطلب" : "Request received"}
         </p>
         <h1 className="mt-3 text-3xl font-bold text-white">
           {ar ? "شكراً لك" : "Thank you"}
         </h1>
         <p className="mt-4 text-slate-300">
-          {ar ? "رمز التأكيد" : "Confirmation code"}:{" "}
-          <span className="font-semibold text-white">{confirmationCode}</span>
+          {ar
+            ? "فريق Xora سيتابع طلب المعدات ويتواصل معك قريباً."
+            : "The Xora team will follow up on your equipment request shortly."}
         </p>
         <Link
           href={localizedPath(locale, "/equipment")}
@@ -234,26 +243,6 @@ export function EquipmentDetailView({
 
   return (
     <div className={cn(siteContainer, pageBottom, "relative py-8 sm:py-10")}>
-      {geideaSession ? (
-        <GeideaPaymentModal
-          locale={locale}
-          session={geideaSession}
-          scriptUrl={paymentConfig?.hppScriptUrl}
-          onClose={() => {
-            setGeideaSession(null);
-            setError(
-              ar
-                ? "تم إلغاء الدفع. يمكنك المحاولة مرة أخرى."
-                : "Payment cancelled. You can try again.",
-            );
-          }}
-          onError={(message) => {
-            setGeideaSession(null);
-            setError(message);
-          }}
-        />
-      ) : null}
-
       <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
         <Link href={localizedPath(locale, "/equipment")} className="hover:text-white">
           {ar ? "المعدات" : "Equipment"}
@@ -408,14 +397,14 @@ export function EquipmentDetailView({
         <aside id="book" className="scroll-mt-24 space-y-4 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-[1.35rem] border border-cyan-400/20 bg-cyan-500/5 px-4 py-3 text-sm text-cyan-50">
             {ar
-              ? "اختر أيام التأجير، موقع التسليم، والإضافات — ثم ادفع مباشرة."
-              : "Pick rental days, delivery location, and add-ons — then pay instantly."}
+              ? "أرسل طلب التأجير مع الأيام والوحدات والخيارات — فريق Xora يتابعك بدون دفع فوري."
+              : "Send a rental request with days, units, and options — Xora follows up with no instant payment."}
           </div>
 
           <div className="booking-panel rounded-[1.5rem] border border-white/10 bg-slate-950/80 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
             <p className="text-lg font-bold text-white">{totalLabel}</p>
             <p className="text-xs text-slate-500">
-              {ar ? "الإجمالي التقديري قبل الدفع" : "Estimated total before payment"}
+              {ar ? "تقدير مرجعي — الطلب بدون دفع فوري" : "Reference estimate — request only, no instant pay"}
             </p>
 
             {offering.packages.length ? (
@@ -511,13 +500,43 @@ export function EquipmentDetailView({
                 {ar ? "عدد الوحدات" : "Units"}
                 <input
                   type="number"
-                  min={1}
-                  max={offering.capacity || 50}
+                  min={minQty}
+                  max={maxQty}
+                  step={qtyStep}
                   value={units}
-                  onChange={(e) => setUnits(Math.max(1, Number(e.target.value) || 1))}
+                  onChange={(e) => setUnits(snapUnits(Number(e.target.value) || minQty))}
                   className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-white"
                 />
+                <span className="mt-1 block text-xs text-slate-500">
+                  {ar
+                    ? `يبدأ من ${minQty}${qtyStep > 1 ? ` · بزيادة ${qtyStep}` : ""}`
+                    : `Starts at ${minQty}${qtyStep > 1 ? ` · step ${qtyStep}` : ""}`}
+                </span>
               </label>
+
+              {customizationOptions.map((opt) => (
+                <label key={opt.key} className="block text-sm text-slate-300">
+                  {opt.label}
+                  {opt.required ? <span className="text-rose-300"> *</span> : null}
+                  <select
+                    required={Boolean(opt.required)}
+                    value={customSelections[opt.key] ?? ""}
+                    onChange={(e) =>
+                      setCustomSelections((prev) => ({ ...prev, [opt.key]: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-white"
+                  >
+                    <option value="">
+                      {ar ? "اختر…" : "Choose…"}
+                    </option>
+                    {opt.choices.map((choice) => (
+                      <option key={choice.value} value={choice.value}>
+                        {choice.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
 
               <label className="block text-sm text-slate-300">
                 {ar ? "موقع التسليم / الفعالية" : "Delivery / event location"}
@@ -561,34 +580,6 @@ export function EquipmentDetailView({
                 />
               </label>
 
-              {paymentConfig?.methods?.length ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-slate-300">{ar ? "طريقة الدفع" : "Payment method"}</p>
-                  {paymentConfig.methods.map((method: PaymentMethodOption) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(method.id)}
-                      className={cn(
-                        "flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-sm",
-                        paymentMethod === method.id
-                          ? "border-emerald-400/50 bg-emerald-500/10 text-white"
-                          : "border-white/10 text-slate-300",
-                      )}
-                    >
-                      <span className="flex items-center gap-2">
-                        {method.gateway === "geidea" ? (
-                          <GeideaWordmark />
-                        ) : (
-                          <PaymentBrandMark id={method.id} />
-                        )}
-                        {method.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-
               {error ? <p className="text-sm text-rose-300">{error}</p> : null}
 
               <button
@@ -598,11 +589,11 @@ export function EquipmentDetailView({
               >
                 {loading
                   ? ar
-                    ? "جاري المعالجة…"
-                    : "Processing…"
+                    ? "جاري الإرسال…"
+                    : "Sending…"
                   : ar
-                    ? `ادفع ${totalLabel}`
-                    : `Pay ${totalLabel}`}
+                    ? "أرسل طلب التأجير"
+                    : "Send rental request"}
               </button>
             </form>
           </div>

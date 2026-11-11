@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { HeaderAccountLink } from "@/components/layout/HeaderAccountLink";
 import { HeaderCta } from "@/components/layout/HeaderCta";
 import { SiteLogo } from "@/components/brand/SiteLogo";
@@ -21,33 +21,30 @@ interface HeaderProps {
   readonly settings?: SiteSettings;
 }
 
-type NavKey = "home" | "about" | "services" | "activities" | "events" | "partners";
+type NavKey =
+  | "home"
+  | "about"
+  | "individualEvents"
+  | "corporateEvents"
+  | "equipment"
+  | "activities"
+  | "events"
+  | "partners";
 
 const navKeys = [
   { href: "/", key: "home" as const },
   { href: "/about", key: "about" as const },
-  { href: "/services", key: "services" as const, dropdown: true },
-  { href: "/activities", key: "activities" as const },
-  { href: "/events", key: "events" as const },
-  { href: "/partners", key: "partners" as const },
-] satisfies ReadonlyArray<{ href: string; key: NavKey; dropdown?: boolean }>;
-
-const servicesChildren = [
   { href: "/individual-events", key: "individualEvents" as const },
   { href: "/corporate-events", key: "corporateEvents" as const },
   { href: "/equipment", key: "equipment" as const },
+  { href: "/activities", key: "activities" as const },
+  { href: "/events", key: "events" as const },
+  { href: "/partners", key: "partners" as const },
 ] as const;
 
 function navLabel(locale: Locale, key: NavKey, nav: Dictionary["nav"]): string {
   if (key === "events") return locale === "ar" ? "فعالياتنا" : "Our events";
   return nav[key];
-}
-
-function servicesChildLabel(
-  key: (typeof servicesChildren)[number]["key"],
-  nav: Dictionary["nav"],
-): string {
-  return nav.servicesMenu[key];
 }
 
 const accountActive = (pathname: string): boolean => pathname.includes("/account");
@@ -100,12 +97,7 @@ export function Header({
   settings,
 }: HeaderProps): React.ReactElement {
   const pathname = usePathname();
-  const menuId = useId();
   const [open, setOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
-  const servicesRef = useRef<HTMLDivElement | null>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { pinned, scrolled } = useHeaderPinned(open);
 
   const switchLocale: Locale = locale === "ar" ? "en" : "ar";
@@ -119,27 +111,8 @@ export function Header({
     return pathname === full || pathname.startsWith(`${full}/`);
   };
 
-  const servicesActive =
-    isActive("/services") ||
-    servicesChildren.some((child) => isActive(child.href));
-
-  function openServices(): void {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-    setServicesOpen(true);
-  }
-
-  function scheduleCloseServices(): void {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setServicesOpen(false), 120);
-  }
-
   useEffect(() => {
     setOpen(false);
-    setServicesOpen(false);
-    setMobileServicesOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -150,30 +123,6 @@ export function Header({
       document.body.style.overflow = prev;
     };
   }, [open]);
-
-  useEffect(() => {
-    return () => {
-      if (closeTimer.current) clearTimeout(closeTimer.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!servicesOpen) return;
-    function onPointerDown(event: MouseEvent): void {
-      if (!servicesRef.current?.contains(event.target as Node)) {
-        setServicesOpen(false);
-      }
-    }
-    function onKey(event: KeyboardEvent): void {
-      if (event.key === "Escape") setServicesOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [servicesOpen]);
 
   return (
     <>
@@ -190,7 +139,7 @@ export function Header({
         <div
           className={cn(
             siteContainer,
-            "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 py-3 sm:gap-x-4 sm:py-3.5 lg:gap-x-6",
+            "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 py-3 sm:gap-x-4 sm:py-3.5 lg:gap-x-4 xl:gap-x-6",
           )}
         >
           <Link
@@ -206,79 +155,10 @@ export function Header({
           </Link>
 
           <nav
-            className="hidden min-w-0 items-center justify-center gap-4 xl:gap-6 2xl:gap-7 lg:flex"
+            className="hidden min-w-0 items-center justify-center gap-2.5 xl:gap-4 2xl:gap-5 lg:flex"
             aria-label="Main"
           >
-            {navKeys.map(({ href, key, dropdown }) => {
-              if (dropdown) {
-                return (
-                  <div
-                    key={href}
-                    ref={servicesRef}
-                    className="relative"
-                    onMouseEnter={openServices}
-                    onMouseLeave={scheduleCloseServices}
-                  >
-                    <button
-                      type="button"
-                      className={cn(
-                        "relative inline-flex h-9 items-center gap-1.5 whitespace-nowrap pb-0.5 text-sm font-medium transition-colors",
-                        servicesActive || servicesOpen
-                          ? "text-[color:var(--text)]"
-                          : "text-[color:var(--text-muted)] hover:text-[color:var(--text)]",
-                      )}
-                      aria-expanded={servicesOpen}
-                      aria-controls={menuId}
-                      aria-haspopup="menu"
-                      onClick={() => setServicesOpen((v) => !v)}
-                    >
-                      {navLabel(locale, key, nav)}
-                      <span
-                        className={cn("text-[10px] leading-none transition-transform", servicesOpen && "rotate-180")}
-                        aria-hidden
-                      >
-                        ▾
-                      </span>
-                      <span
-                        className={cn(
-                          "absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-opacity",
-                          servicesActive || servicesOpen ? "opacity-100" : "opacity-0",
-                        )}
-                        aria-hidden
-                      />
-                    </button>
-
-                    <div
-                      id={menuId}
-                      role="menu"
-                      hidden={!servicesOpen}
-                      className="absolute top-full start-1/2 z-[60] w-max -translate-x-1/2 pt-3 rtl:translate-x-1/2"
-                    >
-                      <div className="services-dropdown min-w-[16rem] overflow-hidden rounded-2xl border p-2 shadow-[0_20px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl">
-                        {servicesChildren.map((child) => {
-                          const resolved = resolveHref(locale, child.href);
-                          return (
-                            <Link
-                              key={child.href}
-                              href={resolved}
-                              role="menuitem"
-                              prefetch={prefetchRoutes}
-                              className={cn(
-                                "services-dropdown-item block rounded-xl px-3.5 py-2.5 text-sm transition",
-                                isActive(child.href) && "services-dropdown-item--active",
-                              )}
-                              onClick={() => setServicesOpen(false)}
-                            >
-                              {servicesChildLabel(child.key, nav)}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
+            {navKeys.map(({ href, key }) => {
               const resolved = resolveHref(locale, href);
               return (
                 <NavTextLink
@@ -360,51 +240,7 @@ export function Header({
                   compact
                 />
                 <div className="mobile-nav-divider my-1 h-px w-full bg-white/10" role="separator" aria-hidden />
-                {navKeys.map(({ href, key, dropdown }) => {
-                  if (dropdown) {
-                    return (
-                      <div key={href} className="w-full">
-                        <button
-                          type="button"
-                          className={cn(
-                            "mobile-nav-link relative flex w-full items-center justify-center rounded-xl px-4 py-3.5 text-center text-base font-semibold transition",
-                            servicesActive
-                              ? "mobile-nav-link--active bg-purple-600 text-white ring-1 ring-purple-400/50"
-                              : "text-slate-100 hover:bg-white/8",
-                          )}
-                          aria-expanded={mobileServicesOpen}
-                          onClick={() => setMobileServicesOpen((v) => !v)}
-                        >
-                          <span>{navLabel(locale, key, nav)}</span>
-                          <span
-                            className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-xs opacity-80"
-                            aria-hidden
-                          >
-                            {mobileServicesOpen ? "▴" : "▾"}
-                          </span>
-                        </button>
-                        {mobileServicesOpen ? (
-                          <div className="services-mobile-submenu mt-1 space-y-1 rounded-xl border border-white/10 bg-black/25 p-2">
-                            {servicesChildren.map((child) => (
-                              <Link
-                                key={child.href}
-                                href={resolveHref(locale, child.href)}
-                                prefetch={prefetchRoutes}
-                                onClick={() => setOpen(false)}
-                                className={cn(
-                                  "services-dropdown-item block rounded-lg px-3 py-2.5 text-center text-sm font-medium",
-                                  isActive(child.href) && "services-dropdown-item--active",
-                                )}
-                              >
-                                {servicesChildLabel(child.key, nav)}
-                              </Link>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  }
-
+                {navKeys.map(({ href, key }) => {
                   const resolved = resolveHref(locale, href);
                   const active = isActive(href);
                   const isExactPage = pathname === resolved;

@@ -320,6 +320,86 @@ html[data-theme="light"] header.mobile-menu-open.glass {
   border-color: rgba(15, 23, 42, 0.12) !important;
 }
 
+/* ─── EVENT CONFIGURATOR: clear in light + dark ─────────────────────────────── */
+
+html[data-theme="light"] .event-configurator .event-cfg-heading,
+html[data-theme="light"] .event-configurator .event-cfg-label {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-muted,
+html[data-theme="light"] .event-configurator .event-cfg-intro {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-eyebrow {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-chip {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #065f46 !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-panel,
+html[data-theme="light"] .event-configurator .event-cfg-summary {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-field {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-tip-btn {
+  background: rgba(8, 145, 178, 0.12) !important;
+  border-color: rgba(8, 145, 178, 0.4) !important;
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .event-configurator .event-cfg-tip-popover {
+  background: #ffffff !important;
+  border-color: rgba(8, 145, 178, 0.28) !important;
+  color: #0f172a !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .event-configurator .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .event-configurator .text-emerald-200,
+html[data-theme="light"] .event-configurator .text-emerald-300 {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .event-configurator .text-slate-300,
+html[data-theme="light"] .event-configurator .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .package-details-modal {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .package-details-modal .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .package-details-modal .text-slate-300,
+html[data-theme="light"] .package-details-modal .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .package-details-modal .text-emerald-300 {
+  color: #047857 !important;
+}
+
 /* ─── EQUIPMENT + EVENT SURFACES: readable in light theme ───────────────────── */
 
 html[data-theme="light"] .equipment-card {

@@ -1,7 +1,14 @@
-import { getApiBaseUrl } from "@/lib/api-base";
+import { laravelFetch } from "@/lib/laravel-fetch";
 import { saveFormProfile } from "@/lib/form-profile-cookie";
 
 export type InquiryType = "booking" | "contact" | "service" | "event_booking";
+
+export interface EquipmentCustomizationSelection {
+  key: string;
+  label: string;
+  value: string;
+  value_label: string;
+}
 
 export interface InquiryPayload {
   type: InquiryType;
@@ -16,27 +23,41 @@ export interface InquiryPayload {
   title?: string;
   description?: string;
   preferred_date?: string;
+  preferred_end_date?: string;
+  booking_date?: string;
+  booking_end_date?: string;
   location?: string;
   guests_count?: number;
+  units_count?: number;
+  adults?: number;
   customer_message?: string;
   event_slug?: string;
+  event_offering_id?: number;
+  event_package_ids?: number[];
+  equipment_offering_id?: number;
+  equipment_package_ids?: number[];
+  customizations?: EquipmentCustomizationSelection[];
 }
 
 export async function submitInquiry(
   payload: InquiryPayload,
-): Promise<{ id: number; event_request_id?: number | null }> {
-  const response = await fetch(`${getApiBaseUrl()}/api/inquiries`, {
+): Promise<{
+  id: number;
+  event_request_id?: number | null;
+  equipment_request_id?: number | null;
+}> {
+  const response = await laravelFetch("/api/inquiries", {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
 
   const data = (await response.json().catch(() => ({}))) as {
     message?: string;
-    data?: { id: number; event_request_id?: number | null };
+    data?: {
+      id: number;
+      event_request_id?: number | null;
+      equipment_request_id?: number | null;
+    };
     errors?: Record<string, string[]>;
   };
 
@@ -55,5 +76,6 @@ export async function submitInquiry(
   return {
     id: data.data?.id ?? 0,
     event_request_id: data.data?.event_request_id ?? null,
+    equipment_request_id: data.data?.equipment_request_id ?? null,
   };
 }
