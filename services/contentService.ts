@@ -126,6 +126,10 @@ function mergePages(
     corporateEvents: { ...dictPages.corporateEvents, ...apiPages.corporateEvents },
     equipment: { ...dictPages.equipment, ...apiPages.equipment },
     contact: { ...dictPages.contact, ...apiPages.contact },
+    annualCorporateEvent: {
+      ...dictPages.annualCorporateEvent,
+      ...apiPages.annualCorporateEvent,
+    },
   };
 }
 
