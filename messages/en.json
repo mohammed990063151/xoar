@@ -9,6 +9,7 @@
     "activities": "Entertainment",
     "individualEvents": "Individual events",
     "corporateEvents": "Corporate events",
+    "annualCorporateEvent": "Annual event",
     "equipment": "Equipment booking",
     "partners": "Partners",
     "blog": "Xora Blog",
@@ -19,6 +20,7 @@
     "servicesMenu": {
       "individualEvents": "Individual events",
       "corporateEvents": "Corporate events",
+      "annualCorporateEvent": "Annual event",
       "activities": "Entertainment activities",
       "equipment": "Equipment booking"
     }
@@ -518,6 +520,70 @@
       "whyTitle": "Why reach out?",
       "formTitle": "Contact form",
       "mapTitle": "Find us on the map"
+    },
+    "annualCorporateEvent": {
+      "eyebrow": "Corporate event planning",
+      "brand": "Xora",
+      "title": "Your annual event… from idea to every last detail",
+      "intro": "We plan and run your company event end to end — one team, one owner for every detail.",
+      "formTitle": "Request a proposal",
+      "formHint": "Share your details and we will contact you within 24 hours.",
+      "companyName": "Company name",
+      "contactName": "Contact person",
+      "jobTitle": "Job title",
+      "phone": "Mobile number",
+      "email": "Email address",
+      "submit": "Send request",
+      "sending": "Sending…",
+      "successTitle": "Request received",
+      "success": "Thank you — our corporate events team will review your request and contact you soon.",
+      "sendAnother": "Send another request",
+      "trust": [
+        "One owner for every detail",
+        "From concept to wrap-up",
+        "An experience that reflects your brand"
+      ],
+      "servicesEyebrow": "What we cover",
+      "servicesTitle": "Complete services for your annual event",
+      "servicesIntro": "Pick what you need — or let us run the full event from start to finish.",
+      "ctaBack": "Back to the form — request your proposal",
+      "services": [
+        {
+          "id": "venues",
+          "title": "Venues & locations",
+          "description": "Halls, hotels, conference centers and outdoor spaces sized to your guests and budget."
+        },
+        {
+          "id": "decor",
+          "title": "Decor & themes",
+          "description": "A full theme that matches your brand: colors, stages, reception and photo areas."
+        },
+        {
+          "id": "catering",
+          "title": "Hospitality & catering",
+          "description": "Hosts, open buffets, finger food and food trucks — polished hospitality for your guests."
+        },
+        {
+          "id": "entertainment",
+          "title": "Entertainment & activities",
+          "description": "Live shows, interactive activities and team-building that leave a lasting impression."
+        },
+        {
+          "id": "production",
+          "title": "AV & technical production",
+          "description": "Sound, lighting, LED screens, staging and visual effects at a professional level."
+        },
+        {
+          "id": "gifts",
+          "title": "Gifts & giveaways",
+          "description": "Custom corporate gifts and branded giveaways for guests and employees."
+        },
+        {
+          "id": "hosts",
+          "title": "Hosts & speakers",
+          "description": "Event MCs, speakers and moderators who keep the program smooth and engaging."
+        }
+      ]
     }
   }
 }

@@ -26,6 +26,7 @@ type NavKey =
   | "about"
   | "individualEvents"
   | "corporateEvents"
+  | "annualCorporateEvent"
   | "equipment"
   | "activities"
   | "events"
@@ -36,6 +37,7 @@ const navKeys = [
   { href: "/about", key: "about" as const },
   { href: "/individual-events", key: "individualEvents" as const },
   { href: "/corporate-events", key: "corporateEvents" as const },
+  { href: "/annual-corporate-event", key: "annualCorporateEvent" as const },
   { href: "/equipment", key: "equipment" as const },
   { href: "/activities", key: "activities" as const },
   { href: "/events", key: "events" as const },
@@ -44,6 +46,9 @@ const navKeys = [
 
 function navLabel(locale: Locale, key: NavKey, nav: Dictionary["nav"]): string {
   if (key === "events") return locale === "ar" ? "فعالياتنا" : "Our events";
+  if (key === "annualCorporateEvent") {
+    return nav.annualCorporateEvent ?? (locale === "ar" ? "الحفل السنوي" : "Annual event");
+  }
   return nav[key];
 }
 

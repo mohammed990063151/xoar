@@ -15,6 +15,8 @@ export interface InquiryPayload {
   source?: string;
   locale?: string;
   name: string;
+  company_name?: string;
+  job_title?: string;
   email: string;
   phone?: string;
   message?: string;

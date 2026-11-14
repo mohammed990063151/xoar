@@ -118,6 +118,79 @@ html[data-theme="light"] .border-white\/15 {
   border-color: rgba(15, 23, 42, 0.14) !important;
 }
 
+/* Campaign hero stays dark-on-photo in light theme */
+html[data-theme="light"] .annual-corporate-hero .text-white {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero .text-slate-200 {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero .text-cyan-100 {
+  color: #cffafe !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero .text-red-200 {
+  color: #fecaca !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero .border-white\/12,
+html[data-theme="light"] .annual-corporate-hero .border-white\/15 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero h1,
+html[data-theme="light"] .annual-corporate-hero h2,
+html[data-theme="light"] .annual-corporate-hero h3 {
+  color: #ffffff !important;
+}
+
+/* Services section readable in light theme */
+html[data-theme="light"] .annual-corporate-services {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .text-slate-400 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .text-cyan-100 {
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .text-cyan-400\/90 {
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .annual-corporate-services h2,
+html[data-theme="light"] .annual-corporate-services h3 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .annual-service-cta {
+  border-color: rgba(8, 145, 178, 0.35) !important;
+  background: rgba(8, 145, 178, 0.1) !important;
+  color: #0e7490 !important;
+}
+
 body::-webkit-scrollbar,
 body::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-track {
