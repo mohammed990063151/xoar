@@ -39,8 +39,8 @@ const SERVICE_IMAGES: Record<string, string> = {
   catering: "/landing/annual-corporate/catering-arabic-coffee-served.png",
   // عرض ترفيهي سعودي (عرضة) — فعالية في الرياض
   entertainment: "/landing/annual-corporate/sa-svc-entertainment.jpg",
-  // إنتاج فني: مسرح وإضاءة بديكور سعودي (4 Stars International)
-  production: "/landing/annual-corporate/sa-prod-kosha2.jpg",
+  // إنتاج فني فخم: سماعات + تروس إضاءة + شاشة LED (ZONEX الرياض)
+  production: "/landing/annual-corporate/sa-svc-production-av.webp",
   // هدايا شركات
   gifts: "/landing/annual-corporate/gifts-corporate.jpg",
   // مقدّم فعالية بزيّ سعودي على المنصة — فعالية في الرياض
