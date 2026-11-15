@@ -367,18 +367,24 @@ export function AnnualCorporateLandingView({
             </div>
           </SlideInEdge>
 
-          <div className="mt-10 grid gap-6 sm:mt-12 sm:gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-10 grid items-stretch gap-6 sm:mt-12 sm:gap-8 md:grid-cols-2 xl:grid-cols-3">
             {copy.services.map((service, index) => {
               const image = SERVICE_IMAGES[service.id] ?? HERO_IMAGE;
+              const isLast = index === copy.services.length - 1;
               return (
                 <SlideInEdge
                   key={service.id}
                   from="bottom"
                   delay={Math.min(index * 0.05, 0.25)}
                   amount={36}
+                  className={cn(
+                    "flex h-full min-h-0 flex-col",
+                    isLast &&
+                      "md:col-span-2 md:mx-auto md:w-full md:max-w-[calc((100%-2rem)/2)] xl:col-span-1 xl:col-start-2 xl:mx-0 xl:max-w-none",
+                  )}
                 >
-                  <article className="group h-full overflow-hidden">
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 shadow-sm">
+                  <article className="group flex h-full min-h-0 flex-col overflow-hidden">
+                    <div className="relative aspect-[16/10] shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-sm">
                       <Image
                         src={image}
                         alt={service.title}
@@ -391,10 +397,17 @@ export function AnnualCorporateLandingView({
                         aria-hidden
                       />
                     </div>
-                    <h3 className="mt-4 text-lg font-bold text-white sm:text-xl">
+                    <h3 className="mt-4 min-h-[3.25rem] text-lg font-bold leading-snug text-white sm:min-h-[3.5rem] sm:text-xl">
                       {service.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-400 sm:text-[15px]">
+                    <p
+                      className={cn(
+                        "mt-2 text-sm leading-relaxed text-slate-400 sm:text-[15px]",
+                        expandedServiceId === service.id
+                          ? "flex-1"
+                          : "line-clamp-3 min-h-[4.5rem] sm:min-h-[4.75rem]",
+                      )}
+                    >
                       {expandedServiceId === service.id && service.fullDescription
                         ? service.fullDescription
                         : service.description}
@@ -408,7 +421,7 @@ export function AnnualCorporateLandingView({
                             current === service.id ? null : service.id,
                           )
                         }
-                        className="mt-2 text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+                        className="mt-auto pt-3 text-start text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
                       >
                         {expandedServiceId === service.id
                           ? copy.readLess
