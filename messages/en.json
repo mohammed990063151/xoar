@@ -10,7 +10,7 @@
     "individualEvents": "Individual events",
     "corporateEvents": "Corporate events",
     "annualCorporateEvent": "Annual event",
-    "equipment": "Equipment booking",
+    "equipment": "Event supplies booking",
     "partners": "Partners",
     "blog": "Xora Blog",
     "careers": "Careers",
@@ -22,7 +22,7 @@
       "corporateEvents": "Corporate events",
       "annualCorporateEvent": "Annual event",
       "activities": "Entertainment activities",
-      "equipment": "Equipment booking"
+      "equipment": "Event supplies booking"
     }
   },
   "activityTabs": [
@@ -479,16 +479,16 @@
       "cta": "Submit request"
     },
     "equipment": {
-      "eyebrow": "Equipment rental",
-      "title": "Equipment booking & rental",
+      "eyebrow": "Event supplies",
+      "title": "Event supplies booking",
       "intro": "A ready-to-book catalog: sound, lighting, LED screens, and staging — pick dates and add-ons, pay instantly, or send a custom request.",
       "highlights": [
         "Instant book & pay with live calendar",
         "Sound, lighting, screens, and staging",
         "Delivery and setup by arrangement"
       ],
-      "formTitle": "Custom equipment request",
-      "equipmentNeeded": "Equipment needed",
+      "formTitle": "Custom supplies request",
+      "equipmentNeeded": "Supplies needed",
       "equipmentNeededPlaceholder": "e.g. PA system, 4 LED screens, stage lighting…",
       "requestTitle": "Request title",
       "preferredDate": "Usage date",
@@ -499,8 +499,8 @@
       "phone": "Phone number",
       "submit": "Send custom request",
       "sending": "Sending…",
-      "successTitle": "Equipment request received",
-      "success": "Thank you — our rental team will review your request and contact you soon.",
+      "successTitle": "Supplies request received",
+      "success": "Thank you — our supplies team will review your request and contact you soon.",
       "sendAnother": "Submit another request",
       "cta": "Book now"
     },
