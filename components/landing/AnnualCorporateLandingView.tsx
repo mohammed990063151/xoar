@@ -395,11 +395,12 @@ export function AnnualCorporateLandingView({
                       {service.title}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-400 sm:text-[15px]">
-                      {expandedServiceId === service.id
+                      {expandedServiceId === service.id && service.fullDescription
                         ? service.fullDescription
                         : service.description}
                     </p>
-                    {service.fullDescription ? (
+                    {service.fullDescription &&
+                    service.fullDescription !== service.description ? (
                       <button
                         type="button"
                         onClick={() =>
