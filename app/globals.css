@@ -154,6 +154,20 @@ html[data-theme="light"] .annual-corporate-hero h3 {
   color: #ffffff !important;
 }
 
+/* Form fields: keep dark-readable text (global light input bg is white) */
+html[data-theme="light"] .annual-corporate-hero input,
+html[data-theme="light"] .annual-corporate-hero textarea,
+html[data-theme="light"] .annual-corporate-hero .annual-corporate-field {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+}
+
+html[data-theme="light"] .annual-corporate-hero input::placeholder,
+html[data-theme="light"] .annual-corporate-hero textarea::placeholder {
+  color: #64748b !important;
+}
+
 /* Services section readable in light theme */
 html[data-theme="light"] .annual-corporate-services {
   background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
@@ -188,6 +202,11 @@ html[data-theme="light"] .annual-corporate-services .border-white\/10 {
 html[data-theme="light"] .annual-corporate-services .annual-service-cta {
   border-color: rgba(8, 145, 178, 0.35) !important;
   background: rgba(8, 145, 178, 0.1) !important;
+  color: #0e7490 !important;
+}
+
+html[data-theme="light"] .annual-corporate-services .text-cyan-300,
+html[data-theme="light"] .annual-corporate-services .text-cyan-200 {
   color: #0e7490 !important;
 }
 

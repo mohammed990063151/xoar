@@ -532,12 +532,18 @@
       "contactName": "Contact person",
       "jobTitle": "Job title",
       "phone": "Mobile number",
+      "phonePlaceholder": "05xxxxxxxx",
+      "phoneInvalid": "Enter a valid mobile number (digits only, at least 9 digits).",
       "email": "Email address",
+      "eventDetails": "Event details",
+      "eventDetailsPlaceholder": "Approx. date, guest count, preferred venue, and any notes…",
       "submit": "Send request",
       "sending": "Sending…",
       "successTitle": "Request received",
       "success": "Thank you — our corporate events team will review your request and contact you soon.",
       "sendAnother": "Send another request",
+      "readMore": "Read more",
+      "readLess": "Show less",
       "trust": [
         "One owner for every detail",
         "From concept to wrap-up",
@@ -551,37 +557,44 @@
         {
           "id": "venues",
           "title": "Venues & locations",
-          "description": "Halls, hotels, conference centers and outdoor spaces sized to your guests and budget."
+          "description": "Halls, hotels, conference centers and outdoor spaces sized to your guests and budget.",
+          "fullDescription": "We offer a wide range of halls, hotels, conference centers, outdoor spaces and event venues matched to your occasion, guest count and budget. We help you choose a strategic location with the right facilities so your event runs in a professional setting that meets your goals."
         },
         {
           "id": "decor",
           "title": "Decor & themes",
-          "description": "A full theme that matches your brand: colors, stages, reception and photo areas."
+          "description": "A full theme that matches your brand: colors, stages, reception and photo areas.",
+          "fullDescription": "We design and build event decor around a cohesive theme that reflects your brand — from concept and color choices through stages, display platforms, reception areas and photo backdrops — for a polished visual experience."
         },
         {
           "id": "catering",
           "title": "Hospitality & catering",
-          "description": "Hosts, open buffets, finger food and food trucks — polished hospitality for your guests."
+          "description": "Hosts, open buffets, finger food and food trucks — polished hospitality for your guests.",
+          "fullDescription": "We provide hospitality and catering for events of every type: traditional coffee servers, open buffets, finger food and food trucks. Options and presentation are tailored to the occasion and guest count for a refined, complete guest experience."
         },
         {
           "id": "entertainment",
           "title": "Entertainment & activities",
-          "description": "Live shows, interactive activities and team-building that leave a lasting impression."
+          "description": "Live shows, interactive activities and team-building that leave a lasting impression.",
+          "fullDescription": "We deliver interactive entertainment that builds energy and connection — live shows, interactive activities, team-building games, and programs designed for companies and employees that boost engagement and create lasting memories."
         },
         {
           "id": "production",
           "title": "AV & technical production",
-          "description": "Sound, lighting, LED screens, staging and visual effects at a professional level."
+          "description": "Sound, lighting, LED screens, staging and visual effects at a professional level.",
+          "fullDescription": "We deliver full AV and technical production for events and conferences: professional sound and lighting, LED screens and visuals, staging and platforms, effects, and show operation — using modern tech sized to the quality your event deserves."
         },
         {
           "id": "gifts",
           "title": "Gifts & giveaways",
-          "description": "Custom corporate gifts and branded giveaways for guests and employees."
+          "description": "Custom corporate gifts and branded giveaways for guests and employees.",
+          "fullDescription": "We design and supply commemorative gifts and promotional giveaways with custom branding and packaging aligned to your visual identity — creative products that strengthen brand presence and leave a lasting impression."
         },
         {
           "id": "hosts",
           "title": "Hosts & speakers",
-          "description": "Event MCs, speakers and moderators who keep the program smooth and engaging."
+          "description": "Event MCs, speakers and moderators who keep the program smooth and engaging.",
+          "fullDescription": "We provide professional MCs, moderators and speakers for conferences, gatherings and corporate celebrations. We help you choose the right talent for your audience so the program runs smoothly and your messages land clearly."
         }
       ]
     }

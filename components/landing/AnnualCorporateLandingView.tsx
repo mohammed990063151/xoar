@@ -48,10 +48,15 @@ const SERVICE_IMAGES: Record<string, string> = {
 };
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-white/12 bg-black/45 px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/55 focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]";
+  "annual-corporate-field mt-1.5 w-full rounded-xl border border-white/12 bg-black/45 px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/55 focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)]";
 
 function scrollToForm(): void {
   document.getElementById("lead-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function isValidPhone(value: string): boolean {
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 9 && digits.length <= 15;
 }
 
 export function AnnualCorporateLandingView({
@@ -66,6 +71,8 @@ export function AnnualCorporateLandingView({
   const [jobTitle, setJobTitle] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [eventDetails, setEventDetails] = useState("");
+  const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -79,6 +86,12 @@ export function AnnualCorporateLandingView({
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setError("");
+
+    if (!isValidPhone(phone)) {
+      setError(copy.phoneInvalid);
+      return;
+    }
+
     setLoading(true);
 
     const message = [
@@ -88,6 +101,7 @@ export function AnnualCorporateLandingView({
       `${ar ? "المسمى الوظيفي" : "Job title"}: ${jobTitle.trim()}`,
       `${ar ? "الجوال" : "Phone"}: ${phone.trim()}`,
       `${ar ? "البريد" : "Email"}: ${email.trim()}`,
+      `${ar ? "تفاصيل الفعالية" : "Event details"}: ${eventDetails.trim() || "—"}`,
     ].join("\n");
 
     try {
@@ -105,6 +119,7 @@ export function AnnualCorporateLandingView({
           ? `حفل سنوي — ${companyName.trim()}`
           : `Annual event — ${companyName.trim()}`,
         message,
+        description: eventDetails.trim() || undefined,
       });
       setSent(true);
     } catch (err) {
@@ -206,6 +221,7 @@ export function AnnualCorporateLandingView({
                         setJobTitle("");
                         setPhone("");
                         setEmail("");
+                        setEventDetails("");
                       }}
                       className="mt-6 inline-flex rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-400/40 hover:text-white"
                     >
@@ -272,10 +288,14 @@ export function AnnualCorporateLandingView({
                           type="tel"
                           name="phone"
                           autoComplete="tel"
-                          inputMode="tel"
+                          inputMode="numeric"
+                          pattern="[0-9+\s()\-]{9,20}"
+                          placeholder={copy.phonePlaceholder}
                           dir="ltr"
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          onChange={(e) =>
+                            setPhone(e.target.value.replace(/[^\d+\s()\-]/g, ""))
+                          }
                           className={cn(fieldClass, "text-start")}
                         />
                       </label>
@@ -293,6 +313,19 @@ export function AnnualCorporateLandingView({
                         />
                       </label>
                     </div>
+
+                    <label className="block text-sm text-slate-300">
+                      {copy.eventDetails}
+                      <textarea
+                        required
+                        name="eventDetails"
+                        rows={4}
+                        value={eventDetails}
+                        onChange={(e) => setEventDetails(e.target.value)}
+                        placeholder={copy.eventDetailsPlaceholder}
+                        className={cn(fieldClass, "resize-y min-h-[6.5rem]")}
+                      />
+                    </label>
 
                     <button
                       type="submit"
@@ -362,8 +395,25 @@ export function AnnualCorporateLandingView({
                       {service.title}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-400 sm:text-[15px]">
-                      {service.description}
+                      {expandedServiceId === service.id
+                        ? service.fullDescription
+                        : service.description}
                     </p>
+                    {service.fullDescription ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedServiceId((current) =>
+                            current === service.id ? null : service.id,
+                          )
+                        }
+                        className="mt-2 text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+                      >
+                        {expandedServiceId === service.id
+                          ? copy.readLess
+                          : copy.readMore}
+                      </button>
+                    ) : null}
                   </article>
                 </SlideInEdge>
               );
