@@ -148,13 +148,18 @@ export function AnnualCorporateLandingView({
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               className="max-w-xl"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300/90 sm:text-xs">
+              <p
+                className={cn(
+                  "text-[10px] font-semibold text-cyan-300/90 sm:text-xs",
+                  ar ? "tracking-normal" : "uppercase tracking-[0.22em]",
+                )}
+              >
                 {copy.eyebrow}
               </p>
-              <p className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              <p className="mt-3 text-3xl font-extrabold tracking-normal text-white sm:text-4xl lg:text-5xl">
                 {copy.brand}
               </p>
-              <h1 className="mt-3 text-[clamp(1.45rem,4.8vw,2.65rem)] font-bold leading-tight tracking-tight text-white">
+              <h1 className="mt-3 text-[clamp(1.45rem,4.8vw,2.65rem)] font-bold leading-tight tracking-normal text-white">
                 {copy.title}
               </h1>
               <p className="mt-4 max-w-lg text-base leading-relaxed text-slate-300 sm:text-lg">
@@ -312,10 +317,15 @@ export function AnnualCorporateLandingView({
         <div className={cn(siteContainer, "relative")}>
           <SlideInEdge from="bottom" amount={28}>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400/90 sm:text-xs">
+              <p
+                className={cn(
+                  "text-[10px] font-semibold text-cyan-400/90 sm:text-xs",
+                  ar ? "tracking-normal" : "uppercase tracking-[0.2em]",
+                )}
+              >
                 {copy.servicesEyebrow}
               </p>
-              <h2 className="mt-3 text-[clamp(1.35rem,4vw,2.25rem)] font-bold tracking-tight text-white">
+              <h2 className="mt-3 text-[clamp(1.35rem,4vw,2.25rem)] font-bold tracking-normal text-white">
                 {copy.servicesTitle}
               </h2>
               <p className="mt-3 text-base leading-relaxed text-slate-400">
