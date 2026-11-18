@@ -12,13 +12,13 @@ import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { pageBottom, pageTitle, siteContainer } from "@/lib/layout";
 import {
-  GCC_DIAL_CODES,
   formatGccE164,
   isValidGccMobile,
   splitGccPhone,
   toAsciiDigits,
   type GccDialCode,
 } from "@/lib/phone";
+import { GccPhoneField } from "@/components/ui/GccPhoneField";
 import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import { submitInquiry } from "@/services/inquiryService";
 import type {
@@ -587,61 +587,21 @@ export function EventConfiguratorForm({
                       dir="ltr"
                     />
                   </label>
-                  <div className="block text-sm text-slate-200 sm:col-span-2">
-                    <span className="block">{copy.phone}</span>
-                    <div className="mt-1.5 flex gap-2" dir="ltr">
-                      <label className="sr-only" htmlFor="event-phone-country">
-                        {copy.phoneCountry}
-                      </label>
-                      <select
-                        id="event-phone-country"
-                        value={dialCode}
-                        onChange={(e) => setDialCode(e.target.value as GccDialCode)}
-                        className={cn(
-                          fieldClass,
-                          "mt-0 w-[7.75rem] shrink-0 appearance-none px-2.5 py-3 text-start",
-                        )}
-                      >
-                        {GCC_DIAL_CODES.map((c) => (
-                          <option key={c.dial} value={c.dial}>
-                            {c.flag} +{c.dial}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        required
-                        type="tel"
-                        id="event-phone"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        autoComplete="tel-national"
-                        placeholder={copy.phonePlaceholder}
-                        value={phoneNational}
-                        onChange={(e) => {
-                          const raw = e.target.value;
-                          const digits = toAsciiDigits(raw);
-                          if (
-                            raw.includes("+") ||
-                            digits.startsWith("00") ||
-                            digits.startsWith("0") ||
-                            digits.length > 9
-                          ) {
-                            const split = splitGccPhone(raw);
-                            setDialCode(split.dial);
-                            setPhoneNational(
-                              split.national.replace(/^0+/, "").slice(0, 9),
-                            );
-                            return;
-                          }
-                          setPhoneNational(digits.slice(0, 9));
-                        }}
-                        className={cn(fieldClass, "mt-0 min-w-0 flex-1 text-start")}
-                        aria-invalid={phoneNationalClean.length > 0 && !phoneValid}
-                      />
-                    </div>
-                    {phoneNationalClean.length > 0 && !phoneValid ? (
-                      <p className="mt-2 text-xs text-rose-300">{copy.phoneInvalid}</p>
-                    ) : null}
+                  <div className="sm:col-span-2">
+                    <GccPhoneField
+                      locale={locale}
+                      dialCode={dialCode}
+                      national={phoneNational}
+                      onDialChange={setDialCode}
+                      onNationalChange={setPhoneNational}
+                      label={copy.phone}
+                      countryLabel={copy.phoneCountry}
+                      placeholder={copy.phonePlaceholder}
+                      invalid={phoneNationalClean.length > 0 && !phoneValid}
+                      invalidMessage={copy.phoneInvalid}
+                      fieldClassName={fieldClass}
+                      id="event-phone"
+                    />
                   </div>
                 </div>
               </section>
