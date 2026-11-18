@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { SlideInEdge } from "@/components/motion/SlideInEdge";
 import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
@@ -10,6 +10,14 @@ import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { pageBottom, siteContainer } from "@/lib/layout";
 import { cn } from "@/lib/cn";
+import {
+  GCC_DIAL_CODES,
+  formatGccE164,
+  isValidGccMobile,
+  splitGccPhone,
+  toAsciiDigits,
+  type GccDialCode,
+} from "@/lib/phone";
 
 type Copy = Dictionary["pages"]["annualCorporateEvent"];
 
@@ -54,11 +62,6 @@ function scrollToForm(): void {
   document.getElementById("lead-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function isValidPhone(value: string): boolean {
-  const digits = value.replace(/\D/g, "");
-  return digits.length >= 9 && digits.length <= 15;
-}
-
 export function AnnualCorporateLandingView({
   locale,
   copy,
@@ -69,7 +72,9 @@ export function AnnualCorporateLandingView({
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
-  const [phone, setPhone] = useState("");
+  const [dialCode, setDialCode] = useState<GccDialCode>("966");
+  const [phoneNational, setPhoneNational] = useState("");
+  const [phoneSeed, setPhoneSeed] = useState("");
   const [email, setEmail] = useState("");
   const [eventDetails, setEventDetails] = useState("");
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(null);
@@ -80,17 +85,27 @@ export function AnnualCorporateLandingView({
   useFormProfileAutofill({
     setName: setContactName,
     setEmail,
-    setPhone,
+    setPhone: setPhoneSeed,
   });
+
+  useEffect(() => {
+    if (!phoneSeed.trim() || phoneNational.trim()) return;
+    const split = splitGccPhone(phoneSeed);
+    setDialCode(split.dial);
+    setPhoneNational(split.national.replace(/^0+/, ""));
+  }, [phoneSeed, phoneNational]);
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setError("");
 
-    if (!isValidPhone(phone)) {
+    const national = toAsciiDigits(phoneNational).replace(/^0+/, "");
+    if (!isValidGccMobile(national, dialCode)) {
       setError(copy.phoneInvalid);
       return;
     }
+
+    const phoneE164 = formatGccE164(dialCode, national);
 
     setLoading(true);
 
@@ -99,7 +114,7 @@ export function AnnualCorporateLandingView({
       `${ar ? "الشركة" : "Company"}: ${companyName.trim()}`,
       `${ar ? "المسؤول" : "Contact"}: ${contactName.trim()}`,
       `${ar ? "المسمى الوظيفي" : "Job title"}: ${jobTitle.trim()}`,
-      `${ar ? "الجوال" : "Phone"}: ${phone.trim()}`,
+      `${ar ? "الجوال" : "Phone"}: ${phoneE164}`,
       `${ar ? "البريد" : "Email"}: ${email.trim()}`,
       `${ar ? "تفاصيل الفعالية" : "Event details"}: ${eventDetails.trim() || "—"}`,
     ].join("\n");
@@ -113,7 +128,7 @@ export function AnnualCorporateLandingView({
         company_name: companyName.trim(),
         job_title: jobTitle.trim(),
         email: email.trim(),
-        phone: phone.trim(),
+        phone: phoneE164,
         event_type: "corporate",
         title: ar
           ? `حفل سنوي — ${companyName.trim()}`
@@ -219,7 +234,8 @@ export function AnnualCorporateLandingView({
                         setCompanyName("");
                         setContactName("");
                         setJobTitle("");
-                        setPhone("");
+                        setDialCode("966");
+                        setPhoneNational("");
                         setEmail("");
                         setEventDetails("");
                       }}
@@ -281,24 +297,60 @@ export function AnnualCorporateLandingView({
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <label className="block text-sm text-slate-300">
-                        {copy.phone}
-                        <input
-                          required
-                          type="tel"
-                          name="phone"
-                          autoComplete="tel"
-                          inputMode="numeric"
-                          pattern="[0-9+\s()\-]{9,20}"
-                          placeholder={copy.phonePlaceholder}
-                          dir="ltr"
-                          value={phone}
-                          onChange={(e) =>
-                            setPhone(e.target.value.replace(/[^\d+\s()\-]/g, ""))
-                          }
-                          className={cn(fieldClass, "text-start")}
-                        />
-                      </label>
+                      <div className="block text-sm text-slate-300">
+                        <span className="block">{copy.phone}</span>
+                        <div className="mt-1.5 flex gap-2" dir="ltr">
+                          <label className="sr-only" htmlFor="lead-phone-country">
+                            {copy.phoneCountry ?? (ar ? "مفتاح الدولة" : "Country code")}
+                          </label>
+                          <select
+                            id="lead-phone-country"
+                            name="phoneCountry"
+                            value={dialCode}
+                            onChange={(e) => setDialCode(e.target.value as GccDialCode)}
+                            className={cn(
+                              fieldClass,
+                              "mt-0 w-[7.75rem] shrink-0 appearance-none px-2.5 py-3 text-start",
+                            )}
+                          >
+                            {GCC_DIAL_CODES.map((c) => (
+                              <option key={c.dial} value={c.dial}>
+                                {c.flag} +{c.dial}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            required
+                            type="tel"
+                            name="phone"
+                            id="lead-phone"
+                            autoComplete="tel-national"
+                            inputMode="numeric"
+                            placeholder={copy.phonePlaceholder}
+                            value={phoneNational}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              const digits = toAsciiDigits(raw);
+                              // Pasted international / local-with-0 → split dial + national.
+                              if (
+                                raw.includes("+") ||
+                                digits.startsWith("00") ||
+                                digits.startsWith("0") ||
+                                digits.length > 9
+                              ) {
+                                const split = splitGccPhone(raw);
+                                setDialCode(split.dial);
+                                setPhoneNational(
+                                  split.national.replace(/^0+/, "").slice(0, 9),
+                                );
+                                return;
+                              }
+                              setPhoneNational(digits.slice(0, 9));
+                            }}
+                            className={cn(fieldClass, "mt-0 min-w-0 flex-1 text-start")}
+                          />
+                        </div>
+                      </div>
                       <label className="block text-sm text-slate-300">
                         {copy.email}
                         <input

@@ -32,17 +32,27 @@ type NavKey =
   | "events"
   | "partners";
 
-const navKeys = [
+/** Core links — order: Home → About → Individuals → Corporate → Activities → Equipment */
+const coreNavKeys = [
   { href: "/", key: "home" as const },
   { href: "/about", key: "about" as const },
   { href: "/individual-events", key: "individualEvents" as const },
   { href: "/corporate-events", key: "corporateEvents" as const },
-  { href: "/annual-corporate-event", key: "annualCorporateEvent" as const },
-  { href: "/equipment", key: "equipment" as const },
   { href: "/activities", key: "activities" as const },
+  { href: "/equipment", key: "equipment" as const },
+] as const;
+
+/** Landing pages sit after equipment and before Our events / Partners. */
+const landingNavKeys = [
+  { href: "/annual-corporate-event", key: "annualCorporateEvent" as const },
+] as const;
+
+const trailingNavKeys = [
   { href: "/events", key: "events" as const },
   { href: "/partners", key: "partners" as const },
 ] as const;
+
+const navKeys = [...coreNavKeys, ...landingNavKeys, ...trailingNavKeys] as const;
 
 function navLabel(locale: Locale, key: NavKey, nav: Dictionary["nav"]): string {
   if (key === "events") return locale === "ar" ? "فعالياتنا" : "Our events";

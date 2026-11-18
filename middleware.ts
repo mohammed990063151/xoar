@@ -39,6 +39,15 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.next();
   }
 
+  // Meta / public legal URLs must resolve without relying on a client-only hop.
+  // Rewrite keeps https://xoraevents.com/privacy-policy (etc.) while serving locale pages.
+  const legalExact = new Set(["/privacy-policy", "/terms", "/data-deletion"]);
+  if (legalExact.has(pathname)) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/${defaultLocale}${pathname}`;
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
   const url = request.nextUrl.clone();
   url.pathname = `/${defaultLocale}${pathname === "/" ? "" : pathname}`;
   return NextResponse.redirect(url);

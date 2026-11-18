@@ -381,6 +381,39 @@ export function HeroSection({
               label={hero.eventRequestCta ?? (locale === "ar" ? "طلب فعالية" : "Request an event")}
               variant="hero"
             />
+            {/* Mobile-first shortcuts (desktop already has these in the header). */}
+            <motion.span
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full sm:w-auto lg:hidden"
+            >
+              <Link
+                href={localizedPath(locale, "/corporate-events")}
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-full border border-sky-500/35 bg-sky-500/10 px-6 py-3 text-sm font-semibold text-sky-50 transition hover:border-sky-400/50 hover:bg-sky-500/20 sm:w-auto sm:px-7 sm:py-3.5"
+              >
+                {hero.corporateEventsCta ??
+                  (locale === "ar" ? "فعاليات الشركات" : "Corporate events")}
+                <span className="text-lg transition group-hover:translate-x-0.5 rtl:-scale-x-100" aria-hidden>
+                  →
+                </span>
+              </Link>
+            </motion.span>
+            <motion.span
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full sm:w-auto lg:hidden"
+            >
+              <Link
+                href={localizedPath(locale, "/equipment")}
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-full border border-violet-500/35 bg-violet-500/10 px-6 py-3 text-sm font-semibold text-violet-50 transition hover:border-violet-400/50 hover:bg-violet-500/20 sm:w-auto sm:px-7 sm:py-3.5"
+              >
+                {hero.equipmentCta ??
+                  (locale === "ar" ? "حجز مستلزمات الفعاليات" : "Event supplies booking")}
+                <span className="text-lg transition group-hover:translate-x-0.5 rtl:-scale-x-100" aria-hidden>
+                  →
+                </span>
+              </Link>
+            </motion.span>
             <motion.span whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
               <Link
                 href={localizedPath(locale, "/works")}

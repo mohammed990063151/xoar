@@ -332,11 +332,33 @@ export function Footer({
           </div>
         </motion.div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/8 pt-6 text-center text-xs text-slate-500 sm:flex-row sm:text-start">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-6 text-center text-xs text-slate-500 sm:flex-row sm:text-start">
           <p>
             © {new Date().getFullYear()} {companyName}. {footer.rights}
           </p>
-          <p className="text-slate-600">{tagline}</p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link
+              href={localizedPath(locale, "/privacy-policy")}
+              scroll={false}
+              className="transition hover:text-cyan-300"
+            >
+              {footer.privacy}
+            </Link>
+            <Link
+              href={localizedPath(locale, "/terms")}
+              scroll={false}
+              className="transition hover:text-cyan-300"
+            >
+              {footer.terms}
+            </Link>
+            <Link
+              href={localizedPath(locale, "/data-deletion")}
+              scroll={false}
+              className="transition hover:text-cyan-300"
+            >
+              {footer.dataDeletion}
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

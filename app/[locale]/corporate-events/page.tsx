@@ -24,8 +24,8 @@ export async function generateMetadata({
       title: loc === "ar" ? "فعاليات الشركات | اكزورا" : "Corporate events | Xora",
       description:
         loc === "ar"
-          ? "جهّز فعالية شركتك: اختر الفكرة والباقات وأرسل طلبك ليتواصل معك فريق إكزورا."
-          : "Prepare your company event: pick a theme and packages, then send your request so Xora can follow up.",
+          ? "اطلب فعالية شركتك بثلاث خطوات: التفاصيل والميزانية، التواصل، ثم اختر فكرة أو اكتب فكرتك — ويتواصل معك فريق إكزورا."
+          : "Request your company event in three steps: details and budget, contact, then pick or write an idea — Xora will follow up.",
     },
   );
 }

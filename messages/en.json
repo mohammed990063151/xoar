@@ -94,6 +94,8 @@
     "subtitle": "From idea to execution: conferences, exhibitions, celebrations, and recreation — with technical precision and bold visual identity.",
     "primaryCta": "Explore entertainment activities",
     "eventRequestCta": "Individual events",
+    "corporateEventsCta": "Corporate events",
+    "equipmentCta": "Event supplies booking",
     "secondaryCta": "Watch our work",
     "videoPoster": "https://images.unsplash.com/photo-1674822858255-fcc093a1ef43?auto=format&fit=crop&w=960&q=85"
   },
@@ -226,6 +228,9 @@
     "follow": "Follow us on",
     "whatsapp": "WhatsApp",
     "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "dataDeletion": "Data Deletion",
     "social": {
       "instagram": "https://www.instagram.com/xoraevents",
       "x": "https://x.com/xoraevents",
@@ -456,11 +461,11 @@
     },
     "individualEvents": {
       "eyebrow": "Individual events",
-      "title": "Request your event in clear steps",
-      "intro": "Four simple steps: pick an idea, add packages, fill the details, then submit. Tap the (i) next to any field to learn what it’s for — then Xora will contact you to confirm.",
+      "title": "Request your event in 3 steps",
+      "intro": "1) Event details and budget · 2) Your contact info · 3) Pick an idea or write your own. Then Xora contacts you — no payment now.",
       "highlights": [
-        "Clear steps like trusted service platforms",
-        "Guidance beside every field",
+        "Only 3 clear steps",
+        "Budget shown from the start",
         "No payment on submit"
       ],
       "formTitle": "Event request",
@@ -468,11 +473,11 @@
     },
     "corporateEvents": {
       "eyebrow": "Corporate events",
-      "title": "Prepare your company event with clear steps",
-      "intro": "Choose an idea and packages, fill the details clearly, then submit. Every field has an (i) tip explaining its purpose — then Xora follows up to finalize arrangements.",
+      "title": "Request your company event in 3 steps",
+      "intro": "1) Details and budget · 2) Contact info · 3) Pick an idea or write another. Xora follows up to finalize — no payment now.",
       "highlights": [
-        "Clear steps for teams and companies",
-        "Guidance beside every field",
+        "3 clear steps for teams",
+        "Budget shown from the start",
         "Full follow-up after the request"
       ],
       "formTitle": "Event request",
@@ -527,13 +532,14 @@
       "title": "Your annual event… from idea to every last detail",
       "intro": "We plan and run your company event end to end: from defining goals, concept, budget and timeline through on-site execution and wrap-up. One team and one owner for every detail — we save you time and deliver a professional event that reflects your brand.",
       "formTitle": "Request a proposal",
-      "formHint": "Share your details and we will contact you within 24 hours.",
+      "formHint": "Fill every field with a real mobile number and country code — we will contact you within 24 hours.",
       "companyName": "Company name",
       "contactName": "Contact person",
       "jobTitle": "Job title",
       "phone": "Mobile number",
-      "phonePlaceholder": "05xxxxxxxx",
-      "phoneInvalid": "Enter a valid mobile number (digits only, at least 9 digits).",
+      "phoneCountry": "Country code",
+      "phonePlaceholder": "5xxxxxxxx",
+      "phoneInvalid": "Enter a valid mobile with a country code (e.g. +966). Random or repeated numbers are not accepted.",
       "email": "Email address",
       "eventDetails": "Event details",
       "eventDetailsPlaceholder": "Approx. date, guest count, preferred venue, and any notes…",
@@ -595,6 +601,144 @@
           "title": "Hosts & speakers",
           "description": "We provide professional MCs, moderators and speakers for conferences, gatherings and corporate celebrations.",
           "fullDescription": "We provide professional MCs, moderators and speakers for conferences, gatherings and corporate celebrations. We help you choose the right talent for your audience so the program runs smoothly and your messages land clearly."
+        }
+      ]
+    },
+    "privacyPolicy": {
+      "eyebrow": "Privacy",
+      "title": "Privacy Policy",
+      "updated": "Last updated: November 2026",
+      "intro": "This policy explains how Xora Events collects, uses, and protects your personal data when you use xoraevents.com and related login options (Facebook, Google, or site account).",
+      "contactLabel": "Privacy contact",
+      "contactEmail": "sales@xoraevents.com",
+      "sections": [
+        {
+          "title": "Who we are",
+          "paragraphs": [
+            "Xora Events organizes events, conferences, and activities in Saudi Arabia. When you contact us, create an account, or submit an event request, we process your data under this policy."
+          ]
+        },
+        {
+          "title": "Data we collect",
+          "paragraphs": [
+            "We collect only what is needed to deliver our services and respond to your requests."
+          ],
+          "bullets": [
+            "Identity and contact: name, email, phone, and company or job title when relevant.",
+            "Request details: event info, dates, location, budget, and selected idea or package.",
+            "Account data: when you sign in with Facebook/Google we may receive your name, email, and public profile id.",
+            "Basic technical data: IP address, browser type, and visited pages for security and performance."
+          ]
+        },
+        {
+          "title": "How we use data",
+          "paragraphs": [
+            "We use your data to fulfil event requests, communicate with you, manage accounts and bookings, improve the site, and meet legal requirements. We do not sell your personal data."
+          ]
+        },
+        {
+          "title": "Facebook Login",
+          "paragraphs": [
+            "When you use Facebook Login we request basic permissions such as email and public profile to complete sign-in and link your account. You can disconnect the app in Facebook settings or request deletion as described on our Data Deletion page."
+          ]
+        },
+        {
+          "title": "Sharing and retention",
+          "paragraphs": [
+            "We may share limited data with technical providers (hosting, email, payments) under confidentiality terms. We keep data while your account is active or as needed to fulfil requests and legal duties, then delete or anonymize it."
+          ]
+        },
+        {
+          "title": "Your rights",
+          "paragraphs": [
+            "You may request access, correction, or deletion of your data, or opt out of marketing, by emailing us below. We will respond within a reasonable time."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "eyebrow": "Terms",
+      "title": "Terms of Service",
+      "updated": "Last updated: November 2026",
+      "intro": "By using the Xora Events website, submitting an event request, or creating an account, you agree to these terms.",
+      "contactLabel": "Contact",
+      "contactEmail": "sales@xoraevents.com",
+      "sections": [
+        {
+          "title": "The service",
+          "paragraphs": [
+            "We provide event planning and related equipment and activity services. Submitting a request online is not a final booking until Xora confirms details and pricing with you."
+          ]
+        },
+        {
+          "title": "Accurate information",
+          "paragraphs": [
+            "You are responsible for the accuracy of information you submit (dates, location, guest counts, contact details). Delays or costs caused by inaccurate information may be borne by the client."
+          ]
+        },
+        {
+          "title": "Accounts and login",
+          "paragraphs": [
+            "Users must keep login credentials confidential. Facebook or Google sign-in is also subject to those platforms’ policies."
+          ]
+        },
+        {
+          "title": "Intellectual property",
+          "paragraphs": [
+            "Site content, branding, and designs belong to Xora Events unless stated otherwise. Commercial reuse requires prior written permission."
+          ]
+        },
+        {
+          "title": "Limitation of liability",
+          "paragraphs": [
+            "We take reasonable care to deliver a professional service. We are not liable for circumstances beyond our control (such as force majeure or third-party venue limits) beyond what is agreed in writing in a quote or contract."
+          ]
+        },
+        {
+          "title": "Changes",
+          "paragraphs": [
+            "We may update these terms from time to time. Updates are posted on this page and take effect on the publication date."
+          ]
+        }
+      ]
+    },
+    "dataDeletion": {
+      "eyebrow": "Your data",
+      "title": "User Data Deletion",
+      "updated": "Last updated: November 2026",
+      "intro": "If you signed in with Facebook or created an account with us, you can request deletion of data linked to the Xora / xoraevents.com app using the steps below.",
+      "contactLabel": "Send deletion requests to",
+      "contactEmail": "sales@xoraevents.com",
+      "sections": [
+        {
+          "title": "How to request deletion",
+          "paragraphs": [
+            "Email the address below with the subject “Data deletion request” and include:"
+          ],
+          "bullets": [
+            "Full name and the email used on your account or event requests.",
+            "Phone number if available.",
+            "If you use Facebook Login: your Facebook user id or profile link if available.",
+            "Confirmation that you want the Xora account and/or related data deleted."
+          ]
+        },
+        {
+          "title": "From Facebook settings",
+          "paragraphs": [
+            "You can also remove the app in Facebook: Settings & privacy → Settings → Apps and Websites → Remove Xora, then request data deletion from Removed apps if the option appears."
+          ]
+        },
+        {
+          "title": "What we delete",
+          "paragraphs": [
+            "After verifying your identity we delete or anonymize account profile data, social login linkage, and event requests that are not required for legal retention. Limited records (such as completed invoices) may be kept only as legally required."
+          ]
+        },
+        {
+          "title": "Timeline",
+          "paragraphs": [
+            "We typically process complete deletion requests within 30 days and email confirmation when done."
+          ]
         }
       ]
     }
