@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LocationMapPicker, type MapLocation } from "@/components/events/LocationMapPicker";
 import { PackageDetailsModal } from "@/components/events/PackageDetailsModal";
@@ -11,6 +11,14 @@ import { cn } from "@/lib/cn";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { pageBottom, pageTitle, siteContainer } from "@/lib/layout";
+import {
+  GCC_DIAL_CODES,
+  formatGccE164,
+  isValidGccMobile,
+  splitGccPhone,
+  toAsciiDigits,
+  type GccDialCode,
+} from "@/lib/phone";
 import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import { submitInquiry } from "@/services/inquiryService";
 import type {
@@ -67,12 +75,24 @@ export function EventConfiguratorForm({
   const [budget, setBudget] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [dialCode, setDialCode] = useState<GccDialCode>("966");
+  const [phoneNational, setPhoneNational] = useState("");
+  const [phoneSeed, setPhoneSeed] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useFormProfileAutofill({ setName, setEmail, setPhone });
+  useFormProfileAutofill({ setName, setEmail, setPhone: setPhoneSeed });
+
+  useEffect(() => {
+    if (!phoneSeed.trim() || phoneNational.trim()) return;
+    const split = splitGccPhone(phoneSeed);
+    setDialCode(split.dial);
+    setPhoneNational(split.national.replace(/^0+/, ""));
+  }, [phoneSeed, phoneNational]);
+
+  const phoneNationalClean = toAsciiDigits(phoneNational).replace(/^0+/, "");
+  const phoneValid = isValidGccMobile(phoneNationalClean, dialCode);
 
   const selectedOffering =
     typeof selectedOfferingId === "number"
@@ -163,7 +183,7 @@ export function EventConfiguratorForm({
       {
         id: 2,
         label: ar ? "التواصل" : "Contact",
-        done: Boolean(name.trim() && email.trim() && phone.trim()),
+        done: Boolean(name.trim() && email.trim() && phoneValid),
       },
       {
         id: 3,
@@ -182,7 +202,7 @@ export function EventConfiguratorForm({
       description,
       name,
       email,
-      phone,
+      phoneValid,
       isOtherIdea,
       customIdea,
       selectedOfferingId,
@@ -200,8 +220,12 @@ export function EventConfiguratorForm({
       setError(ar ? "أكمل تفاصيل المناسبة أولاً (بما فيها الميزانية)." : "Complete the event details first (including budget).");
       return;
     }
-    if (!steps[1]?.done) {
+    if (!name.trim() || !email.trim()) {
       setError(ar ? "أدخل بيانات التواصل حتى نقدر نرد عليك." : "Enter your contact details so we can reply.");
+      return;
+    }
+    if (!phoneValid) {
+      setError(copy.phoneInvalid);
       return;
     }
     if (!steps[2]?.done) {
@@ -212,6 +236,8 @@ export function EventConfiguratorForm({
       );
       return;
     }
+
+    const phoneE164 = formatGccE164(dialCode, phoneNationalClean);
 
     setLoading(true);
 
@@ -253,7 +279,7 @@ export function EventConfiguratorForm({
         locale,
         name: name.trim(),
         email: email.trim(),
-        phone: phone.trim() || undefined,
+        phone: phoneE164,
         event_type: audience === "corporate" ? "corporate" : "private",
         title,
         description: description.trim() || undefined,
@@ -279,6 +305,9 @@ export function EventConfiguratorForm({
       setLocation("");
       setLocationCoords(null);
       setBudget("");
+      setDialCode("966");
+      setPhoneNational("");
+      setPhoneSeed("");
     } catch (err) {
       setError(err instanceof Error ? err.message : ar ? "تعذّر إرسال الطلب" : "Could not submit");
     } finally {
@@ -558,19 +587,62 @@ export function EventConfiguratorForm({
                       dir="ltr"
                     />
                   </label>
-                  <label className="block text-sm text-slate-200 sm:col-span-2">
-                    {copy.phone}
-                    <input
-                      required
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className={fieldClass}
-                      placeholder="05xxxxxxxx"
-                      autoComplete="tel"
-                      dir="ltr"
-                    />
-                  </label>
+                  <div className="block text-sm text-slate-200 sm:col-span-2">
+                    <span className="block">{copy.phone}</span>
+                    <div className="mt-1.5 flex gap-2" dir="ltr">
+                      <label className="sr-only" htmlFor="event-phone-country">
+                        {copy.phoneCountry}
+                      </label>
+                      <select
+                        id="event-phone-country"
+                        value={dialCode}
+                        onChange={(e) => setDialCode(e.target.value as GccDialCode)}
+                        className={cn(
+                          fieldClass,
+                          "mt-0 w-[7.75rem] shrink-0 appearance-none px-2.5 py-3 text-start",
+                        )}
+                      >
+                        {GCC_DIAL_CODES.map((c) => (
+                          <option key={c.dial} value={c.dial}>
+                            {c.flag} +{c.dial}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        required
+                        type="tel"
+                        id="event-phone"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete="tel-national"
+                        placeholder={copy.phonePlaceholder}
+                        value={phoneNational}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const digits = toAsciiDigits(raw);
+                          if (
+                            raw.includes("+") ||
+                            digits.startsWith("00") ||
+                            digits.startsWith("0") ||
+                            digits.length > 9
+                          ) {
+                            const split = splitGccPhone(raw);
+                            setDialCode(split.dial);
+                            setPhoneNational(
+                              split.national.replace(/^0+/, "").slice(0, 9),
+                            );
+                            return;
+                          }
+                          setPhoneNational(digits.slice(0, 9));
+                        }}
+                        className={cn(fieldClass, "mt-0 min-w-0 flex-1 text-start")}
+                        aria-invalid={phoneNationalClean.length > 0 && !phoneValid}
+                      />
+                    </div>
+                    {phoneNationalClean.length > 0 && !phoneValid ? (
+                      <p className="mt-2 text-xs text-rose-300">{copy.phoneInvalid}</p>
+                    ) : null}
+                  </div>
                 </div>
               </section>
 
