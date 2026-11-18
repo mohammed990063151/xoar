@@ -130,6 +130,9 @@ function mergePages(
       ...dictPages.annualCorporateEvent,
       ...apiPages.annualCorporateEvent,
     },
+    privacyPolicy: { ...dictPages.privacyPolicy, ...apiPages.privacyPolicy },
+    terms: { ...dictPages.terms, ...apiPages.terms },
+    dataDeletion: { ...dictPages.dataDeletion, ...apiPages.dataDeletion },
   };
 }
 
