@@ -464,24 +464,24 @@
     },
     "individualEvents": {
       "eyebrow": "Individual events",
-      "title": "Request your event in 3 steps",
-      "intro": "1) Event details and budget · 2) Your contact info · 3) Pick an idea or write your own. Then Xora contacts you — no payment now.",
+      "title": "Request your event in clear steps",
+      "intro": "Pick the event type, then the occasion — packages appear next. A ready package goes to payment. Other lets you describe your needs and send a request.",
       "highlights": [
-        "Only 3 clear steps",
-        "Budget shown from the start",
-        "No payment on submit"
+        "Event types from the dashboard",
+        "Text packages, no photos",
+        "Pay for ready packages · request for Other"
       ],
       "formTitle": "Event request",
       "cta": "Submit request"
     },
     "corporateEvents": {
       "eyebrow": "Corporate events",
-      "title": "Request your company event in 3 steps",
-      "intro": "1) Details and budget · 2) Contact info · 3) Pick an idea or write another. Xora follows up to finalize — no payment now.",
+      "title": "Request your company event in clear steps",
+      "intro": "Choose event type then occasion — packages show immediately. Ready packages go to payment; Other is for custom needs and a free request.",
       "highlights": [
-        "3 clear steps for teams",
-        "Budget shown from the start",
-        "Full follow-up after the request"
+        "Event types from the dashboard",
+        "Text packages, no photos",
+        "Pay for ready packages · request for Other"
       ],
       "formTitle": "Event request",
       "cta": "Submit request"

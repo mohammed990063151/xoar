@@ -16,6 +16,8 @@ export interface EventOfferingPackage {
   works?: EventOfferingPackageWork[];
   image?: string | null;
   badge?: string | null;
+  price?: string | null;
+  priceAmount?: number;
   sortOrder?: number;
 }
 
@@ -41,6 +43,8 @@ export interface EventOffering {
   slug: string;
   locale: string;
   audience: EventOfferingAudience;
+  /** Event type group shown first in the configurator (e.g. Birthday parties). */
+  category?: string | null;
   title: string;
   shortLabel?: string | null;
   description?: string | null;
@@ -52,6 +56,8 @@ export interface EventOffering {
   city?: string | null;
   duration?: string | null;
   capacity?: number | null;
+  basePrice?: string | null;
+  basePriceAmount?: number;
   organizerName?: string | null;
   organizerBio?: string | null;
   whatsIncluded?: string | null;
