@@ -15,6 +15,7 @@ import {
   toAsciiDigits,
   type GccDialCode,
 } from "@/lib/phone";
+import { GeideaWordmark, PaymentBrandMark } from "@/components/payment/PaymentBrandMark";
 import { useFormProfileAutofill } from "@/hooks/useFormProfileAutofill";
 import { submitInquiry } from "@/services/inquiryService";
 import { paymentService } from "@/services/paymentService";
@@ -97,6 +98,27 @@ function formatSar(amount: number, locale: Locale): string {
   } catch {
     return `${Math.round(amount)} SAR`;
   }
+}
+
+/** Parse admin duration text (e.g. "4 ساعات") into a select option. */
+function hoursFromDuration(duration?: string | null): string | null {
+  if (!duration?.trim()) return null;
+  const match = duration.match(/(\d{1,2})/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (HOUR_OPTIONS.includes(n)) return String(n);
+  const nearest = HOUR_OPTIONS.reduce((best, h) =>
+    Math.abs(h - n) < Math.abs(best - n) ? h : best,
+  );
+  return String(nearest);
+}
+
+function venueLine(offering: EventOffering | null, ar: boolean): string {
+  if (!offering) return "";
+  const parts = [offering.city?.trim(), offering.location?.trim()].filter(Boolean);
+  if (parts.length === 0) return "";
+  return parts.join(ar ? " — " : " · ");
 }
 
 export function EventConfiguratorForm({
@@ -190,6 +212,21 @@ export function EventConfiguratorForm({
       ? (packages.find((pkg) => pkg.id === selectedPackageId) ?? null)
       : null;
 
+  // Prefill guests / hours / city from the admin offering when the customer picks it.
+  useEffect(() => {
+    if (typeof selectedOfferingId !== "number") return;
+    const offering = offerings.find((item) => item.id === selectedOfferingId);
+    if (!offering) return;
+    if (offering.capacity && offering.capacity > 0) {
+      setGuestsCount(String(offering.capacity));
+    }
+    const parsedHours = hoursFromDuration(offering.duration);
+    if (parsedHours) setHours(parsedHours);
+    if (offering.city?.trim()) {
+      setCity(offering.city.trim());
+    }
+  }, [selectedOfferingId, offerings]);
+
   const packagePrice = selectedPackage?.priceAmount ?? 0;
   const basePrice = selectedOffering?.basePriceAmount ?? 0;
   const payableTotal =
@@ -197,6 +234,12 @@ export function EventConfiguratorForm({
   const canPay = payableTotal > 0 && !isOtherOccasion && !isOtherPackage;
   const showPackages = typeof selectedOfferingId === "number";
   const showCustomNeeds = isOtherOccasion || isOtherPackage;
+  const fixedVenue = selectedOffering?.locationMode === "fixed";
+  const offeringVenue = venueLine(selectedOffering, ar);
+  const locationForSubmit = fixedVenue
+    ? offeringVenue || city.trim()
+    : [city.trim(), selectedOffering?.location?.trim()].filter(Boolean).join(ar ? " — " : " · ") ||
+      city.trim();
 
   const occasionLabel = isOtherOccasion
     ? customOccasion.trim() || (ar ? "أخرى" : "Other")
@@ -298,7 +341,19 @@ export function EventConfiguratorForm({
       isOtherOccasion ? `${ar ? "وصف المناسبة" : "Custom occasion"}: ${customOccasion.trim()}` : null,
       packageLabel ? `${ar ? "الباقة" : "Package"}: ${packageLabel}` : null,
       hours ? `${ar ? "عدد الساعات" : "Hours"}: ${hours}` : null,
+      selectedOffering?.duration
+        ? `${ar ? "المدة المقترحة" : "Suggested duration"}: ${selectedOffering.duration}`
+        : null,
+      selectedOffering?.capacity
+        ? `${ar ? "الضيوف المقترحون" : "Suggested guests"}: ${selectedOffering.capacity}`
+        : null,
+      locationForSubmit
+        ? `${ar ? "الموقع" : "Location"}: ${locationForSubmit}`
+        : null,
       `${ar ? "الميزانية التقريبية" : "Approx. budget"}: ${budget.trim()}`,
+      canPay && payableTotal > 0
+        ? `${ar ? "المبلغ" : "Amount"}: ${formatSar(payableTotal, locale)}`
+        : null,
       customNeeds.trim()
         ? `${ar ? "الاحتياجات / الطلبات" : "Needs / requests"}: ${customNeeds.trim()}`
         : null,
@@ -320,7 +375,7 @@ export function EventConfiguratorForm({
           description: [customNeeds.trim(), notes.trim()].filter(Boolean).join("\n") || undefined,
           preferred_date: preferredDate || undefined,
           booking_date: preferredDate || undefined,
-          location: city.trim() || undefined,
+          location: locationForSubmit || undefined,
           guests_count: guestsCount ? Number(guestsCount) : undefined,
           adults: guestsCount ? Number(guestsCount) : undefined,
           event_offering_id: typeof selectedOfferingId === "number" ? selectedOfferingId : undefined,
@@ -357,7 +412,7 @@ export function EventConfiguratorForm({
           [customNeeds.trim() || customOccasion.trim(), notes.trim()].filter(Boolean).join("\n") ||
           undefined,
         preferred_date: preferredDate || undefined,
-        location: city.trim() || undefined,
+        location: locationForSubmit || undefined,
         guests_count: guestsCount ? Number(guestsCount) : undefined,
         event_offering_id: typeof selectedOfferingId === "number" ? selectedOfferingId : undefined,
         event_package_ids:
@@ -501,6 +556,18 @@ export function EventConfiguratorForm({
                 </label>
               ) : null}
 
+              {selectedOffering?.description?.trim() ? (
+                <p className="sm:col-span-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-slate-300">
+                  {selectedOffering.description}
+                </p>
+              ) : null}
+
+              {fixedVenue && offeringVenue ? (
+                <p className="sm:col-span-2 text-sm text-cyan-200/90">
+                  {ar ? "الموقع:" : "Venue:"} {offeringVenue}
+                </p>
+              ) : null}
+
               <label className="block text-sm text-slate-200">
                 {ar ? "تاريخ المناسبة" : "Event date"}
                 <input
@@ -519,7 +586,11 @@ export function EventConfiguratorForm({
                   value={guestsCount}
                   onChange={(e) => setGuestsCount(toAsciiDigits(e.target.value).slice(0, 5))}
                   className={fieldClass}
-                  placeholder="40"
+                  placeholder={
+                    selectedOffering?.capacity
+                      ? String(selectedOffering.capacity)
+                      : "40"
+                  }
                 />
               </label>
               <label className="block text-sm text-slate-200">
@@ -532,6 +603,12 @@ export function EventConfiguratorForm({
                   {HOUR_OPTIONS.map((h) => (
                     <option key={h} value={String(h)}>
                       {h} {ar ? "ساعات" : "hours"}
+                      {selectedOffering?.duration &&
+                      hoursFromDuration(selectedOffering.duration) === String(h)
+                        ? ar
+                          ? " (مقترح)"
+                          : " (suggested)"
+                        : ""}
                     </option>
                   ))}
                 </select>
@@ -543,7 +620,10 @@ export function EventConfiguratorForm({
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className={fieldClass}
-                  placeholder={copy.cityPlaceholder}
+                  placeholder={
+                    selectedOffering?.city?.trim() || copy.cityPlaceholder
+                  }
+                  readOnly={fixedVenue && Boolean(selectedOffering?.city?.trim())}
                 />
               </label>
               <label className="block text-sm text-slate-200 sm:col-span-2">
@@ -648,6 +728,39 @@ export function EventConfiguratorForm({
                   </div>
                 ) : null}
 
+                {selectedPackage && !isOtherPackage ? (
+                  <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
+                    {selectedPackage.details?.trim() || selectedPackage.description?.trim() ? (
+                      <p className="leading-relaxed">
+                        {selectedPackage.details?.trim() || selectedPackage.description}
+                      </p>
+                    ) : null}
+                    {selectedPackage.features && selectedPackage.features.length > 0 ? (
+                      <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+                        {selectedPackage.features.map((feature) => (
+                          <li key={feature} className="text-slate-400">
+                            • {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {basePrice > 0 || (selectedPackage.priceAmount ?? 0) > 0 ? (
+                      <p className="mt-2 text-emerald-300">
+                        {ar ? "السعر:" : "Price:"}{" "}
+                        {formatSar(
+                          (selectedPackage.priceAmount ?? 0) + (basePrice > 0 ? basePrice : 0),
+                          locale,
+                        )}
+                        {basePrice > 0 && (selectedPackage.priceAmount ?? 0) > 0
+                          ? ar
+                            ? ` (أساسي ${formatSar(basePrice, locale)} + الباقة)`
+                            : ` (base ${formatSar(basePrice, locale)} + package)`
+                          : null}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
                 {showCustomNeeds ? (
                   <label className="mt-5 block text-sm text-slate-200">
                     {ar ? "اكتب احتياجاتك بنفسك" : "Write your needs yourself"}
@@ -694,26 +807,95 @@ export function EventConfiguratorForm({
                 <p className="text-sm font-medium text-slate-200">
                   {ar ? "طريقة الدفع" : "Payment method"}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {paymentConfig.methods.map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(method.id)}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition",
-                        paymentMethod === method.id
-                          ? "border-emerald-400/60 bg-emerald-500/15 text-white"
-                          : "border-white/12 text-slate-300 hover:border-white/25",
-                      )}
-                    >
-                      {method.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-2 text-sm text-emerald-300">
+                {paymentConfig.driver === "geidea" ? (
+                  <div className="mt-2 space-y-2">
+                    {paymentConfig.methods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={
+                          paymentMethod === method.id
+                            ? "w-full rounded-xl border border-cyan-400/50 bg-cyan-500/10 px-3 py-3 text-start"
+                            : "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-start hover:border-white/20"
+                        }
+                      >
+                        {method.id === "tabby" || method.id === "tamara" ? (
+                          <>
+                            <span className="flex items-center justify-between gap-2">
+                              <PaymentBrandMark
+                                id={method.id}
+                                className={
+                                  method.id === "tamara" ? "h-9 !w-[6rem]" : "h-8 w-[4.5rem]"
+                                }
+                              />
+                              <span className="text-[11px] font-semibold text-slate-200">
+                                {method.label}
+                              </span>
+                            </span>
+                            {payableTotal > 0 ? (
+                              <span className="mt-2 block text-[11px] leading-relaxed text-slate-400">
+                                {method.id === "tamara"
+                                  ? ar
+                                    ? `قسّطها على 3 دفعات من ${formatSar(payableTotal / 3, locale)}`
+                                    : `Split into 3 payments of ${formatSar(payableTotal / 3, locale)}`
+                                  : ar
+                                    ? `4 دفعات بقيمة ${formatSar((payableTotal * 1.015) / 4, locale)} شهريًا أو حتى 12 شهرًا`
+                                    : `4 payments of ${formatSar((payableTotal * 1.015) / 4, locale)}/mo or up to 12 months`}
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          <>
+                            <span className="flex items-center justify-between gap-2">
+                              <GeideaWordmark />
+                              <span className="text-[11px] font-semibold text-slate-200">
+                                {method.label}
+                              </span>
+                            </span>
+                            <span className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                              {(method.brands ?? []).map((brand) => (
+                                <PaymentBrandMark
+                                  key={brand}
+                                  id={brand}
+                                  className="h-8 w-16"
+                                />
+                              ))}
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {paymentConfig.methods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={
+                          paymentMethod === method.id
+                            ? "flex flex-col items-center gap-2 rounded-xl border border-cyan-400/50 bg-cyan-500/15 px-2 py-3 text-xs font-semibold text-cyan-100"
+                            : "flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-2 py-3 text-xs text-slate-300 hover:border-white/20"
+                        }
+                      >
+                        <PaymentBrandMark id={method.id} />
+                        {method.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-3 text-sm text-emerald-300">
                   {ar ? "المبلغ:" : "Amount:"} {formatSar(payableTotal, locale)}
                 </p>
+                {paymentConfig.methods.some((m) => m.brands?.includes("apple")) ? (
+                  <p className="mt-1 text-xs text-slate-400">
+                    {ar
+                      ? "زر Apple Pay يظهر في صفحة الدفع على Safari / أجهزة Apple بعد تفعيله لدى Geidea."
+                      : "Apple Pay appears on the checkout page in Safari / Apple devices once enabled by Geidea."}
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </section>
@@ -793,6 +975,18 @@ function PackageCard({
         <span className="line-clamp-2 text-[11px] leading-relaxed text-slate-400">
           {description ?? pkg?.description}
         </span>
+      ) : null}
+      {pkg?.features && pkg.features.length > 0 ? (
+        <ul className="mt-1 w-full space-y-0.5 text-start">
+          {pkg.features.slice(0, 4).map((feature) => (
+            <li
+              key={feature}
+              className="line-clamp-1 text-[10px] leading-snug text-slate-400"
+            >
+              • {feature}
+            </li>
+          ))}
+        </ul>
       ) : null}
       {price ? <span className={cn("text-xs font-semibold", style.chip)}>{price}</span> : null}
       {pkg?.badge ? (
