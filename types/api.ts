@@ -223,6 +223,17 @@ export interface InquiryPayload {
   payment_method?: string;
   locale?: string;
   source?: string;
+  company_name?: string;
+  job_title?: string;
+  event_type?: string;
+  title?: string;
+  description?: string;
+  preferred_date?: string;
+  preferred_end_date?: string;
+  guests_count?: number;
+  units_count?: number;
+  customer_message?: string;
+  event_slug?: string;
 }
 
 export interface BookingConfirmation {
