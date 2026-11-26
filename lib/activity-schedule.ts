@@ -117,7 +117,247 @@ function minutesToHhMm(total: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-/** Generate start times from duration + buffer + day window. */
+export type LiveBookingSlot = ActivityBookingSlot & {
+  time: string;
+};
+
+/** Display HH:MM as 12-hour clock with AM/PM. */
+export function formatTime12h(value?: string | null): string {
+  const minutes = timeToMinutes(value ?? null);
+  if (minutes === null) return value || "—";
+  const h24 = Math.floor(minutes / 60) % 24;
+  const m = minutes % 60;
+  const suffix = h24 >= 12 ? "PM" : "AM";
+  let h12 = h24 % 12;
+  if (h12 === 0) h12 = 12;
+  return `${String(h12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
+export function formatTimeRange12h(start?: string | null, end?: string | null): string {
+  if (start && end) return `${formatTime12h(start)} – ${formatTime12h(end)}`;
+  return formatTime12h(start || end || "");
+}
+
+export type DayWindow = {
+  start: string;
+  end: string;
+  adult_price?: string;
+  child_price?: string;
+};
+
+export type BookingShiftGroup = {
+  id: string;
+  labelKey: "morning" | "afternoon" | "evening" | "shift";
+  labelIndex: number;
+  start: string;
+  end: string;
+  adultPriceAmount?: number;
+  childPriceAmount?: number;
+  slots: LiveBookingSlot[];
+};
+
+function normalizeDayWindows(raw: unknown): DayWindow[] {
+  if (!Array.isArray(raw)) return [];
+  const windows: DayWindow[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const start = String((row as { start?: string; from?: string }).start
+      ?? (row as { from?: string }).from
+      ?? "").trim();
+    const end = String((row as { end?: string; to?: string }).end
+      ?? (row as { to?: string }).to
+      ?? "").trim();
+    const startMin = timeToMinutes(start);
+    const endMin = timeToMinutes(end);
+    if (startMin === null || endMin === null || endMin <= startMin) continue;
+    const window: DayWindow = {
+      start: minutesToHhMm(startMin),
+      end: minutesToHhMm(endMin),
+    };
+    const adult = String((row as { adult_price?: string; adult?: string }).adult_price
+      ?? (row as { adult?: string }).adult
+      ?? "").trim();
+    const child = String((row as { child_price?: string; child?: string }).child_price
+      ?? (row as { child?: string }).child
+      ?? "").trim();
+    if (adult) window.adult_price = adult;
+    if (child) window.child_price = child;
+    windows.push(window);
+  }
+  windows.sort((a, b) => a.start.localeCompare(b.start));
+  return windows;
+}
+
+export function resolveDayWindows(activity: Activity, extraWindows?: unknown): DayWindow[] {
+  const fromExtra = normalizeDayWindows(extraWindows);
+  if (fromExtra.length > 0) return fromExtra;
+
+  const fromSchedule = scheduleField<DayWindow[]>(activity, "dayWindows", "day_windows");
+  const normalized = normalizeDayWindows(fromSchedule);
+  if (normalized.length > 0) return normalized;
+
+  const ext = activity as Activity & { dayWindows?: DayWindow[] | null; day_windows?: DayWindow[] | null };
+  const fromActivity = normalizeDayWindows(ext.dayWindows ?? ext.day_windows);
+  if (fromActivity.length > 0) return fromActivity;
+
+  const start = scheduleField<string>(activity, "dayWindowStart", "day_window_start");
+  const end = scheduleField<string>(activity, "dayWindowEnd", "day_window_end");
+  return normalizeDayWindows([{ start: start ?? "", end: end ?? "" }]);
+}
+
+function shiftLabelKey(start: string): BookingShiftGroup["labelKey"] {
+  const minutes = timeToMinutes(start);
+  if (minutes === null) return "shift";
+  if (minutes < 12 * 60) return "morning";
+  if (minutes < 17 * 60) return "afternoon";
+  return "evening";
+}
+
+function parseOptionalAmount(value?: string | null): number | undefined {
+  if (!value) return undefined;
+  const amount = parsePriceAmount(value);
+  return amount > 0 ? amount : undefined;
+}
+
+function inferWindowsFromSlotGaps(slots: LiveBookingSlot[], gapMinutes = 180): DayWindow[] {
+  if (slots.length < 2) return [];
+  const sorted = [...slots].sort((a, b) => a.time.localeCompare(b.time));
+  const groups: string[][] = [[sorted[0].time]];
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = timeToMinutes(sorted[i - 1].time);
+    const curr = timeToMinutes(sorted[i].time);
+    if (prev === null || curr === null || curr - prev >= gapMinutes) {
+      groups.push([sorted[i].time]);
+    } else {
+      groups[groups.length - 1].push(sorted[i].time);
+    }
+  }
+  if (groups.length < 2) return [];
+  return groups.map((times) => ({
+    start: times[0],
+    end: minutesToHhMm((timeToMinutes(times[times.length - 1]) ?? 0) + 60),
+  }));
+}
+
+/** Prefer the narrowest matching window so overlapping shifts never duplicate a slot. */
+function bestWindowIndexForTime(time: string, windows: DayWindow[]): number {
+  const minutes = timeToMinutes(time);
+  if (minutes === null) return -1;
+
+  let best = -1;
+  let bestWidth = Number.POSITIVE_INFINITY;
+  windows.forEach((window, index) => {
+    const start = timeToMinutes(window.start);
+    const end = timeToMinutes(window.end);
+    if (start === null || end === null || end <= start) return;
+    if (minutes < start || minutes >= end) return;
+    const width = end - start;
+    if (width < bestWidth || (width === bestWidth && (best < 0 || index < best))) {
+      bestWidth = width;
+      best = index;
+    }
+  });
+  return best;
+}
+
+function windowsOverlap(windows: DayWindow[]): boolean {
+  for (let i = 0; i < windows.length; i++) {
+    const aStart = timeToMinutes(windows[i].start);
+    const aEnd = timeToMinutes(windows[i].end);
+    if (aStart === null || aEnd === null) continue;
+    for (let j = i + 1; j < windows.length; j++) {
+      const bStart = timeToMinutes(windows[j].start);
+      const bEnd = timeToMinutes(windows[j].end);
+      if (bStart === null || bEnd === null) continue;
+      if (aStart < bEnd && bStart < aEnd) return true;
+    }
+  }
+  return false;
+}
+
+/** Group booking slots into morning/evening (or custom) shifts for a tidy live UI. */
+export function groupSlotsByShifts(
+  slots: LiveBookingSlot[],
+  windowsInput?: unknown,
+): BookingShiftGroup[] {
+  const sorted = [...slots].sort((a, b) => a.time.localeCompare(b.time));
+  if (sorted.length === 0) return [];
+
+  let windows = normalizeDayWindows(windowsInput);
+  if (windows.length < 2 || windowsOverlap(windows)) {
+    const inferred = inferWindowsFromSlotGaps(sorted);
+    if (inferred.length >= 2) {
+      windows = inferred;
+    } else if (windows.length < 2) {
+      windows = [];
+    }
+  }
+  if (windows.length < 2) {
+    return [{
+      id: "all",
+      labelKey: "shift",
+      labelIndex: 1,
+      start: sorted[0].time,
+      end: sorted[sorted.length - 1].time,
+      slots: sorted,
+    }];
+  }
+
+  const buckets: LiveBookingSlot[][] = windows.map(() => []);
+  const leftover: LiveBookingSlot[] = [];
+
+  sorted.forEach((slot) => {
+    const index = bestWindowIndexForTime(slot.time, windows);
+    if (index >= 0) buckets[index].push(slot);
+    else leftover.push(slot);
+  });
+
+  const groups: BookingShiftGroup[] = windows.map((window, index) => {
+    const groupSlots = buckets[index];
+    const pricedSlot = groupSlots.find((slot) => typeof slot.adultPriceAmount === "number");
+    const labelKey =
+      windows.length === 2
+        ? (index === 0 ? "morning" : "evening")
+        : shiftLabelKey(window.start);
+    return {
+      id: `shift-${index + 1}-${window.start}`,
+      labelKey,
+      labelIndex: index + 1,
+      start: window.start,
+      end: window.end,
+      adultPriceAmount: pricedSlot?.adultPriceAmount
+        ?? parseOptionalAmount(window.adult_price),
+      childPriceAmount: pricedSlot?.childPriceAmount
+        ?? parseOptionalAmount(window.child_price),
+      slots: groupSlots,
+    };
+  }).filter((group) => group.slots.length > 0);
+
+  if (leftover.length > 0) {
+    groups.push({
+      id: "other",
+      labelKey: "shift",
+      labelIndex: groups.length + 1,
+      start: leftover[0].time,
+      end: leftover[leftover.length - 1].time,
+      slots: leftover,
+    });
+  }
+
+  return groups;
+}
+
+function generateTimesForWindow(duration: number, buffer: number, start: number, end: number): string[] {
+  const times: string[] = [];
+  let cursor = start;
+  while (cursor + duration <= end) {
+    times.push(minutesToHhMm(cursor));
+    cursor += duration + buffer;
+  }
+  return times;
+}
+
+/** Generate start times from duration + buffer + day window(s)/shifts. */
 export function generateStartTimes(activity: Activity): string[] {
   const duration = Number(
     scheduleField<number>(activity, "durationMinutes", "duration_minutes") ?? 0,
@@ -126,21 +366,26 @@ export function generateStartTimes(activity: Activity): string[] {
     0,
     Number(scheduleField<number>(activity, "bufferMinutes", "buffer_minutes") ?? 0),
   );
-  const start = timeToMinutes(
-    scheduleField<string>(activity, "dayWindowStart", "day_window_start") ?? null,
-  );
-  const end = timeToMinutes(
-    scheduleField<string>(activity, "dayWindowEnd", "day_window_end") ?? null,
-  );
-  if (!duration || start === null || end === null || end <= start) return [];
+  if (!duration) return [];
 
-  const times: string[] = [];
-  let cursor = start;
-  while (cursor + duration <= end) {
-    times.push(minutesToHhMm(cursor));
-    cursor += duration + buffer;
+  const fromApi = scheduleField<string[]>(activity, "generatedTimes", "generated_times");
+  if (Array.isArray(fromApi) && fromApi.length > 0) {
+    return [...fromApi];
   }
-  return times;
+
+  const windows = resolveDayWindows(activity);
+  if (windows.length === 0) return [];
+
+  const times = new Set<string>();
+  for (const window of windows) {
+    const start = timeToMinutes(window.start);
+    const end = timeToMinutes(window.end);
+    if (start === null || end === null) continue;
+    for (const time of generateTimesForWindow(duration, buffer, start, end)) {
+      times.add(time);
+    }
+  }
+  return Array.from(times).sort();
 }
 
 export function usesGeneratedSchedule(activity: Activity): boolean {
@@ -293,7 +538,3 @@ export function calculateGuestBookingTotal(
   const dayCount = Math.max(1, Math.floor(days));
   return (adultPrice * Math.max(1, adults) + childPrice * Math.max(0, children)) * dayCount;
 }
-
-export type LiveBookingSlot = ActivityBookingSlot & {
-  time: string;
-};

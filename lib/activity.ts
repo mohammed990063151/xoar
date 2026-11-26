@@ -77,6 +77,8 @@ export function normalizeActivityFromApi(raw: Activity): Activity {
     dayWindowStart: raw.dayWindowStart ?? raw.day_window_start ?? raw.schedule?.dayWindowStart ?? raw.schedule?.day_window_start,
     day_window_end: raw.day_window_end ?? raw.dayWindowEnd ?? raw.schedule?.day_window_end ?? raw.schedule?.dayWindowEnd,
     dayWindowEnd: raw.dayWindowEnd ?? raw.day_window_end ?? raw.schedule?.dayWindowEnd ?? raw.schedule?.day_window_end,
+    day_windows: raw.day_windows ?? raw.dayWindows ?? raw.schedule?.day_windows ?? raw.schedule?.dayWindows ?? null,
+    dayWindows: raw.dayWindows ?? raw.day_windows ?? raw.schedule?.dayWindows ?? raw.schedule?.day_windows ?? null,
     slot_capacity: raw.slot_capacity ?? raw.slotCapacity ?? raw.schedule?.slot_capacity ?? raw.schedule?.slotCapacity,
     slotCapacity: raw.slotCapacity ?? raw.slot_capacity ?? raw.schedule?.slotCapacity ?? raw.schedule?.slot_capacity,
     availability_starts_on: raw.availability_starts_on ?? raw.availabilityStartsOn ?? raw.schedule?.availability_starts_on ?? raw.schedule?.availabilityStartsOn,

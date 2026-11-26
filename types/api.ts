@@ -27,6 +27,8 @@ export interface ActivitySchedulePayload {
   day_window_start?: string | null;
   dayWindowEnd?: string | null;
   day_window_end?: string | null;
+  dayWindows?: Array<{ start: string; end: string; adult_price?: string; child_price?: string }> | null;
+  day_windows?: Array<{ start: string; end: string; adult_price?: string; child_price?: string }> | null;
   slotCapacity?: number | null;
   slot_capacity?: number | null;
   availabilityStartsOn?: string | null;
@@ -123,6 +125,8 @@ export interface Activity {
   dayWindowStart?: string | null;
   day_window_end?: string | null;
   dayWindowEnd?: string | null;
+  day_windows?: Array<{ start: string; end: string; adult_price?: string; child_price?: string }> | null;
+  dayWindows?: Array<{ start: string; end: string; adult_price?: string; child_price?: string }> | null;
   slot_capacity?: number | null;
   slotCapacity?: number | null;
   availability_starts_on?: string | null;

@@ -4,6 +4,7 @@ import Image from "next/image";
 import QRCode from "react-qr-code";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n";
+import { formatTime12h } from "@/lib/activity-schedule";
 import {
   GeideaWordmark,
   PaymentBrandMark,
@@ -18,6 +19,7 @@ export type BookingInvoiceCardProps = {
   readonly activityImage?: string;
   readonly bookingDate?: string;
   readonly bookingDateTo?: string;
+  readonly bookingTime?: string | null;
   readonly guests?: number;
   readonly totalAmount?: string;
   readonly customerName?: string;
@@ -78,6 +80,7 @@ export function BookingInvoiceCard({
   activityImage,
   bookingDate,
   bookingDateTo,
+  bookingTime,
   guests,
   totalAmount,
   customerName,
@@ -98,6 +101,7 @@ export function BookingInvoiceCard({
     bookingDate && bookingDateTo && bookingDateTo !== bookingDate
       ? `${bookingDate} → ${bookingDateTo}`
       : bookingDate ?? "—";
+  const timeLine = bookingTime ? formatTime12h(bookingTime) : null;
 
   return (
     <article
@@ -183,6 +187,15 @@ export function BookingInvoiceCard({
             ar: "تاريخ الفعالية",
             val: dateLine,
           },
+          ...(timeLine
+            ? [
+                {
+                  en: "Time Period",
+                  ar: "الفترة الزمنية",
+                  val: timeLine,
+                },
+              ]
+            : []),
         ].map((item) => (
           <div
             key={item.en}
@@ -220,6 +233,13 @@ export function BookingInvoiceCard({
           <div className="booking-invoice-section overflow-hidden rounded-xl border border-white/11 bg-white/[0.05]">
             <SectionHead titleEn="Booking Details" titleAr="تفاصيل الحجز" />
             <BilingualRow labelEn="Activity Date" labelAr="تاريخ الفعالية" value={dateLine} />
+            {timeLine ? (
+              <BilingualRow
+                labelEn="Time Period"
+                labelAr="الفترة الزمنية"
+                value={<span dir="ltr">{timeLine}</span>}
+              />
+            ) : null}
             {guests != null ? (
               <BilingualRow
                 labelEn="Total Participants"

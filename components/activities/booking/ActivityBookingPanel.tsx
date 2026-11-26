@@ -16,10 +16,14 @@ import {
 } from "@/lib/booking";
 import {
   calculateGuestBookingTotal,
+  formatTime12h,
+  formatTimeRange12h,
+  groupSlotsByShifts,
   guestUnitPricesForDate,
   resolveAvailableTimesForDate,
   resolveBookableDays,
   resolveBookableIsoSet,
+  resolveDayWindows,
   type LiveBookingSlot,
 } from "@/lib/activity-schedule";
 import { bookingLabels, giftConfirmedMessage } from "@/lib/booking-labels";
@@ -165,12 +169,14 @@ export function ActivityBookingPanel({
     [activity, selectedDate],
   );
   const [liveSlots, setLiveSlots] = useState<LiveBookingSlot[] | null>(null);
+  const [liveWindows, setLiveWindows] = useState<unknown[] | null>(null);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
   useEffect(() => {
     const iso = dateFrom;
     if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
       setLiveSlots(null);
+      setLiveWindows(null);
       return;
     }
 
@@ -180,7 +186,13 @@ export function ActivityBookingPanel({
     fetch(url)
       .then(async (res) => {
         if (!res.ok) throw new Error("slots");
-        return (await res.json()) as { data?: { slots?: ActivityBookingSlot[] } };
+        return (await res.json()) as {
+          data?: {
+            slots?: ActivityBookingSlot[];
+            windows?: unknown[];
+            day_windows?: unknown[];
+          };
+        };
       })
       .then((json) => {
         if (cancelled) return;
@@ -189,9 +201,13 @@ export function ActivityBookingPanel({
           time: String(slot.time ?? "").slice(0, 5),
         }));
         setLiveSlots(slots);
+        setLiveWindows(json.data?.windows ?? json.data?.day_windows ?? null);
       })
       .catch(() => {
-        if (!cancelled) setLiveSlots(null);
+        if (!cancelled) {
+          setLiveSlots(null);
+          setLiveWindows(null);
+        }
       })
       .finally(() => {
         if (!cancelled) setSlotsLoading(false);
@@ -215,6 +231,13 @@ export function ActivityBookingPanel({
       childPriceAmount: undefined,
     }));
   }, [liveSlots, localTimes]);
+
+  const shiftGroups = useMemo(() => {
+    const windows = liveWindows ?? resolveDayWindows(activity);
+    return groupSlotsByShifts(slotOptions, windows);
+  }, [activity, liveWindows, slotOptions]);
+
+  const showShiftGroups = shiftGroups.length > 1;
 
   const [selectedTime, setSelectedTime] = useState("");
   useEffect(() => {
@@ -552,7 +575,7 @@ export function ActivityBookingPanel({
           `${labels.adults}: ${adults}`,
           `${labels.children}: ${children}`,
           `${ar ? "الفترة" : "Period"}: ${dateFrom}${(dateTo || dateFrom) !== dateFrom ? ` → ${dateTo || dateFrom}` : ""} (${dayCount} ${ar ? "يوم" : "day(s)"})`,
-          selectedTime ? `${labels.selectTime}: ${selectedTime}` : "",
+          selectedTime ? `${labels.selectTime}: ${formatTime12h(selectedTime)}` : "",
         ]
           .filter(Boolean)
           .join(" · "),
@@ -606,6 +629,7 @@ export function ActivityBookingPanel({
             activityImage={heroImage}
             bookingDate={dateFrom}
             bookingDateTo={dateTo || dateFrom}
+            bookingTime={selectedTime || undefined}
             guests={adults + children}
             totalAmount={totalLabel}
             isGift={giftReady}
@@ -821,7 +845,7 @@ export function ActivityBookingPanel({
                 />
                 {slotOptions.length > 0 ? (
                   <div className="mt-4" role="group" aria-labelledby="booking-time-label">
-                    <p id="booking-time-label" className="mb-2 text-xs font-medium text-slate-400">
+                    <p id="booking-time-label" className="mb-3 text-xs font-medium text-slate-400">
                       {labels.selectTime}
                       <span className="mx-1 text-slate-600">·</span>
                       <span className="text-slate-500">{formatDisplayDate(selectedDate, locale)}</span>
@@ -829,42 +853,93 @@ export function ActivityBookingPanel({
                         <span className="ms-2 text-slate-500">{ar ? "تحديث المقاعد…" : "Updating seats…"}</span>
                       ) : null}
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      {slotOptions.map((slot) => {
-                        const full = slot.available === false;
-                        const active = selectedTime === slot.time;
+                    <div className={showShiftGroups ? "space-y-3" : undefined}>
+                      {shiftGroups.map((group) => {
+                        const shiftTitle =
+                          group.labelKey === "morning"
+                            ? labels.morningShift
+                            : group.labelKey === "afternoon"
+                              ? labels.afternoonShift
+                              : group.labelKey === "evening"
+                                ? labels.eveningShift
+                                : `${labels.shiftLabel} ${group.labelIndex}`;
+                        const groupAdult =
+                          typeof group.adultPriceAmount === "number" && group.adultPriceAmount > 0
+                            ? group.adultPriceAmount
+                            : undefined;
+                        const groupChild =
+                          typeof group.childPriceAmount === "number" && group.childPriceAmount >= 0
+                            ? group.childPriceAmount
+                            : undefined;
+
                         return (
-                          <button
-                            key={slot.time}
-                            type="button"
-                            disabled={full}
-                            onClick={() => setSelectedTime(slot.time)}
+                          <div
+                            key={group.id}
                             className={
-                              full
-                                ? "cursor-not-allowed rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-xs text-slate-600 line-through"
-                                : active
-                                  ? "rounded-xl border border-cyan-400/50 bg-cyan-500/15 px-3 py-2 text-xs font-semibold text-cyan-100"
-                                  : "rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400 hover:border-white/20"
+                              showShiftGroups
+                                ? "rounded-2xl border border-white/10 bg-white/[0.03] p-3"
+                                : undefined
                             }
                           >
-                            <span className="block">{slot.time}</span>
-                            {typeof slot.seatsLeft === "number" ? (
-                              <span className="mt-0.5 block text-[10px] opacity-80">
-                                {full
-                                  ? ar
-                                    ? "مكتمل"
-                                    : "Full"
-                                  : ar
-                                    ? `${slot.seatsLeft} مقاعد`
-                                    : `${slot.seatsLeft} left`}
-                              </span>
+                            {showShiftGroups ? (
+                              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                  <p className="text-xs font-semibold text-white">{shiftTitle}</p>
+                                  <p className="text-[10px] text-slate-500" dir="ltr">
+                                    {formatTimeRange12h(group.start, group.end)}
+                                  </p>
+                                </div>
+                                {groupAdult ? (
+                                  <p className="text-[10px] text-slate-400">
+                                    {ar ? "بالغ" : "Adult"} {formatMoney(groupAdult, locale)}
+                                    {typeof groupChild === "number"
+                                      ? ` · ${ar ? "طفل" : "Child"} ${formatMoney(groupChild, locale)}`
+                                      : ""}
+                                  </p>
+                                ) : null}
+                              </div>
                             ) : null}
-                          </button>
+                            <div className="flex flex-wrap gap-2">
+                              {group.slots.map((slot) => {
+                                const full = slot.available === false;
+                                const active = selectedTime === slot.time;
+                                const seats = typeof slot.seatsLeft === "number" ? slot.seatsLeft : null;
+                                return (
+                                  <button
+                                    key={`${group.id}-${slot.time}`}
+                                    type="button"
+                                    disabled={full}
+                                    onClick={() => setSelectedTime(slot.time)}
+                                    className={
+                                      full
+                                        ? "min-w-[4.5rem] cursor-not-allowed rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 text-xs text-slate-600 line-through"
+                                        : active
+                                          ? "min-w-[4.5rem] rounded-xl border border-cyan-400/50 bg-cyan-500/15 px-3 py-2 text-xs font-semibold text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.15)]"
+                                          : "min-w-[4.5rem] rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-300 hover:border-white/25 hover:bg-white/[0.08]"
+                                    }
+                                  >
+                                    <span className="block text-sm font-semibold tracking-wide" dir="ltr">
+                                      {formatTime12h(slot.time)}
+                                    </span>
+                                    {seats !== null ? (
+                                      <span className="mt-0.5 block text-[10px] opacity-80">
+                                        {full
+                                          ? labels.fullSlot
+                                          : `${seats} ${seats === 1 ? labels.seatLeft : labels.seatsLeft}`}
+                                      </span>
+                                    ) : null}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
                     {adultUnit > 0 ? (
-                      <p className="mt-2 text-[11px] text-slate-500">
+                      <p className="mt-3 text-[11px] text-slate-500">
+                        {ar ? "السعر للوقت المحدد" : "Price for selected time"}
+                        {": "}
                         {ar ? "بالغ" : "Adult"} {formatMoney(adultUnit, locale)}
                         {" · "}
                         {ar ? "طفل" : "Child"} {formatMoney(childUnit, locale)}

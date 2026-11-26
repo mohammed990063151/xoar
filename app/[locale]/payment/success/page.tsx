@@ -133,6 +133,7 @@ function PaymentSuccessContent(): React.ReactElement {
               activityImage={image}
               bookingDate={booking?.bookingDate}
               bookingDateTo={booking?.bookingEndDate || booking?.bookingDate}
+              bookingTime={booking?.bookingTime}
               guests={guests && guests > 0 ? guests : undefined}
               totalAmount={booking?.totalAmount}
               isGift={booking?.isGift}
