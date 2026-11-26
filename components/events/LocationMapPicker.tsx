@@ -22,9 +22,20 @@ interface LocationMapPickerProps {
   readonly optionalHint?: string;
   readonly className?: string;
   readonly inputClassName?: string;
+  readonly required?: boolean;
 }
 
 const RIYADH: [number, number] = [24.7136, 46.6753];
+
+const CITY_PRESETS: Array<{ labelAr: string; labelEn: string; lat: number; lng: number }> = [
+  { labelAr: "الرياض", labelEn: "Riyadh", lat: 24.7136, lng: 46.6753 },
+  { labelAr: "جدة", labelEn: "Jeddah", lat: 21.4858, lng: 39.1925 },
+  { labelAr: "الدمام", labelEn: "Dammam", lat: 26.3927, lng: 49.9777 },
+  { labelAr: "الخبر", labelEn: "Khobar", lat: 26.2172, lng: 50.1971 },
+  { labelAr: "أبها", labelEn: "Abha", lat: 18.2164, lng: 42.5053 },
+];
+
+type SearchHit = { lat: number; lng: number; label: string };
 
 async function reverseGeocode(lat: number, lng: number, ar: boolean): Promise<string> {
   try {
@@ -43,6 +54,35 @@ async function reverseGeocode(lat: number, lng: number, ar: boolean): Promise<st
     : `Map location (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
 }
 
+async function searchPlaces(query: string, ar: boolean): Promise<SearchHit[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  try {
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}` +
+      `&countrycodes=sa&limit=6&accept-language=${ar ? "ar" : "en"}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const data = (await res.json()) as Array<{
+      lat?: string;
+      lon?: string;
+      display_name?: string;
+    }>;
+    return data
+      .map((row) => {
+        const lat = Number(row.lat);
+        const lng = Number(row.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        const label = row.display_name?.trim();
+        if (!label) return null;
+        return { lat, lng, label };
+      })
+      .filter((row): row is SearchHit => row !== null);
+  } catch {
+    return [];
+  }
+}
+
 export function LocationMapPicker({
   locale,
   value,
@@ -53,16 +93,23 @@ export function LocationMapPicker({
   optionalHint,
   className,
   inputClassName,
+  required = false,
 }: LocationMapPickerProps): React.ReactElement {
   const ar = locale === "ar";
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<MapLocation | null>(null);
   const [resolving, setResolving] = useState(false);
   const [geoError, setGeoError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchHits, setSearchHits] = useState<SearchHit[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
+  const pickRef = useRef<((lat: number, lng: number, label?: string) => Promise<void>) | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -108,18 +155,19 @@ export function LocationMapPicker({
             void pick(pos.lat, pos.lng);
           });
         }
-        map.panTo([lat, lng]);
+        map.setView([lat, lng], Math.max(map.getZoom(), 15));
       };
 
-      const pick = async (lat: number, lng: number) => {
+      const pick = async (lat: number, lng: number, knownLabel?: string) => {
         setResolving(true);
         setGeoError("");
         placeMarker(lat, lng);
-        const labelText = await reverseGeocode(lat, lng, ar);
+        const labelText = knownLabel?.trim() || (await reverseGeocode(lat, lng, ar));
         if (cancelled) return;
         setDraft({ lat, lng, label: labelText });
         setResolving(false);
       };
+      pickRef.current = pick;
 
       map.on("click", (e) => {
         void pick(e.latlng.lat, e.latlng.lng);
@@ -146,6 +194,7 @@ export function LocationMapPicker({
 
     return () => {
       cancelled = true;
+      pickRef.current = null;
       timeouts.forEach(clearTimeout);
       document.body.style.overflow = prevOverflow;
       if (mapRef.current) {
@@ -158,6 +207,32 @@ export function LocationMapPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, ar]);
 
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+      setSearchHits([]);
+      return;
+    }
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchHits([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      setSearching(true);
+      void searchPlaces(q, ar).then((hits) => {
+        if (cancelled) return;
+        setSearchHits(hits);
+        setSearching(false);
+      });
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery, open, ar]);
+
   function useMyLocation(): void {
     setGeoError("");
     if (!navigator.geolocation) {
@@ -167,31 +242,7 @@ export function LocationMapPicker({
     setResolving(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        void (async () => {
-          const labelText = await reverseGeocode(lat, lng, ar);
-          setDraft({ lat, lng, label: labelText });
-          setResolving(false);
-          if (mapRef.current) {
-            mapRef.current.setView([lat, lng], 15);
-            const L = await import("leaflet");
-            const pinIcon = L.divIcon({
-              className: "event-location-map-pin",
-              html: `<div style="width:18px;height:18px;border-radius:9999px;background:#10b981;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.45)"></div>`,
-              iconSize: [18, 18],
-              iconAnchor: [9, 9],
-            });
-            if (markerRef.current) {
-              markerRef.current.setLatLng([lat, lng]);
-            } else if (mapRef.current) {
-              markerRef.current = L.marker([lat, lng], {
-                icon: pinIcon,
-                draggable: true,
-              }).addTo(mapRef.current);
-            }
-          }
-        })();
+        void pickRef.current?.(pos.coords.latitude, pos.coords.longitude);
       },
       () => {
         setResolving(false);
@@ -215,6 +266,16 @@ export function LocationMapPicker({
   function clearMapSelection(): void {
     setDraft(null);
     onCoordsChange?.(null);
+  }
+
+  async function selectHit(hit: SearchHit): Promise<void> {
+    setSearchQuery(hit.label);
+    setSearchHits([]);
+    await pickRef.current?.(hit.lat, hit.lng, hit.label);
+  }
+
+  async function jumpToCity(lat: number, lng: number, cityLabel: string): Promise<void> {
+    await pickRef.current?.(lat, lng, cityLabel);
   }
 
   return (
@@ -241,9 +302,9 @@ export function LocationMapPicker({
 
       <input
         value={value}
+        required={required}
         onChange={(e) => {
           onChange(e.target.value);
-          // Manual typing clears pinned coords until map is used again.
           if (draft && e.target.value !== draft.label) clearMapSelection();
         }}
         className={inputClassName}
@@ -270,24 +331,71 @@ export function LocationMapPicker({
             aria-label={ar ? "اختيار الموقع من الخريطة" : "Pick location on map"}
             className="relative z-[81] flex max-h-[min(92dvh,720px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/15 bg-slate-950 shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
           >
-            <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
-              <div>
-                <p className="text-sm font-bold text-white">
-                  {ar ? "اختر الموقع على الخريطة" : "Choose a location on the map"}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  {ar
-                    ? "اضغط أي مكان على الخريطة، أو اسحب الدبوس، أو استخدم موقعك الحالي."
-                    : "Tap anywhere, drag the pin, or use your current location."}
-                </p>
+            <div className="space-y-3 border-b border-white/10 px-4 py-3 sm:px-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-white">
+                    {ar ? "اختر الموقع على الخريطة" : "Choose a location on the map"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-400">
+                    {ar
+                      ? "ابحث عن العنوان، أو اضغط على الخريطة، أو استخدم موقعك الحالي."
+                      : "Search an address, tap the map, or use your current location."}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg border border-white/15 px-2.5 py-1 text-xs text-slate-200 hover:bg-white/5"
+                >
+                  {ar ? "إغلاق" : "Close"}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-lg border border-white/15 px-2.5 py-1 text-xs text-slate-200 hover:bg-white/5"
-              >
-                {ar ? "إغلاق" : "Close"}
-              </button>
+
+              <div className="relative">
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={ar ? "ابحث عن حي، قاعة، عنوان…" : "Search neighborhood, hall, address…"}
+                  className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 text-sm text-white outline-none focus:border-cyan-400/50"
+                  autoComplete="off"
+                />
+                {searching ? (
+                  <span className="absolute end-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">
+                    {ar ? "بحث…" : "Searching…"}
+                  </span>
+                ) : null}
+                {searchHits.length > 0 ? (
+                  <ul className="absolute inset-x-0 top-[calc(100%+4px)] z-20 max-h-48 overflow-y-auto rounded-xl border border-white/15 bg-slate-900 shadow-xl">
+                    {searchHits.map((hit) => (
+                      <li key={`${hit.lat}-${hit.lng}-${hit.label}`}>
+                        <button
+                          type="button"
+                          onClick={() => void selectHit(hit)}
+                          className="w-full px-3 py-2.5 text-start text-xs leading-relaxed text-slate-200 hover:bg-white/5"
+                        >
+                          {hit.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {CITY_PRESETS.map((city) => (
+                  <button
+                    key={city.labelEn}
+                    type="button"
+                    onClick={() =>
+                      void jumpToCity(city.lat, city.lng, ar ? city.labelAr : city.labelEn)
+                    }
+                    className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] text-slate-200 hover:border-cyan-300/40 hover:bg-cyan-500/10"
+                  >
+                    {ar ? city.labelAr : city.labelEn}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="relative min-h-[280px] flex-1 bg-slate-900 sm:min-h-[380px]">
@@ -306,7 +414,7 @@ export function LocationMapPicker({
                 <p className="line-clamp-2 text-xs leading-relaxed text-slate-300">{draft.label}</p>
               ) : (
                 <p className="text-xs text-slate-500">
-                  {ar ? "لم يُحدَّد موقع بعد — اضغط على الخريطة." : "No pin yet — tap the map."}
+                  {ar ? "لم يُحدَّد موقع بعد — ابحث أو اضغط على الخريطة." : "No pin yet — search or tap the map."}
                 </p>
               )}
               {geoError ? <p className="text-xs text-rose-300">{geoError}</p> : null}

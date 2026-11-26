@@ -3,6 +3,7 @@ import { EventConfiguratorForm } from "@/components/events/EventConfiguratorForm
 import { getDictionary } from "@/lib/dictionary";
 import { isLocale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo-service";
+import { getSiteContent } from "@/services/contentService";
 import { eventOfferingService } from "@/services/eventOfferingService";
 import { notFound } from "next/navigation";
 
@@ -37,8 +38,11 @@ export default async function CorporateEventsPage({
 }): Promise<React.ReactElement> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
-  const dict = getDictionary(loc);
-  const offerings = await eventOfferingService.list(loc, "corporate", 48);
+  const [dict, site, offerings] = await Promise.all([
+    Promise.resolve(getDictionary(loc)),
+    getSiteContent(loc),
+    eventOfferingService.list(loc, "corporate", 48),
+  ]);
 
   return (
     <EventConfiguratorForm
@@ -47,6 +51,8 @@ export default async function CorporateEventsPage({
       offerings={offerings}
       copy={dict.pages.requestEvent}
       page={dict.pages.corporateEvents}
+      budgetOptions={site.settings?.eventBudgetOptions}
+      hourOptions={site.settings?.eventHourOptions}
     />
   );
 }

@@ -1,9 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SlideInEdge } from "@/components/motion/SlideInEdge";
+import { PackageDetailsModal } from "@/components/events/PackageDetailsModal";
+import { LocationMapPicker } from "@/components/events/LocationMapPicker";
 import { GccPhoneField } from "@/components/ui/GccPhoneField";
+import { ACTIVITY_FALLBACK_IMAGE } from "@/lib/activity";
 import { cn } from "@/lib/cn";
 import type { Dictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
@@ -32,10 +36,28 @@ interface EventConfiguratorFormProps {
   readonly offerings: EventOffering[];
   readonly copy: Dictionary["pages"]["requestEvent"];
   readonly page: Dictionary["pages"]["individualEvents"] | Dictionary["pages"]["corporateEvents"];
+  /** From admin general settings — falls back to defaults when empty. */
+  readonly budgetOptions?: readonly number[];
+  readonly hourOptions?: readonly number[];
 }
 
 const OTHER = "other" as const;
-const HOUR_OPTIONS = [2, 3, 4, 5, 6, 8, 10, 12];
+const DEFAULT_HOUR_OPTIONS = [2, 3, 4, 5, 6, 8, 10, 12];
+const DEFAULT_BUDGET_OPTIONS = [
+  3000, 5000, 8000, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000,
+];
+
+function normalizeNumberOptions(
+  values: readonly number[] | undefined,
+  fallback: number[],
+): number[] {
+  const cleaned = (values ?? [])
+    .map((n) => Number(n))
+    .filter((n) => Number.isFinite(n) && n > 0)
+    .map((n) => Math.round(n));
+  const unique = Array.from(new Set(cleaned)).sort((a, b) => a - b);
+  return unique.length > 0 ? unique : fallback;
+}
 
 const fieldClass =
   "event-cfg-field mt-1.5 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-emerald-400/60 focus:shadow-[0_0_0_3px_rgba(52,211,153,0.12)]";
@@ -100,15 +122,40 @@ function formatSar(amount: number, locale: Locale): string {
   }
 }
 
+function parseBudgetAmount(raw: string): number {
+  const digits = toAsciiDigits(raw).replace(/[^\d.]/g, "");
+  if (!digits) return 0;
+  const n = Number(digits);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function packageCover(
+  pkg: EventOfferingPackage,
+  offering: EventOffering | null,
+): string {
+  const fromPkg = pkg.image?.trim();
+  if (fromPkg) return fromPkg;
+  const fromWork = pkg.works?.find((w) => w.image?.trim())?.image?.trim();
+  if (fromWork) return fromWork;
+  const fromGallery = offering?.gallery?.find((url) => url?.trim())?.trim();
+  if (fromGallery) return fromGallery;
+  const fromOffering = offering?.image?.trim();
+  if (fromOffering) return fromOffering;
+  return ACTIVITY_FALLBACK_IMAGE;
+}
+
 /** Parse admin duration text (e.g. "4 ساعات") into a select option. */
-function hoursFromDuration(duration?: string | null): string | null {
+function hoursFromDuration(
+  duration?: string | null,
+  hourOptions: readonly number[] = DEFAULT_HOUR_OPTIONS,
+): string | null {
   if (!duration?.trim()) return null;
   const match = duration.match(/(\d{1,2})/);
   if (!match) return null;
   const n = Number(match[1]);
   if (!Number.isFinite(n) || n <= 0) return null;
-  if (HOUR_OPTIONS.includes(n)) return String(n);
-  const nearest = HOUR_OPTIONS.reduce((best, h) =>
+  if (hourOptions.includes(n)) return String(n);
+  const nearest = hourOptions.reduce((best, h) =>
     Math.abs(h - n) < Math.abs(best - n) ? h : best,
   );
   return String(nearest);
@@ -127,10 +174,20 @@ export function EventConfiguratorForm({
   offerings,
   copy,
   page,
+  budgetOptions,
+  hourOptions,
 }: EventConfiguratorFormProps): React.ReactElement {
   const ar = locale === "ar";
   const source =
     audience === "individual" ? "event-request-individual" : "event-request-corporate";
+  const BUDGET_OPTIONS = useMemo(
+    () => normalizeNumberOptions(budgetOptions, DEFAULT_BUDGET_OPTIONS),
+    [budgetOptions],
+  );
+  const HOUR_OPTIONS = useMemo(
+    () => normalizeNumberOptions(hourOptions, DEFAULT_HOUR_OPTIONS),
+    [hourOptions],
+  );
 
   const [category, setCategory] = useState("");
   const [selectedOfferingId, setSelectedOfferingId] = useState<number | typeof OTHER | null>(
@@ -145,7 +202,9 @@ export function EventConfiguratorForm({
   const [guestsCount, setGuestsCount] = useState("");
   const [hours, setHours] = useState("4");
   const [city, setCity] = useState("");
-  const [budget, setBudget] = useState("");
+  const [locationDetail, setLocationDetail] = useState("");
+  const [budgetMin, setBudgetMin] = useState("");
+  const [budgetMax, setBudgetMax] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [dialCode, setDialCode] = useState<GccDialCode>("966");
@@ -153,6 +212,7 @@ export function EventConfiguratorForm({
   const [phoneSeed, setPhoneSeed] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
+  const [detailsPackageId, setDetailsPackageId] = useState<number | null>(null);
   const [sent, setSent] = useState(false);
   const [paidCode, setPaidCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -212,6 +272,35 @@ export function EventConfiguratorForm({
       ? (packages.find((pkg) => pkg.id === selectedPackageId) ?? null)
       : null;
 
+  const budgetMinAmount = parseBudgetAmount(budgetMin);
+  const budgetMaxAmount = parseBudgetAmount(budgetMax);
+  const hasBudgetFilter = budgetMinAmount > 0 || budgetMaxAmount > 0;
+
+  const filteredPackages = useMemo(() => {
+    if (!hasBudgetFilter) return packages;
+    return packages.filter((pkg) => {
+      const price = pkg.priceAmount ?? 0;
+      if (price <= 0) return true;
+      if (budgetMinAmount > 0 && price < budgetMinAmount) return false;
+      if (budgetMaxAmount > 0 && price > budgetMaxAmount) return false;
+      return true;
+    });
+  }, [packages, hasBudgetFilter, budgetMinAmount, budgetMaxAmount]);
+
+  const detailsPackage =
+    detailsPackageId !== null
+      ? (packages.find((pkg) => pkg.id === detailsPackageId) ?? null)
+      : null;
+
+  const budgetLabel = useMemo(() => {
+    const minLabel = budgetMinAmount > 0 ? formatSar(budgetMinAmount, locale) : "";
+    const maxLabel = budgetMaxAmount > 0 ? formatSar(budgetMaxAmount, locale) : "";
+    if (minLabel && maxLabel) return `${minLabel} — ${maxLabel}`;
+    if (minLabel) return ar ? `من ${minLabel}` : `From ${minLabel}`;
+    if (maxLabel) return ar ? `حتى ${maxLabel}` : `Up to ${maxLabel}`;
+    return [budgetMin.trim(), budgetMax.trim()].filter(Boolean).join(" — ");
+  }, [budgetMin, budgetMax, budgetMinAmount, budgetMaxAmount, locale, ar]);
+
   // Prefill guests / hours / city from the admin offering when the customer picks it.
   useEffect(() => {
     if (typeof selectedOfferingId !== "number") return;
@@ -220,12 +309,23 @@ export function EventConfiguratorForm({
     if (offering.capacity && offering.capacity > 0) {
       setGuestsCount(String(offering.capacity));
     }
-    const parsedHours = hoursFromDuration(offering.duration);
+    const parsedHours = hoursFromDuration(offering.duration, HOUR_OPTIONS);
     if (parsedHours) setHours(parsedHours);
     if (offering.city?.trim()) {
       setCity(offering.city.trim());
     }
-  }, [selectedOfferingId, offerings]);
+    if (offering.locationMode === "fixed") {
+      setLocationDetail("");
+    }
+  }, [selectedOfferingId, offerings, HOUR_OPTIONS]);
+
+  // Drop package selection if budget filter hides it.
+  useEffect(() => {
+    if (typeof selectedPackageId !== "number") return;
+    if (filteredPackages.some((pkg) => pkg.id === selectedPackageId)) return;
+    setSelectedPackageId(null);
+    setDetailsPackageId(null);
+  }, [filteredPackages, selectedPackageId]);
 
   const packagePrice = selectedPackage?.priceAmount ?? 0;
   const basePrice = selectedOffering?.basePriceAmount ?? 0;
@@ -238,8 +338,9 @@ export function EventConfiguratorForm({
   const offeringVenue = venueLine(selectedOffering, ar);
   const locationForSubmit = fixedVenue
     ? offeringVenue || city.trim()
-    : [city.trim(), selectedOffering?.location?.trim()].filter(Boolean).join(ar ? " — " : " · ") ||
-      city.trim();
+    : [city.trim(), locationDetail.trim() || selectedOffering?.location?.trim()]
+        .filter(Boolean)
+        .join(ar ? " — " : " · ") || city.trim();
 
   const occasionLabel = isOtherOccasion
     ? customOccasion.trim() || (ar ? "أخرى" : "Other")
@@ -254,6 +355,7 @@ export function EventConfiguratorForm({
   function resetPackageChoice(): void {
     setSelectedPackageId(null);
     setCustomNeeds("");
+    setDetailsPackageId(null);
   }
 
   function handleCategoryChange(value: string): void {
@@ -280,11 +382,16 @@ export function EventConfiguratorForm({
     resetPackageChoice();
   }
 
+  const needsCustomerMapLocation =
+    isOtherOccasion ||
+    (typeof selectedOfferingId === "number" && !fixedVenue);
+
   const detailsDone = Boolean(
     preferredDate.trim() &&
       guestsCount.trim() &&
       city.trim() &&
-      budget.trim() &&
+      (needsCustomerMapLocation ? locationDetail.trim() : true) &&
+      (budgetMinAmount > 0 || budgetMaxAmount > 0) &&
       name.trim() &&
       email.trim() &&
       phoneValid &&
@@ -350,7 +457,9 @@ export function EventConfiguratorForm({
       locationForSubmit
         ? `${ar ? "الموقع" : "Location"}: ${locationForSubmit}`
         : null,
-      `${ar ? "الميزانية التقريبية" : "Approx. budget"}: ${budget.trim()}`,
+      budgetLabel
+        ? `${ar ? "الميزانية" : "Budget"}: ${budgetLabel}`
+        : null,
       canPay && payableTotal > 0
         ? `${ar ? "المبلغ" : "Amount"}: ${formatSar(payableTotal, locale)}`
         : null,
@@ -604,7 +713,8 @@ export function EventConfiguratorForm({
                     <option key={h} value={String(h)}>
                       {h} {ar ? "ساعات" : "hours"}
                       {selectedOffering?.duration &&
-                      hoursFromDuration(selectedOffering.duration) === String(h)
+                      hoursFromDuration(selectedOffering.duration, HOUR_OPTIONS) ===
+                        String(h)
                         ? ar
                           ? " (مقترح)"
                           : " (suggested)"
@@ -626,16 +736,75 @@ export function EventConfiguratorForm({
                   readOnly={fixedVenue && Boolean(selectedOffering?.city?.trim())}
                 />
               </label>
-              <label className="block text-sm text-slate-200 sm:col-span-2">
-                {copy.budget}
-                <input
-                  required
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  className={fieldClass}
-                  placeholder={copy.budgetPlaceholder}
-                />
-              </label>
+
+              {!fixedVenue ? (
+                <div className="sm:col-span-2">
+                  <LocationMapPicker
+                    locale={locale}
+                    label={copy.locationMap}
+                    value={locationDetail}
+                    onChange={setLocationDetail}
+                    required={needsCustomerMapLocation}
+                    placeholder={copy.locationMapPlaceholder}
+                    inputClassName={fieldClass}
+                  />
+                </div>
+              ) : null}
+
+              <div className="sm:col-span-2 space-y-2">
+                <p className="text-sm text-slate-200">{copy.budget}</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block text-sm text-slate-300">
+                    {copy.budgetFrom}
+                    <select
+                      required
+                      value={budgetMin}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setBudgetMin(next);
+                        const nextMin = parseBudgetAmount(next);
+                        if (
+                          nextMin > 0 &&
+                          budgetMaxAmount > 0 &&
+                          budgetMaxAmount < nextMin
+                        ) {
+                          setBudgetMax("");
+                        }
+                      }}
+                      className={fieldClass}
+                    >
+                      <option value="">
+                        {ar ? "اختر الحد الأدنى" : "Select minimum"}
+                      </option>
+                      {BUDGET_OPTIONS.map((amount) => (
+                        <option key={`min-${amount}`} value={String(amount)}>
+                          {formatSar(amount, locale)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block text-sm text-slate-300">
+                    {copy.budgetTo}
+                    <select
+                      required
+                      value={budgetMax}
+                      onChange={(e) => setBudgetMax(e.target.value)}
+                      className={fieldClass}
+                    >
+                      <option value="">
+                        {ar ? "اختر الحد الأعلى" : "Select maximum"}
+                      </option>
+                      {BUDGET_OPTIONS.filter(
+                        (amount) => budgetMinAmount <= 0 || amount >= budgetMinAmount,
+                      ).map((amount) => (
+                        <option key={`max-${amount}`} value={String(amount)}>
+                          {formatSar(amount, locale)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
               <label className="block text-sm text-slate-200">
                 {copy.name}
                 <input
@@ -700,65 +869,52 @@ export function EventConfiguratorForm({
                 </h2>
 
                 {showPackages ? (
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    {packages.map((pkg) => (
+                  <>
+                    {hasBudgetFilter && filteredPackages.length === 0 ? (
+                      <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                        {copy.noPackagesInBudget}
+                      </p>
+                    ) : null}
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {filteredPackages.map((pkg) => (
+                        <PackageCard
+                          key={pkg.id}
+                          pkg={pkg}
+                          offering={selectedOffering}
+                          locale={locale}
+                          active={selectedPackageId === pkg.id}
+                          selectLabel={
+                            selectedPackageId === pkg.id
+                              ? copy.selectedPackage
+                              : copy.selectPackage
+                          }
+                          detailsLabel={copy.viewPackage}
+                          onSelect={() => {
+                            setSelectedPackageId(pkg.id);
+                            setCustomNeeds("");
+                          }}
+                          onOpenDetails={() => setDetailsPackageId(pkg.id)}
+                        />
+                      ))}
                       <PackageCard
-                        key={pkg.id}
-                        pkg={pkg}
                         locale={locale}
-                        active={selectedPackageId === pkg.id}
-                        onSelect={() => {
-                          setSelectedPackageId(pkg.id);
-                          setCustomNeeds("");
-                        }}
+                        offering={selectedOffering}
+                        active={isOtherPackage}
+                        custom
+                        onSelect={() => setSelectedPackageId(OTHER)}
+                        selectLabel={
+                          isOtherPackage ? copy.selectedPackage : copy.selectPackage
+                        }
+                        detailsLabel={copy.viewPackage}
+                        title={ar ? "أخرى (احتياجاتي)" : "Other (my needs)"}
+                        description={
+                          ar
+                            ? "ما لقيت باقتك؟ اكتب طلبك وسنجهّزه لك."
+                            : "Don’t see your package? Describe it and we’ll build it."
+                        }
                       />
-                    ))}
-                    <PackageCard
-                      locale={locale}
-                      active={isOtherPackage}
-                      custom
-                      onSelect={() => setSelectedPackageId(OTHER)}
-                      title={ar ? "أخرى (احتياجاتي)" : "Other (my needs)"}
-                      description={
-                        ar
-                          ? "ما لقيت باقتك؟ اكتب طلبك وسنجهّزه لك."
-                          : "Don’t see your package? Describe it and we’ll build it."
-                      }
-                    />
-                  </div>
-                ) : null}
-
-                {selectedPackage && !isOtherPackage ? (
-                  <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
-                    {selectedPackage.details?.trim() || selectedPackage.description?.trim() ? (
-                      <p className="leading-relaxed">
-                        {selectedPackage.details?.trim() || selectedPackage.description}
-                      </p>
-                    ) : null}
-                    {selectedPackage.features && selectedPackage.features.length > 0 ? (
-                      <ul className="mt-2 grid gap-1 sm:grid-cols-2">
-                        {selectedPackage.features.map((feature) => (
-                          <li key={feature} className="text-slate-400">
-                            • {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {basePrice > 0 || (selectedPackage.priceAmount ?? 0) > 0 ? (
-                      <p className="mt-2 text-emerald-300">
-                        {ar ? "السعر:" : "Price:"}{" "}
-                        {formatSar(
-                          (selectedPackage.priceAmount ?? 0) + (basePrice > 0 ? basePrice : 0),
-                          locale,
-                        )}
-                        {basePrice > 0 && (selectedPackage.priceAmount ?? 0) > 0
-                          ? ar
-                            ? ` (أساسي ${formatSar(basePrice, locale)} + الباقة)`
-                            : ` (base ${formatSar(basePrice, locale)} + package)`
-                          : null}
-                      </p>
-                    ) : null}
-                  </div>
+                    </div>
+                  </>
                 ) : null}
 
                 {showCustomNeeds ? (
@@ -929,71 +1085,187 @@ export function EventConfiguratorForm({
           {error ? <p className="text-sm text-rose-300">{error}</p> : null}
         </form>
       </div>
+
+      <PackageDetailsModal
+        locale={locale}
+        pkg={
+          detailsPackage
+            ? {
+                id: detailsPackage.id,
+                title: detailsPackage.title,
+                description: detailsPackage.description,
+                details: detailsPackage.details,
+                features: detailsPackage.features,
+                works: detailsPackage.works,
+                image: detailsPackage.image || packageCover(detailsPackage, selectedOffering),
+                gallery: selectedOffering?.gallery,
+                price: detailsPackage.price,
+                priceAmount: detailsPackage.priceAmount,
+                badge: detailsPackage.badge,
+              }
+            : null
+        }
+        selected={detailsPackage ? selectedPackageId === detailsPackage.id : false}
+        onClose={() => setDetailsPackageId(null)}
+        onToggleSelect={() => {
+          if (!detailsPackage) return;
+          if (selectedPackageId === detailsPackage.id) {
+            setSelectedPackageId(null);
+            return;
+          }
+          setSelectedPackageId(detailsPackage.id);
+          setCustomNeeds("");
+        }}
+      />
     </div>
   );
 }
 
 function PackageCard({
   pkg,
+  offering,
   locale,
   active,
   onSelect,
+  onOpenDetails,
   custom = false,
   title,
   description,
+  selectLabel,
+  detailsLabel,
 }: {
   readonly pkg?: EventOfferingPackage;
+  readonly offering?: EventOffering | null;
   readonly locale: Locale;
   readonly active: boolean;
   readonly onSelect: () => void;
+  readonly onOpenDetails?: () => void;
   readonly custom?: boolean;
   readonly title?: string;
   readonly description?: string;
+  readonly selectLabel: string;
+  readonly detailsLabel: string;
 }): React.ReactElement {
+  const ar = locale === "ar";
   const label = title ?? pkg?.title ?? "";
   const tone = custom ? "custom" : packageTone(label);
   const style = toneStyles[tone];
+  const cover = pkg ? packageCover(pkg, offering ?? null) : ACTIVITY_FALLBACK_IMAGE;
   const price =
     pkg?.priceAmount && pkg.priceAmount > 0 ? formatSar(pkg.priceAmount, locale) : null;
+  const featurePreview = (pkg?.features ?? []).filter(Boolean).slice(0, 2);
+
+  const bookButtonClass =
+    "flex w-full items-center justify-center rounded-xl bg-gradient-to-l from-violet-600 via-blue-500 to-cyan-400 py-2.5 text-sm font-semibold text-white shadow-[0_6px_20px_rgba(99,102,241,0.3)] transition hover:brightness-110";
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <motion.div
       className={cn(
-        "flex min-h-[9.5rem] flex-col items-center justify-center gap-2 rounded-2xl border px-3 py-5 text-center transition",
-        style.ring,
-        active ? cn(style.glow, "scale-[1.02]") : "opacity-90 hover:opacity-100",
-        active && "ring-2 ring-emerald-400/70",
+        "gradient-border group h-full",
+        active && "ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-slate-950",
       )}
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
     >
-      <span className={cn("text-2xl", style.chip)} aria-hidden>
-        {style.icon}
-      </span>
-      <span className="text-sm font-bold text-white">{label}</span>
-      {description || pkg?.description ? (
-        <span className="line-clamp-2 text-[11px] leading-relaxed text-slate-400">
-          {description ?? pkg?.description}
-        </span>
-      ) : null}
-      {pkg?.features && pkg.features.length > 0 ? (
-        <ul className="mt-1 w-full space-y-0.5 text-start">
-          {pkg.features.slice(0, 4).map((feature) => (
-            <li
-              key={feature}
-              className="line-clamp-1 text-[10px] leading-snug text-slate-400"
+      <div className="inner flex h-full flex-col overflow-hidden">
+        <button
+          type="button"
+          onClick={() => {
+            if (onOpenDetails) onOpenDetails();
+            else onSelect();
+          }}
+          className="relative w-full shrink-0 text-start"
+        >
+          <div className="relative aspect-[16/11] w-full overflow-hidden bg-slate-900">
+            {custom ? (
+              <div
+                className={cn(
+                  "flex h-full w-full items-center justify-center text-4xl",
+                  style.ring,
+                )}
+              >
+                <span className={style.chip} aria-hidden>
+                  {style.icon}
+                </span>
+              </div>
+            ) : (
+              <Image
+                src={cover}
+                alt={label}
+                fill
+                className="object-cover transition duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#05050c]/90 via-transparent to-black/15" />
+            {pkg?.badge ? (
+              <span className="absolute start-3 top-3 z-10 rounded-full border border-amber-300/35 bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-amber-100 backdrop-blur">
+                {pkg.badge}
+              </span>
+            ) : null}
+            {price ? (
+              <div className="activity-card-price-strip pointer-events-none absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-gradient-to-t from-[#05050c] to-[#05050c]/85 px-3 py-2 backdrop-blur-sm">
+                <p className="text-sm font-bold text-emerald-300">{price}</p>
+              </div>
+            ) : null}
+          </div>
+        </button>
+
+        <div className="flex flex-1 flex-col justify-start gap-1.5 p-3">
+          <span
+            className={cn(
+              "w-fit rounded-full border px-2.5 py-0.5 text-[10px] font-medium",
+              custom
+                ? "border-violet-500/30 bg-violet-500/10 text-violet-200"
+                : "border-cyan-500/30 bg-cyan-500/10 text-cyan-200",
+            )}
+          >
+            {custom ? (ar ? "طلب مخصص" : "Custom request") : style.icon + " " + (ar ? "باقة" : "Package")}
+          </span>
+
+          <h3 className="line-clamp-1 text-sm font-bold leading-snug text-white transition group-hover:text-purple-200 sm:text-base">
+            {label}
+          </h3>
+
+          {description || pkg?.description ? (
+            <p className="line-clamp-2 text-[11px] leading-relaxed text-slate-400">
+              {description ?? pkg?.description}
+            </p>
+          ) : null}
+
+          {featurePreview.length > 0 ? (
+            <ul className="space-y-0.5">
+              {featurePreview.map((feature) => (
+                <li key={feature} className="line-clamp-1 text-[10px] text-slate-500">
+                  • {feature}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <div className="mt-auto flex flex-col gap-2 pt-1">
+            {onOpenDetails ? (
+              <button
+                type="button"
+                onClick={onOpenDetails}
+                className="w-full rounded-xl border border-white/15 bg-white/[0.04] py-2 text-xs font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/10 hover:text-white"
+              >
+                {detailsLabel}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onSelect}
+              className={cn(
+                bookButtonClass,
+                active && "ring-2 ring-emerald-300/60",
+              )}
             >
-              • {feature}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {price ? <span className={cn("text-xs font-semibold", style.chip)}>{price}</span> : null}
-      {pkg?.badge ? (
-        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-slate-200">
-          {pkg.badge}
-        </span>
-      ) : null}
-    </button>
+              {selectLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }

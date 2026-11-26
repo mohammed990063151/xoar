@@ -70,6 +70,10 @@ export type SiteSettings = {
   email?: string;
   whatsapp?: string;
   social?: Record<string, string>;
+  /** SAR amounts for event request budget selects (from admin general settings). */
+  eventBudgetOptions?: number[];
+  /** Hour choices for event request duration select. */
+  eventHourOptions?: number[];
 };
 
 export type HappeningItem = {
